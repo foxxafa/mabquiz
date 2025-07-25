@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/theme/theme.dart';
+import 'package:go_router/go_router.dart';
 import '../../domain/entities/question.dart';
 import '../../application/bandit_manager.dart';
 import '../../application/providers.dart';
@@ -8,7 +8,7 @@ import '../../application/providers.dart';
 /// Modern quiz screen with adaptive learning
 class QuizScreen extends ConsumerStatefulWidget {
   final String? subject;
-  
+
   const QuizScreen({
     super.key,
     this.subject,
@@ -56,7 +56,9 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
     if (widget.subject != null) {
       try {
         final quizService = ref.read(quizServiceProvider);
-        final questions = await quizService.getQuestionsBySubject(widget.subject!);
+        final questions =
+            await quizService.getQuestionsBySubject(widget.subject!);
+        _banditManager.initializeQuestions(questions); // Initialize BanditManager
         setState(() {
           _availableQuestions = questions;
           _questionsLoaded = true;
@@ -143,24 +145,17 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
         .toList();
 
     if (availableQuestions.isEmpty && _availableQuestions.isNotEmpty) {
+      // All questions answered, reset for infinite mode
       _answeredQuestionIds.clear();
       availableQuestions = _availableQuestions;
     }
 
     if (availableQuestions.isNotEmpty) {
-      final questionTypeGroups = <QuestionType, List<Question>>{};
-      for (var q in availableQuestions) {
-        (questionTypeGroups[q.type] ??= []).add(q);
-      }
+      // Use BanditManager to select the next question
+      final recommendedQuestion =
+          _banditManager.selectNextQuestion(availableQuestions);
 
-      final availableTypes = questionTypeGroups.keys.toList();
-      if (availableTypes.isNotEmpty) {
-        availableTypes.shuffle();
-        final selectedType = availableTypes.first;
-        final questionsOfType = questionTypeGroups[selectedType]!;
-        questionsOfType.shuffle();
-        final recommendedQuestion = questionsOfType.first;
-
+      if (recommendedQuestion != null) {
         setState(() {
           _currentQuestion = recommendedQuestion;
           _isAnswered = false;
@@ -173,6 +168,17 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
         _questionController.forward();
 
         _progressController.animateTo((_questionIndex % 10) / 10);
+      } else {
+        // Handle case where bandit couldn't select a question
+        // For now, just load another question randomly.
+        availableQuestions.shuffle();
+        setState(() {
+          _currentQuestion = availableQuestions.first;
+          _isAnswered = false;
+          _selectedAnswer = null;
+          _showingFeedback = false;
+          _questionIndex++;
+        });
       }
     }
   }
@@ -198,7 +204,11 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
     }
 
     // BanditManager'a sonucu bildir
-    _banditManager.reportResult(_currentQuestion!.id, isCorrect);
+    _banditManager.updatePerformance(
+      questionId: _currentQuestion!.id,
+      isCorrect: isCorrect,
+      responseTime: const Duration(seconds: 5), // Placeholder
+    );
     _answeredQuestionIds.add(_currentQuestion!.id);
 
     setState(() {
@@ -220,23 +230,26 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
   }
 
   void _showExitDialog() {
+    final theme = Theme.of(context);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        backgroundColor: theme.colorScheme.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
         ),
-        title: const Text('Quiz\'den Çık'),
+        title: Text('Quiz\'den Çık', style: theme.textTheme.headlineSmall),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('Quiz\'i sonlandırmak istediğinizden emin misiniz?'),
+            Text('Quiz\'i sonlandırmak istediğinizden emin misiniz?',
+                style: theme.textTheme.bodyLarge),
             const SizedBox(height: 16),
             if (_totalQuestions > 0) ...[
               Text(
                 'Şu ana kadar $_correctAnswers/$_totalQuestions doğru cevap verdiniz.',
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: AppColors.primary,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.primary,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -246,15 +259,15 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Devam Et'),
+            child: Text('Devam Et', style: TextStyle(color: theme.colorScheme.primary)),
           ),
           ElevatedButton(
             onPressed: () {
               Navigator.of(context).pop();
-              Navigator.of(context).pop();
+              context.pop();
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
+              backgroundColor: theme.colorScheme.primary,
               foregroundColor: Colors.white,
             ),
             child: const Text('Çık'),
@@ -266,36 +279,27 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
-      backgroundColor: AppColors.background,
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF4facfe),
-              Color(0xFF00f2fe),
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              _buildQuizHeader(),
-              Expanded(
-                child: _currentQuestion == null
-                    ? const Center(child: CircularProgressIndicator())
-                    : _buildQuestionContent(),
-              ),
-            ],
-          ),
+      backgroundColor: theme.colorScheme.background,
+      body: SafeArea(
+        child: Column(
+          children: [
+            _buildQuizHeader(theme),
+            Expanded(
+              child: _questionsLoaded
+                  ? _currentQuestion == null
+                      ? const Center(child: CircularProgressIndicator())
+                      : _buildQuestionContent(theme)
+                  : const Center(child: CircularProgressIndicator()),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildQuizHeader() {
+  Widget _buildQuizHeader(ThemeData theme) {
     return Container(
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -312,7 +316,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
               Expanded(
                 child: Text(
                   widget.subject ?? 'Quiz',
-                  style: AppTextStyles.h3.copyWith(
+                  style: theme.textTheme.headlineSmall?.copyWith(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
                   ),
@@ -324,14 +328,14 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
                 children: [
                   Text(
                     'Soru $_questionIndex',
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: Colors.white,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: Colors.white70,
                     ),
                   ),
                   Text(
                     '$_correctAnswers doğru',
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: Colors.white,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: Colors.white70,
                     ),
                   ),
                 ],
@@ -343,10 +347,9 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
             animation: _progressAnimation,
             builder: (context, child) {
               return LinearProgressIndicator(
-                value: (_questionIndex % 10) / 10, // Döngüsel progress
-                backgroundColor: Colors.white.withValues(alpha: 0.3),
-                valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
-                minHeight: 8,
+                value: _progressAnimation.value,
+                backgroundColor: Colors.white.withOpacity(0.2),
+                valueColor: AlwaysStoppedAnimation<Color>(theme.colorScheme.primary),
               );
             },
           ),
@@ -355,215 +358,96 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
     );
   }
 
-  Widget _buildQuestionContent() {
-    return AnimatedBuilder(
-      animation: _questionAnimation,
-      builder: (context, child) {
-        return SlideTransition(
-          position: _slideAnimation,
-          child: FadeTransition(
-            opacity: _questionAnimation,
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                children: [
-                  _buildQuestionCard(),
-                  const SizedBox(height: 24),
-                  Expanded(
-                    child: _buildAnswerOptions(),
-                  ),
-                  if (_showingFeedback) _buildFeedback(),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildQuestionCard() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            offset: const Offset(0, 8),
-            blurRadius: 24,
-          ),
-        ],
-      ),
+  Widget _buildQuestionContent(ThemeData theme) {
+    if (_currentQuestion == null) {
+      return const Center(child: Text('Soru yükleniyor...'));
+    }
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24.0),
       child: Column(
         children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: _getDifficultyColor().withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              _currentQuestion!.difficulty.name.toUpperCase(),
-              style: AppTextStyles.bodySmall.copyWith(
-                color: _getDifficultyColor(),
-                fontWeight: FontWeight.bold,
+          FadeTransition(
+            opacity: _questionAnimation,
+            child: SlideTransition(
+              position: _slideAnimation,
+              child: Column(
+                children: [
+                  Text(
+                    _currentQuestion!.text,
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.headlineMedium,
+                  ),
+                  const SizedBox(height: 32),
+                  ..._buildAnswerOptions(theme),
+                ],
               ),
             ),
           ),
-          const SizedBox(height: 16),
-          Text(
-            _currentQuestion!.text,
-            style: AppTextStyles.h3.copyWith(
-              fontWeight: FontWeight.w600,
+          if (_showingFeedback)
+            ScaleTransition(
+              scale: _feedbackAnimation,
+              child: Container(
+                margin: const EdgeInsets.only(top: 20),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                decoration: BoxDecoration(
+                  color: _feedbackColor.withOpacity(0.8),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  _feedback ?? '',
+                  style: theme.textTheme.bodyLarge?.copyWith(color: Colors.white),
+                  textAlign: TextAlign.center,
+                ),
+              ),
             ),
-            textAlign: TextAlign.center,
-          ),
         ],
       ),
     );
   }
 
-  Color _getDifficultyColor() {
-    switch (_currentQuestion!.difficulty) {
-      case DifficultyLevel.beginner:
-        return Colors.green;
-      case DifficultyLevel.intermediate:
-        return Colors.orange;
-      case DifficultyLevel.advanced:
-        return Colors.red;
-    }
-  }
+  List<Widget> _buildAnswerOptions(ThemeData theme) {
+    if (_currentQuestion == null) return [];
 
-  Widget _buildAnswerOptions() {
-    return ListView.builder(
-      itemCount: _currentQuestion!.options.length,
-      itemBuilder: (context, index) {
-        final option = _currentQuestion!.options[index];
-        final isSelected = _selectedAnswer == option;
-        final isCorrect = option == _currentQuestion!.correctAnswer;
+    final options = _currentQuestion!.options;
+    return options.map((option) {
+      final isSelected = _selectedAnswer == option;
+      final isCorrect = option == _currentQuestion!.correctAnswer;
 
-        Color backgroundColor = Colors.white;
-        Color borderColor = AppColors.border;
+      Color tileColor = theme.colorScheme.surface;
+      Color borderColor = theme.colorScheme.surface;
+      IconData? trailingIcon;
 
-        if (_isAnswered) {
-          if (isCorrect) {
-            backgroundColor = Colors.green.withValues(alpha: 0.1);
-            borderColor = Colors.green;
-          } else if (isSelected && !isCorrect) {
-            backgroundColor = Colors.red.withValues(alpha: 0.1);
-            borderColor = Colors.red;
-          }
-        } else if (isSelected) {
-          backgroundColor = AppColors.primary.withValues(alpha: 0.1);
-          borderColor = AppColors.primary;
+      if (_isAnswered) {
+        if (isSelected) {
+          tileColor = isCorrect
+              ? Colors.green.withOpacity(0.3)
+              : Colors.red.withOpacity(0.3);
+          borderColor = isCorrect ? Colors.green : Colors.red;
+          trailingIcon = isCorrect ? Icons.check_circle : Icons.cancel;
+        } else if (isCorrect) {
+          tileColor = Colors.green.withOpacity(0.3);
+          borderColor = Colors.green;
         }
+      }
 
-        return Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          child: GestureDetector(
-            onTap: () => _answerQuestion(option),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: backgroundColor,
-                border: Border.all(color: borderColor, width: 2),
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    offset: const Offset(0, 2),
-                    blurRadius: 8,
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 24,
-                    height: 24,
-                    decoration: BoxDecoration(
-                      color: borderColor,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Center(
-                      child: Text(
-                        String.fromCharCode(65 + index), // A, B, C, D
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Text(
-                      option,
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                  if (_isAnswered && isCorrect)
-                    const Icon(
-                      Icons.check_circle,
-                      color: Colors.green,
-                    ),
-                  if (_isAnswered && isSelected && !isCorrect)
-                    const Icon(
-                      Icons.cancel,
-                      color: Colors.red,
-                    ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildFeedback() {
-    return AnimatedBuilder(
-      animation: _feedbackAnimation,
-      builder: (context, child) {
-        return ScaleTransition(
-          scale: _feedbackAnimation,
-          child: Container(
-            margin: const EdgeInsets.only(top: 16),
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: _feedbackColor.withValues(alpha: 0.1),
-              border: Border.all(color: _feedbackColor),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  _feedbackColor == Colors.green
-                      ? Icons.check_circle
-                      : Icons.error,
-                  color: _feedbackColor,
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    _feedback ?? '',
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: _feedbackColor,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
+      return AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        margin: const EdgeInsets.only(bottom: 12),
+        decoration: BoxDecoration(
+          color: tileColor,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: borderColor, width: 2),
+        ),
+        child: ListTile(
+          title: Text(option, style: theme.textTheme.bodyLarge),
+          trailing: trailingIcon != null
+              ? Icon(trailingIcon,
+                  color: isCorrect ? Colors.green : Colors.red)
+              : null,
+          onTap: () => _answerQuestion(option),
+        ),
+      );
+    }).toList();
   }
 }

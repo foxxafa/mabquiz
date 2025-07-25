@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mabquiz/src/features/home/presentation/screens/home_screen.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../application/providers.dart';
 import 'login_screen.dart';
@@ -9,7 +9,7 @@ import 'login_screen.dart';
 ///
 /// This widget listens to the authentication state and routes users
 /// to the appropriate screen based on their authentication status:
-/// - If user is authenticated: shows HomeScreen
+/// - If user is authenticated: navigates to the home screen ('/home')
 /// - If user is not authenticated: shows LoginScreen
 /// - While loading: shows loading indicator
 /// - On error: shows error screen
@@ -22,9 +22,14 @@ class AuthGate extends ConsumerWidget {
 
     return authState.when(
       data: (user) {
-        // If user is authenticated, show home screen
+        // If user is authenticated, navigate to home screen via router
         if (user != null) {
-          return const HomeScreen();
+          // Use a post-frame callback to ensure the widget is built before navigating.
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            context.go('/home');
+          });
+          // Return a loading screen while the navigation is happening.
+          return const _LoadingScreen();
         }
         // If user is not authenticated, show login screen
         return const LoginScreen();

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'src/features/auth/presentation/screens/auth_gate.dart';
+import 'package:mabquiz/src/core/navigation/app_router.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -21,7 +21,8 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
+      routerConfig: appRouterProvider,
       title: 'MAB Quiz',
       theme: ThemeData(
         brightness: Brightness.dark,
@@ -64,7 +65,6 @@ class MyApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      home: const AuthGate(),
       debugShowCheckedModeBanner: false,
     );
   }

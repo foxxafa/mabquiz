@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mabquiz/src/features/auth/application/providers.dart';
-import 'package:mabquiz/src/features/auth/presentation/screens/register_screen.dart';
 import 'package:mabquiz/src/features/auth/presentation/utils/error_handler.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -66,14 +65,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
   @override
   Widget build(BuildContext context) {
     final isLoading = ref.watch(authLoadingProvider);
+    final theme = Theme.of(context);
 
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              Theme.of(context).colorScheme.background,
-              Theme.of(context).colorScheme.surface,
+              theme.colorScheme.background,
+              theme.colorScheme.surface,
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -112,6 +112,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
   }
 
   Widget _buildHeader(BuildContext context) {
+    final theme = Theme.of(context);
     return Column(
       children: [
         Container(
@@ -120,8 +121,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                Theme.of(context).colorScheme.primary,
-                Theme.of(context).colorScheme.secondary,
+                theme.colorScheme.primary,
+                theme.colorScheme.secondary,
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -129,7 +130,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+                color: theme.colorScheme.primary.withOpacity(0.3),
                 offset: const Offset(0, 8),
                 blurRadius: 24,
                 spreadRadius: 0,
@@ -145,14 +146,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
         const SizedBox(height: 24),
         Text(
           'Hoş Geldin!',
-          style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+          style: theme.textTheme.headlineLarge?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
         ),
         const SizedBox(height: 8),
         Text(
           'Öğrenmeye devam etmek için giriş yap',
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          style: theme.textTheme.bodyMedium?.copyWith(
                 color: Colors.grey[400],
               ),
           textAlign: TextAlign.center,
@@ -251,11 +252,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
         const Text("Hesabın yok mu?"),
         TextButton(
           onPressed: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => const RegisterScreen(),
-              ),
-            );
+            // TODO: Navigate to Register Screen using GoRouter
           },
           child: const Text('Kayıt Ol'),
         ),
@@ -275,6 +272,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
         _emailController.text.trim(),
         _passwordController.text,
       );
+      // On successful login, AuthGate will handle navigation
     } catch (e) {
       ref.read(authErrorProvider.notifier).state = e.toString();
 

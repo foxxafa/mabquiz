@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../application/providers.dart';
-import 'quiz_screen.dart';
 import 'dart:math' as math;
 
 class SubjectSelectionScreen extends ConsumerStatefulWidget {
@@ -54,89 +54,25 @@ class _SubjectSelectionScreenState extends ConsumerState<SubjectSelectionScreen>
   @override
   Widget build(BuildContext context) {
     final availableSubjects = ref.watch(availableSubjectsProvider);
+    final theme = Theme.of(context);
 
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF121212),
-              Color(0xFF1E1E1E),
-              Color(0xFF2A2A2A),
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              const SizedBox(height: 40),
-              _buildHeader(),
-              const SizedBox(height: 30),
-              Expanded(
-                child: availableSubjects.when(
-                  data: (subjects) => _buildSubjectGrid(subjects),
-                  loading: () => const Center(
-                    child: CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4F9CF9)),
-                    ),
-                  ),
-                  error: (error, stack) => _buildErrorWidget(error, ref),
-                ),
-              ),
-            ],
-          ),
-        ),
+      appBar: AppBar(
+        title: const Text('Ders Seçimi'),
+        backgroundColor: theme.colorScheme.background,
+        elevation: 0,
       ),
-    );
-  }
-
-  Widget _buildHeader() {
-    return FadeTransition(
-      opacity: _fadeAnimation,
-      child: Column(
-        children: [
-          Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF4F9CF9), Color(0xFF2E5EAA)],
-              ),
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF4F9CF9).withOpacity(0.4),
-                  blurRadius: 20,
-                  offset: const Offset(0, 10),
-                ),
-              ],
-            ),
-            child: const Icon(
-              Icons.school_rounded,
-              size: 40,
-              color: Colors.white,
+      body: SafeArea(
+        child: availableSubjects.when(
+          data: (subjects) => _buildSubjectGrid(subjects),
+          loading: () => Center(
+            child: CircularProgressIndicator(
+              valueColor:
+                  AlwaysStoppedAnimation<Color>(theme.colorScheme.primary),
             ),
           ),
-          const SizedBox(height: 20),
-          const Text(
-            'Ders Seçimi',
-            style: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Bilgini test etmek için bir ders seç',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey[400],
-            ),
-          ),
-        ],
+          error: (error, stack) => _buildErrorWidget(error, ref),
+        ),
       ),
     );
   }
@@ -167,14 +103,7 @@ class _SubjectSelectionScreenState extends ConsumerState<SubjectSelectionScreen>
             final subject = subjects[index];
             return _SubjectCard(
               subject: subject,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => QuizScreen(subject: subject),
-                  ),
-                );
-              },
+              onTap: () => context.go('/quiz/${Uri.encodeComponent(subject)}'),
             );
           },
         ),
@@ -183,6 +112,7 @@ class _SubjectSelectionScreenState extends ConsumerState<SubjectSelectionScreen>
   }
 
   Widget _buildErrorWidget(Object error, WidgetRef ref) {
+    final theme = Theme.of(context);
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24.0),
@@ -208,7 +138,7 @@ class _SubjectSelectionScreenState extends ConsumerState<SubjectSelectionScreen>
               icon: const Icon(Icons.refresh),
               label: const Text('Tekrar Dene'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF4F9CF9),
+                backgroundColor: theme.colorScheme.primary,
                 foregroundColor: Colors.white,
               ),
             ),
