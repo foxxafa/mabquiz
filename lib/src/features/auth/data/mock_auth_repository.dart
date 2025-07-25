@@ -23,7 +23,7 @@ class MockAuthRepository implements AuthRepository {
   static const Map<String, String> _testUsers = {
     'test@example.com': 'password',
     'admin@example.com': 'admin1234',
-    'user@example.com': 'user123',
+    'user@example.com': 'user1234',
   };
 
   MockAuthRepository({
