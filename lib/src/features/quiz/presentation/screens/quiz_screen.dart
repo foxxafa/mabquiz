@@ -263,8 +263,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
           ),
           ElevatedButton(
             onPressed: () {
-              Navigator.of(context).pop();
-              context.pop();
+              context.go('/home');
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: theme.colorScheme.primary,

@@ -1,0 +1,57 @@
+[
+  {
+    "id": "term_fill_001",
+    "prompt": "Kalp atışının dakikada 60'tan az olması _____ olarak adlandırılır.",
+    "type": "fill_in_blank",
+    "correctAnswer": "bradikardi",
+    "alternatives": ["Bradikardi", "BRADIKARDI"],
+    "explanation": "Bradikardi, kalp atış hızının dakikada 60'tan az olması durumudur.",
+    "knowledgeType": "pathophysiology",
+    "topic": "kardiyoloji",
+    "subtopic": "ritim_bozuklukları"
+  },
+  {
+    "id": "term_fill_002",
+    "prompt": "Kan basıncının normal değerlerin üstünde olması _____ olarak adlandırılır.",
+    "type": "fill_in_blank",
+    "correctAnswer": "hipertansiyon",
+    "alternatives": ["Hipertansiyon", "HIPERTANSIYON"],
+    "explanation": "Hipertansiyon, sistolik kan basıncının 140 mmHg ve/veya diyastolik kan basıncının 90 mmHg üzerinde olmasıdır.",
+    "knowledgeType": "pathophysiology",
+    "topic": "kardiyoloji",
+    "subtopic": "kan_basıncı"
+  },
+  {
+    "id": "term_fill_003",
+    "prompt": "Karaciğerin normal boyutundan büyük olması _____ olarak adlandırılır.",
+    "type": "fill_in_blank",
+    "correctAnswer": "hepatomegali",
+    "alternatives": ["Hepatomegali", "HEPATOMEGALI"],
+    "explanation": "Hepatomegali, karaciğerin palpasyonla sağ kostokondral sınırın altında hissedilmesidir.",
+    "knowledgeType": "pathophysiology",
+    "topic": "gastroenteroloji",
+    "subtopic": "organ_patolojileri"
+  },
+  {
+    "id": "term_fill_004",
+    "prompt": "Yutma eyleminde güçlük çekme durumu _____ olarak adlandırılır.",
+    "type": "fill_in_blank",
+    "correctAnswer": "disfaji",
+    "alternatives": ["Disfaji", "DISFAJI"],
+    "explanation": "Disfaji, oral, faringeal veya özofageal aşamalardan birinde ya da hepsinde yutma güçlüğü yaşanmasıdır.",
+    "knowledgeType": "pathophysiology",
+    "topic": "gastroenteroloji",
+    "subtopic": "yutma_bozuklukları"
+  },
+  {
+    "id": "term_fill_005",
+    "prompt": "Anatomide \"ön\" anlamına gelen terim _____ dir.",
+    "type": "fill_in_blank",
+    "correctAnswer": "anterior",
+    "alternatives": ["Anterior", "ANTERIOR"],
+    "explanation": "Anterior terimi anatomide vücudun ön kısmını ifade eder.",
+    "knowledgeType": "terminology",
+    "topic": "anatomi",
+    "subtopic": "yön_terimleri"
+  }
+]

@@ -1,0 +1,90 @@
+[
+  {
+    "id": "term_mc_001",
+    "prompt": "Anatomik terimde \"anterior\" ne anlama gelir?",
+    "type": "multiple_choice",
+    "options": ["Ön", "Arka", "Üst", "Alt"],
+    "correctAnswer": "Ön",
+    "explanation": "Anterior, anatomide \"öne doğru\" veya \"ön\" anlamına gelir.",
+    "knowledgeType": "terminology",
+    "topic": "anatomi",
+    "subtopic": "yön_terimleri"
+  },
+  {
+    "id": "term_mc_002",
+    "prompt": "Tıbbi terimde \"bradikardi\" neyi ifade eder?",
+    "type": "multiple_choice",
+    "options": ["Hızlı kalp atışı", "Yavaş kalp atışı", "Düzensiz kalp atışı", "Normal kalp atışı"],
+    "correctAnswer": "Yavaş kalp atışı",
+    "explanation": "Bradikardi, dakikada 60'tan az kalp atışı olmasıdır.",
+    "knowledgeType": "pathophysiology",
+    "topic": "kardiyoloji",
+    "subtopic": "ritim_bozuklukları"
+  },
+  {
+    "id": "term_mc_003",
+    "prompt": "\"Hipertansiyon\" ne demektir?",
+    "type": "multiple_choice",
+    "options": ["Yüksek tansiyon", "Düşük tansiyon", "Normal tansiyon", "Değişken tansiyon"],
+    "correctAnswer": "Yüksek tansiyon",
+    "explanation": "Hipertansiyon, kan basıncının normal değerlerin üstünde olmasıdır.",
+    "knowledgeType": "pathophysiology",
+    "topic": "kardiyoloji",
+    "subtopic": "kan_basıncı"
+  },
+  {
+    "id": "term_mc_004",
+    "prompt": "Tıbbi terimde \"disfaji\" neyi ifade eder?",
+    "type": "multiple_choice",
+    "options": ["Yutma güçlüğü", "Nefes alma güçlüğü", "Konuşma güçlüğü", "Görme güçlüğü"],
+    "correctAnswer": "Yutma güçlüğü",
+    "explanation": "Disfaji, yutma eyleminde güçlük çekme durumudur.",
+    "knowledgeType": "pathophysiology",
+    "topic": "gastroenteroloji",
+    "subtopic": "yutma_bozuklukları"
+  },
+  {
+    "id": "term_mc_005",
+    "prompt": "\"Hepatomegali\" hangi organın büyümesini ifade eder?",
+    "type": "multiple_choice",
+    "options": ["Karaciğer", "Böbrek", "Kalp", "Akciğer"],
+    "correctAnswer": "Karaciğer",
+    "explanation": "Hepatomegali, karaciğerin normal boyutundan büyük olması durumudur.",
+    "knowledgeType": "pathophysiology",
+    "topic": "gastroenteroloji",
+    "subtopic": "organ_patolojileri"
+  },
+  {
+    "id": "term_mc_006",
+    "prompt": "\"Taşikardi\" ne anlama gelir?",
+    "type": "multiple_choice",
+    "options": ["Hızlı kalp atışı", "Yavaş kalp atışı", "Düzensiz kalp atışı", "Durmuş kalp atışı"],
+    "correctAnswer": "Hızlı kalp atışı",
+    "explanation": "Taşikardi, dakikada 100'den fazla kalp atışı olmasıdır.",
+    "knowledgeType": "pathophysiology",
+    "topic": "kardiyoloji",
+    "subtopic": "ritim_bozuklukları"
+  },
+  {
+    "id": "term_mc_007",
+    "prompt": "\"Posterior\" anatomik teriminin anlamı nedir?",
+    "type": "multiple_choice",
+    "options": ["Arka", "Ön", "Üst", "Alt"],
+    "correctAnswer": "Arka",
+    "explanation": "Posterior, anatomide \"arkaya doğru\" veya \"arka\" anlamına gelir.",
+    "knowledgeType": "terminology",
+    "topic": "anatomi",
+    "subtopic": "yön_terimleri"
+  },
+  {
+    "id": "term_mc_008",
+    "prompt": "\"Hipotansiyon\" neyi ifade eder?",
+    "type": "multiple_choice",
+    "options": ["Düşük tansiyon", "Yüksek tansiyon", "Normal tansiyon", "Değişken tansiyon"],
+    "correctAnswer": "Düşük tansiyon",
+    "explanation": "Hipotansiyon, kan basıncının normal değerlerin altında olmasıdır.",
+    "knowledgeType": "pathophysiology",
+    "topic": "kardiyoloji",
+    "subtopic": "kan_basıncı"
+  }
+]

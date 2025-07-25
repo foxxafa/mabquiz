@@ -12,13 +12,14 @@ class AssetQuestionLoader {
     required String questionType,
   }) async {
     try {
-      final path = '$_basePath/$subject/$questionType.json';
+      final path = '$_basePath/${subject.toLowerCase()}/$questionType.json';
       final jsonString = await rootBundle.loadString(path);
       final jsonList = json.decode(jsonString) as List;
 
       return jsonList.map((questionJson) => _parseAssetQuestion(questionJson)).toList();
     } catch (e) {
-      print('Error loading questions from $subject/$questionType: $e');
+      // It's okay if a file doesn't exist, just print for debugging
+      // print('Info: Could not load questions from $subject/$questionType: $e');
       return [];
     }
   }
@@ -40,7 +41,7 @@ class AssetQuestionLoader {
 
   /// Get available subjects
   static List<String> getAvailableSubjects() {
-    return ['farmakoloji']; // Şimdilik sadece farmakoloji
+    return ['farmakoloji', 'terminoloji']; // Sağlık öğrencilerine yönelik dersler
   }
 
   /// Parse asset question JSON to Question entity
@@ -121,6 +122,8 @@ class AssetQuestionLoader {
     switch (course.toLowerCase()) {
       case 'farmakoloji':
         return 'Farmakoloji';
+      case 'terminoloji':
+        return 'Terminoloji';
       default:
         return course;
     }

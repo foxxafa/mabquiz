@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 import '../../domain/entities/question.dart';
-import '../models/sample_questions.dart';
+import '../services/asset_question_loader.dart';
 
 /// Mock data source for quiz questions - simulates Firebase behavior
 ///
@@ -38,173 +38,75 @@ class MockQuizDataSource implements QuizDataSource {
   final Random _random = Random();
 
   /// In-memory storage of questions
-  static final List<Question> _allQuestions = [
-    // Matematik soruları
-    Question(
-      id: 'math_001',
-      text: '2 + 2 = ?',
-      type: QuestionType.multipleChoice,
-      difficulty: DifficultyLevel.beginner,
-      options: ['3', '4', '5', '6'],
-      correctAnswer: '4',
-      explanation: '2 + 2 = 4. Temel toplama işlemi.',
-      tags: ['toplama', 'temel'],
-      subject: 'Matematik',
-      points: 5,
-    ),
-    Question(
-      id: 'math_002',
-      text: '√16 = ?',
-      type: QuestionType.multipleChoice,
-      difficulty: DifficultyLevel.intermediate,
-      options: ['2', '4', '8', '16'],
-      correctAnswer: '4',
-      explanation: '16\'nın karekökü 4\'tür çünkü 4 × 4 = 16.',
-      tags: ['karekök', 'orta'],
-      subject: 'Matematik',
-      points: 15,
-    ),
-    Question(
-      id: 'math_003',
-      text: 'x² - 5x + 6 = 0 denkleminin kökleri toplamı kaçtır?',
-      type: QuestionType.multipleChoice,
-      difficulty: DifficultyLevel.advanced,
-      options: ['5', '6', '-5', '-6'],
-      correctAnswer: '5',
-      explanation: 'Vieta formülüne göre köklerin toplamı -b/a = -(-5)/1 = 5\'tir.',
-      tags: ['denklem', 'ileri'],
-      subject: 'Matematik',
-      points: 25,
-    ),
-    Question(
-      id: 'math_004',
-      text: '15 × 8 = ?',
-      type: QuestionType.multipleChoice,
-      difficulty: DifficultyLevel.beginner,
-      options: ['110', '120', '130', '140'],
-      correctAnswer: '120',
-      explanation: '15 × 8 = 120',
-      tags: ['çarpma', 'temel'],
-      subject: 'Matematik',
-      points: 5,
-    ),
-    Question(
-      id: 'math_005',
-      text: 'Bir üçgenin iç açıları toplamı kaç derecedir?',
-      type: QuestionType.multipleChoice,
-      difficulty: DifficultyLevel.intermediate,
-      options: ['90', '180', '270', '360'],
-      correctAnswer: '180',
-      explanation: 'Herhangi bir üçgenin iç açıları toplamı her zaman 180 derecedir.',
-      tags: ['geometri', 'üçgen'],
-      subject: 'Matematik',
-      points: 15,
-    ),
-
-    // Türkçe soruları
-    Question(
-      id: 'tr_001',
-      text: '"Kitap" kelimesinin çoğul hali nedir?',
-      type: QuestionType.multipleChoice,
-      difficulty: DifficultyLevel.beginner,
-      options: ['Kitaplar', 'Kitapları', 'Kitaba', 'Kitaptan'],
-      correctAnswer: 'Kitaplar',
-      explanation: '"Kitap" kelimesinin çoğul hali "+lar" eki alarak "kitaplar" olur.',
-      tags: ['çoğul', 'isim'],
-      subject: 'Türkçe',
-      points: 5,
-    ),
-    Question(
-      id: 'tr_002',
-      text: 'Aşağıdakilerden hangisi mecaz anlamlı kullanılmıştır?',
-      type: QuestionType.multipleChoice,
-      difficulty: DifficultyLevel.intermediate,
-      options: [
-        'Elma ağacından düştü',
-        'Kalbi taş gibi sert',
-        'Okula yürüdü',
-        'Dün geldi'
-      ],
-      correctAnswer: 'Kalbi taş gibi sert',
-      explanation: '"Kalbi taş gibi sert" ifadesinde "taş" mecazi olarak sertlik anlamında kullanılmıştır.',
-      tags: ['mecaz', 'anlam'],
-      subject: 'Türkçe',
-      points: 15,
-    ),
-    Question(
-      id: 'tr_003',
-      text: '"Güneş" kelimesinde kaç sesli harf vardır?',
-      type: QuestionType.multipleChoice,
-      difficulty: DifficultyLevel.beginner,
-      options: ['2', '3', '4', '5'],
-      correctAnswer: '3',
-      explanation: '"Güneş" kelimesinde ü, e, ş sesli harfleri vardır.',
-      tags: ['sesli harf', 'temel'],
-      subject: 'Türkçe',
-      points: 5,
-    ),
-
-    // Farmakoloji soruları
-    ...SampleQuestions.getFarmakolojiQuestions(),
-
-    // Doğru-Yanlış soruları
-    Question(
-      id: 'tf_001',
-      text: 'Türkiye\'nin başkenti Ankara\'dır.',
-      type: QuestionType.trueFalse,
-      difficulty: DifficultyLevel.beginner,
-      options: ['Doğru', 'Yanlış'],
-      correctAnswer: 'Doğru',
-      explanation: 'Türkiye Cumhuriyeti\'nin başkenti Ankara\'dır.',
-      tags: ['genel kültür', 'başkent'],
-      subject: 'Genel Kültür',
-      points: 5,
-    ),
-    Question(
-      id: 'tf_002',
-      text: 'Su 0 derecede donar.',
-      type: QuestionType.trueFalse,
-      difficulty: DifficultyLevel.beginner,
-      options: ['Doğru', 'Yanlış'],
-      correctAnswer: 'Doğru',
-      explanation: 'Su deniz seviyesinde 0°C\'de donar.',
-      tags: ['fizik', 'hal değişimi'],
-      subject: 'Fen Bilgisi',
-      points: 5,
-    ),
-
-    // Boşluk doldurma soruları
-    Question(
-      id: 'fill_001',
-      text: 'Türkiye\'nin en uzun nehri _____ nehridir.',
-      type: QuestionType.fillInBlank,
-      difficulty: DifficultyLevel.intermediate,
-      options: ['Kızılırmak', 'Sakarya', 'Fırat', 'Dicle'],
-      correctAnswer: 'Kızılırmak',
-      explanation: 'Kızılırmak, Türkiye\'nin en uzun nehridir (1355 km).',
-      tags: ['coğrafya', 'nehir'],
-      subject: 'Coğrafya',
-      points: 15,
-    ),
-  ];
+  List<Question> _allQuestions = [];
+  bool _isInitialized = false;
+  Future<void>? _initializationFuture;
 
   MockQuizDataSource({
-    this.simulatedDelay = const Duration(milliseconds: 500),
+    this.simulatedDelay = const Duration(milliseconds: 300),
   });
+
+  /// Initialize the data source with questions from assets
+  Future<void> initialize() async {
+    await _ensureInitialized();
+  }
+
+  Future<void> _initialize() async {
+    if (_isInitialized) return;
+
+    print('[MockQuizDataSource] Starting initialization...');
+
+    // Load farmakoloji questions from assets
+    final farmakolojiQuestions =
+        await AssetQuestionLoader.loadAllQuestionsForSubject('farmakoloji');
+    print('[MockQuizDataSource] Loaded ${farmakolojiQuestions.length} farmakoloji questions');
+
+    // Load terminoloji questions from assets
+    final terminolojiQuestions =
+        await AssetQuestionLoader.loadAllQuestionsForSubject('terminoloji');
+    print('[MockQuizDataSource] Loaded ${terminolojiQuestions.length} terminoloji questions');
+
+    _allQuestions = [
+      // Farmakoloji soruları
+      ...farmakolojiQuestions,
+
+      // Terminoloji soruları
+      ...terminolojiQuestions,
+    ];
+
+    print('[MockQuizDataSource] Total questions loaded: ${_allQuestions.length}');
+    print('[MockQuizDataSource] Available subjects: ${_allQuestions.map((q) => q.subject).toSet().toList()}');
+
+    _isInitialized = true;
+  }
+
+  Future<void> _ensureInitialized() async {
+    if (_isInitialized) return;
+
+    // Prevent multiple concurrent initializations
+    if (_initializationFuture != null) {
+      return _initializationFuture!;
+    }
+
+    _initializationFuture = _initialize();
+    await _initializationFuture!;
+    _initializationFuture = null;
+  }
 
   @override
   Future<List<Question>> getQuestionsBySubject(String subject) async {
+    await _ensureInitialized();
     await Future.delayed(simulatedDelay);
-
     return _allQuestions
-        .where((question) => question.subject.toLowerCase() == subject.toLowerCase())
+        .where((q) => q.subject.toLowerCase() == subject.toLowerCase())
         .toList();
   }
 
   @override
-  Future<List<Question>> getQuestionsByDifficulty(DifficultyLevel difficulty) async {
+  Future<List<Question>> getQuestionsByDifficulty(
+      DifficultyLevel difficulty) async {
+    await _ensureInitialized();
     await Future.delayed(simulatedDelay);
-
     return _allQuestions
         .where((question) => question.difficulty == difficulty)
         .toList();
@@ -217,6 +119,7 @@ class MockQuizDataSource implements QuizDataSource {
     DifficultyLevel? difficulty,
     List<String>? excludeIds,
   }) async {
+    await _ensureInitialized();
     await Future.delayed(simulatedDelay);
 
     var filteredQuestions = List<Question>.from(_allQuestions);
@@ -229,15 +132,13 @@ class MockQuizDataSource implements QuizDataSource {
     }
 
     if (difficulty != null) {
-      filteredQuestions = filteredQuestions
-          .where((q) => q.difficulty == difficulty)
-          .toList();
+      filteredQuestions =
+          filteredQuestions.where((q) => q.difficulty == difficulty).toList();
     }
 
     if (excludeIds != null && excludeIds.isNotEmpty) {
-      filteredQuestions = filteredQuestions
-          .where((q) => !excludeIds.contains(q.id))
-          .toList();
+      filteredQuestions =
+          filteredQuestions.where((q) => !excludeIds.contains(q.id)).toList();
     }
 
     // Shuffle and return requested amount
@@ -247,6 +148,7 @@ class MockQuizDataSource implements QuizDataSource {
 
   @override
   Future<Question?> getQuestionById(String id) async {
+    await _ensureInitialized();
     await Future.delayed(simulatedDelay);
 
     try {
@@ -258,12 +160,11 @@ class MockQuizDataSource implements QuizDataSource {
 
   @override
   Future<List<String>> getAvailableSubjects() async {
+    await _ensureInitialized();
     await Future.delayed(simulatedDelay);
 
-    final subjects = _allQuestions
-        .map((question) => question.subject)
-        .toSet()
-        .toList();
+    final subjects =
+        _allQuestions.map((question) => question.subject).toSet().toList();
 
     subjects.sort();
     return subjects;
@@ -272,6 +173,7 @@ class MockQuizDataSource implements QuizDataSource {
   /// Get all questions for testing and initialization purposes
   @override
   Future<List<Question>> getAllQuestions() async {
+    await _ensureInitialized();
     await Future.delayed(simulatedDelay);
     return List.unmodifiable(_allQuestions);
   }
@@ -284,12 +186,14 @@ class MockQuizDataSource implements QuizDataSource {
   /// Clear all questions (for testing purposes)
   void clearQuestions() {
     _allQuestions.clear();
+    _isInitialized = false;
   }
 
   /// Reset to default questions (for testing purposes)
   void resetToDefaults() {
-    // This would reset to the original hardcoded questions
-    // Implementation depends on how you want to handle this
+    _allQuestions.clear();
+    _isInitialized = false;
+    _initialize();
   }
 }
 

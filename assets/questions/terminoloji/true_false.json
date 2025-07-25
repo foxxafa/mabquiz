@@ -1,0 +1,52 @@
+[
+  {
+    "id": "term_tf_001",
+    "prompt": "Anterior terimi anatomide \"ön\" anlamına gelir.",
+    "type": "true_false",
+    "correctAnswer": "Doğru",
+    "explanation": "Doğru. Anterior terimi anatomide \"öne doğru\" veya \"ön\" anlamına gelir.",
+    "knowledgeType": "terminology",
+    "topic": "anatomi",
+    "subtopic": "yön_terimleri"
+  },
+  {
+    "id": "term_tf_002",
+    "prompt": "Bradikardi hızlı kalp atışı anlamına gelir.",
+    "type": "true_false",
+    "correctAnswer": "Yanlış",
+    "explanation": "Yanlış. Bradikardi yavaş kalp atışı (dakikada 60'tan az) anlamına gelir.",
+    "knowledgeType": "pathophysiology",
+    "topic": "kardiyoloji",
+    "subtopic": "ritim_bozuklukları"
+  },
+  {
+    "id": "term_tf_003",
+    "prompt": "Hipertansiyon düşük kan basıncı demektir.",
+    "type": "true_false",
+    "correctAnswer": "Yanlış",
+    "explanation": "Yanlış. Hipertansiyon yüksek kan basıncı anlamına gelir.",
+    "knowledgeType": "pathophysiology",
+    "topic": "kardiyoloji",
+    "subtopic": "kan_basıncı"
+  },
+  {
+    "id": "term_tf_004",
+    "prompt": "Hepatomegali karaciğerin büyümesi anlamına gelir.",
+    "type": "true_false",
+    "correctAnswer": "Doğru",
+    "explanation": "Doğru. Hepatomegali karaciğerin normal boyutundan büyük olması durumudur.",
+    "knowledgeType": "pathophysiology",
+    "topic": "gastroenteroloji",
+    "subtopic": "organ_patolojileri"
+  },
+  {
+    "id": "term_tf_005",
+    "prompt": "Disfaji nefes alma güçlüğü anlamına gelir.",
+    "type": "true_false",
+    "correctAnswer": "Yanlış",
+    "explanation": "Yanlış. Disfaji yutma güçlüğü anlamına gelir. Nefes alma güçlüğü dispne olarak adlandırılır.",
+    "knowledgeType": "pathophysiology",
+    "topic": "gastroenteroloji",
+    "subtopic": "yutma_bozuklukları"
+  }
+]

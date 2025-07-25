@@ -68,18 +68,27 @@ final quizServiceProvider = Provider<QuizService>((ref) {
 /// Provides a stream that emits quiz session data updates
 /// This provider automatically disposes when not in use but keeps alive
 /// to maintain session state across the app
-final quizSessionProvider = StreamProvider.autoDispose<QuizSessionData?>((ref) {
+final quizSessionProvider = StreamProvider.autoDispose<QuizSessionData?>((ref) async* {
   // Keep the provider alive to maintain session state
   ref.keepAlive();
 
   final service = ref.watch(quizServiceProvider);
-  return service.quizSessionStream;
+  yield* service.quizSessionStream;
 });
 
 /// Provider for available subjects
 ///
 /// Fetches and provides the list of available quiz subjects
 final availableSubjectsProvider = FutureProvider<List<String>>((ref) async {
+  // In development (mock data) mode, use static asset subjects
+  final quizConfig = ref.watch(quizConfigProvider);
+  if (quizConfig.useMockData) {
+    final subjects = AssetQuestionLoader.getAvailableSubjects()
+        .map((s) => s[0].toUpperCase() + s.substring(1))
+        .toList();
+    return subjects;
+  }
+  // Production: fetch from service
   final service = ref.watch(quizServiceProvider);
   return await service.getAvailableSubjects();
 });
@@ -95,9 +104,8 @@ final assetQuestionsBySubjectProvider = FutureProvider.family<List<Question>, St
 ///
 /// Provides available subjects from assets
 final availableAssetSubjectsProvider = FutureProvider<List<String>>((ref) async {
-  // For now, we know Farmakoloji is available
-  // This can be expanded to dynamically scan assets folder
-  return ['farmakoloji'];
+  // Sağlık öğrencilerine yönelik dersler
+  return ['farmakoloji', 'terminoloji'];
 });
 
 /// Provider family for questions by subject

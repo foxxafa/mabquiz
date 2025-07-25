@@ -1,0 +1,83 @@
+[
+  {
+    "id": "term_match_001",
+    "prompt": "Aşağıdaki tıbbi terimleri doğru tanımlarıyla eşleştiriniz:",
+    "type": "match_text_text",
+    "matchPairs": [
+      {
+        "left": "Bradikardi",
+        "right": "Yavaş kalp atışı"
+      },
+      {
+        "left": "Taşikardi",
+        "right": "Hızlı kalp atışı"
+      },
+      {
+        "left": "Hipertansiyon",
+        "right": "Yüksek kan basıncı"
+      },
+      {
+        "left": "Hipotansiyon",
+        "right": "Düşük kan basıncı"
+      }
+    ],
+    "explanation": "Bu terimler kardiyovasküler sistemle ilgili temel tıbbi terminolojidir.",
+    "knowledgeType": "pathophysiology",
+    "topic": "kardiyoloji",
+    "subtopic": "kardiyovasküler_terminoloji"
+  },
+  {
+    "id": "term_match_002",
+    "prompt": "Anatomik yön terimlerini doğru anlamlarıyla eşleştiriniz:",
+    "type": "match_text_text",
+    "matchPairs": [
+      {
+        "left": "Anterior",
+        "right": "Ön"
+      },
+      {
+        "left": "Posterior",
+        "right": "Arka"
+      },
+      {
+        "left": "Superior",
+        "right": "Üst"
+      },
+      {
+        "left": "Inferior",
+        "right": "Alt"
+      }
+    ],
+    "explanation": "Bu terimler anatomide vücudun farklı bölgelerini ve yönlerini ifade eder.",
+    "knowledgeType": "terminology",
+    "topic": "anatomi",
+    "subtopic": "yön_terimleri"
+  },
+  {
+    "id": "term_match_003",
+    "prompt": "Organ büyümesi terimlerini doğru organlarıyla eşleştiriniz:",
+    "type": "match_text_text",
+    "matchPairs": [
+      {
+        "left": "Hepatomegali",
+        "right": "Karaciğer büyümesi"
+      },
+      {
+        "left": "Splenomegali",
+        "right": "Dalak büyümesi"
+      },
+      {
+        "left": "Kardiomegali",
+        "right": "Kalp büyümesi"
+      },
+      {
+        "left": "Nefromegali",
+        "right": "Böbrek büyümesi"
+      }
+    ],
+    "explanation": "Bu terimler farklı organların patolojik büyümelerini ifade eder.",
+    "knowledgeType": "pathophysiology",
+    "topic": "organ_patolojileri",
+    "subtopic": "organ_büyümeleri"
+  }
+]
