@@ -9,7 +9,6 @@ import 'package:mabquiz/src/features/auth/application/auth_service.dart';
 import 'package:mabquiz/src/features/auth/application/providers.dart';
 import 'package:mabquiz/src/features/auth/data/exceptions.dart';
 import 'package:mabquiz/src/features/auth/presentation/screens/register_screen.dart';
-import 'package:mabquiz/src/features/auth/presentation/widgets/error_dialog.dart';
 
 import 'register_screen_test.mocks.dart';
 

@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mabquiz/src/features/auth/data/exceptions.dart';
 import 'package:mabquiz/src/features/auth/data/mock_auth_repository.dart';

@@ -10,7 +10,6 @@ import 'package:mabquiz/src/features/auth/application/providers.dart';
 import 'package:mabquiz/src/features/auth/data/exceptions.dart';
 import 'package:mabquiz/src/features/auth/presentation/screens/login_screen.dart';
 import 'package:mabquiz/src/features/auth/presentation/screens/register_screen.dart';
-import 'package:mabquiz/src/features/auth/presentation/widgets/error_dialog.dart';
 
 import 'login_screen_test.mocks.dart';
 

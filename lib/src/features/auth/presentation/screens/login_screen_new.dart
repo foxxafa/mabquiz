@@ -4,8 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../core/widgets/widgets.dart';
 import '../../application/providers.dart';
+import '../widgets/error_dialog.dart';
 import '../utils/form_validators.dart';
-import '../utils/error_handler.dart';
 import 'register_screen.dart';
 
 /// Login screen for user authentication
@@ -281,9 +281,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
       ref.read(authErrorProvider.notifier).state = e.toString();
 
       if (context.mounted) {
-        await AuthErrorHandler.handleError(
-          context,
-          e,
+        showErrorDialog(
+          context: context,
+          title: 'Giriş Hatası',
+          message: _getErrorMessage(e.toString()),
         );
       }
     } finally {
