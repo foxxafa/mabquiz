@@ -1,21 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mabquiz/src/features/auth/application/providers.dart';
+import 'package:mabquiz/src/features/auth/presentation/screens/register_screen.dart';
+import 'package:mabquiz/src/features/auth/presentation/utils/error_handler.dart';
 
-import '../../../../core/theme/theme.dart';
-import '../../../../core/widgets/widgets.dart';
-import '../../application/providers.dart';
-import '../utils/form_validators.dart';
-import '../utils/error_handler.dart';
-import 'register_screen.dart';
-
-/// Login screen for user authentication
-///
-/// This screen provides:
-/// - Email and password input fields with validation
-/// - Login functionality using AuthService
-/// - Loading state management
-/// - Error handling and display
-/// - Navigation to registration screen
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
@@ -62,7 +50,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
       curve: Curves.easeInOut,
     ));
 
-    // Start animations
     _fadeController.forward();
     _slideController.forward();
   }
@@ -81,31 +68,40 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     final isLoading = ref.watch(authLoadingProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
-          child: SizedBox(
-            height: MediaQuery.of(context).size.height -
-                    MediaQuery.of(context).padding.top - 48,
-            child: FadeTransition(
-              opacity: _fadeAnimation,
-              child: SlideTransition(
-                position: _slideAnimation,
-                child: Column(
-                  children: [
-                    const SizedBox(height: 40),
-                    // Logo ve Başlık
-                    _buildHeader(),
-                    const SizedBox(height: 48),
-                    // Form
-                    Expanded(
-                      child: _buildForm(isLoading),
-                    ),
-                    // Alt kısım
-                    _buildFooter(),
-                    const SizedBox(height: 24),
-                  ],
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Theme.of(context).colorScheme.background,
+              Theme.of(context).colorScheme.surface,
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24.0),
+            child: SizedBox(
+              height: MediaQuery.of(context).size.height -
+                  MediaQuery.of(context).padding.top -
+                  48,
+              child: FadeTransition(
+                opacity: _fadeAnimation,
+                child: SlideTransition(
+                  position: _slideAnimation,
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 40),
+                      _buildHeader(context),
+                      const SizedBox(height: 48),
+                      Expanded(
+                        child: _buildForm(isLoading),
+                      ),
+                      _buildFooter(),
+                      const SizedBox(height: 24),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -115,23 +111,25 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
     return Column(
       children: [
-        // Logo
         Container(
           width: 80,
           height: 80,
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [AppColors.primary, AppColors.primaryLight],
+            gradient: LinearGradient(
+              colors: [
+                Theme.of(context).colorScheme.primary,
+                Theme.of(context).colorScheme.secondary,
+              ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: AppColors.primary.withValues(alpha: 0.3),
+                color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
                 offset: const Offset(0, 8),
                 blurRadius: 24,
                 spreadRadius: 0,
@@ -145,19 +143,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
           ),
         ),
         const SizedBox(height: 24),
-        // Başlık
         Text(
           'Hoş Geldin!',
-          style: AppTextStyles.h1.copyWith(
-            fontWeight: FontWeight.w700,
-          ),
+          style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
         ),
         const SizedBox(height: 8),
         Text(
           'Öğrenmeye devam etmek için giriş yap',
-          style: AppTextStyles.bodyMedium.copyWith(
-            color: AppColors.textSecondary,
-          ),
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Colors.grey[400],
+              ),
           textAlign: TextAlign.center,
         ),
       ],
@@ -169,64 +166,78 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
       key: _formKey,
       child: Column(
         children: [
-          // Email Field
-          CustomTextField(
-            label: 'E-posta',
-            hint: 'ornek@email.com',
+          TextFormField(
             controller: _emailController,
+            decoration: const InputDecoration(
+              labelText: 'E-posta',
+              prefixIcon: Icon(Icons.email_outlined),
+            ),
             keyboardType: TextInputType.emailAddress,
-            prefixIcon: Icons.email_outlined,
             textInputAction: TextInputAction.next,
-            validator: AuthFormValidators.validateEmail,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Lütfen e-posta adresinizi girin';
+              }
+              if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
+                return 'Lütfen geçerli bir e-posta adresi girin';
+              }
+              return null;
+            },
           ),
           const SizedBox(height: 20),
-
-          // Password Field
-          CustomTextField(
-            label: 'Şifre',
-            hint: 'Şifrenizi girin',
+          TextFormField(
             controller: _passwordController,
+            decoration: const InputDecoration(
+              labelText: 'Şifre',
+              prefixIcon: Icon(Icons.lock_outlined),
+            ),
             obscureText: true,
-            prefixIcon: Icons.lock_outlined,
             textInputAction: TextInputAction.done,
-            validator: AuthFormValidators.validatePassword,
-            onSubmitted: (_) => _handleLogin(),
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Lütfen şifrenizi girin';
+              }
+              if (value.length < 6) {
+                return 'Şifre en az 6 karakter olmalıdır';
+              }
+              return null;
+            },
+            onFieldSubmitted: (_) => _handleLogin(),
           ),
           const SizedBox(height: 12),
-
-          // Şifremi Unuttum
           Align(
             alignment: Alignment.centerRight,
             child: TextButton(
               onPressed: () {
-                // TODO: Şifre sıfırlama
+                // TODO: Implement password reset
               },
-              child: Text(
-                'Şifremi Unuttum',
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: AppColors.primary,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              child: const Text('Şifremi Unuttum'),
             ),
           ),
           const SizedBox(height: 32),
-
-          // Login Button
-          CustomButton(
-            text: 'Giriş Yap',
-            onPressed: isLoading ? null : _handleLogin,
-            isLoading: isLoading,
-            type: ButtonType.primary,
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: isLoading ? null : _handleLogin,
+              child: isLoading
+                  ? const CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    )
+                  : const Text('Giriş Yap'),
+            ),
           ),
           const SizedBox(height: 16),
-
-          // Google ile Giriş
-          CustomButton(
-            text: 'Google ile Giriş Yap',
-            onPressed: isLoading ? null : _handleGoogleLogin,
-            type: ButtonType.outline,
-            icon: Icons.g_mobiledata,
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: isLoading ? null : _handleGoogleLogin,
+              icon: const Icon(Icons.g_translate), // Placeholder
+              label: const Text('Google ile Giriş Yap'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: Colors.black,
+              ),
+            ),
           ),
         ],
       ),
@@ -237,12 +248,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Text(
-          'Hesabın yok mu? ',
-          style: AppTextStyles.bodyMedium.copyWith(
-            color: AppColors.textSecondary,
-          ),
-        ),
+        const Text("Hesabın yok mu?"),
         TextButton(
           onPressed: () {
             Navigator.of(context).push(
@@ -251,13 +257,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
               ),
             );
           },
-          child: Text(
-            'Kayıt Ol',
-            style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.primary,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
+          child: const Text('Kayıt Ol'),
         ),
       ],
     );
@@ -275,15 +275,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
         _emailController.text.trim(),
         _passwordController.text,
       );
-
-      // Login başarılı - AuthGate otomatik yönlendirecek
     } catch (e) {
       ref.read(authErrorProvider.notifier).state = e.toString();
 
       if (mounted) {
-        await AuthErrorHandler.handleError(
-          context,
-          e,
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AuthErrorHandler.getErrorMessage(e)),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     } finally {
@@ -294,7 +294,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
   }
 
   Future<void> _handleGoogleLogin() async {
-    // TODO: Google Sign-In implementasyonu
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Google ile giriş yakında eklenecek'),

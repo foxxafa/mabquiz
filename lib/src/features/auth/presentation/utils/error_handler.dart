@@ -6,6 +6,11 @@ import '../widgets/error_dialog.dart';
 
 /// Comprehensive error handling utility for authentication
 class AuthErrorHandler {
+  static String getErrorMessage(Object error) {
+    final authException = AuthErrorMapper.mapException(error);
+    return AuthErrorMessages.getAuthExceptionMessage(authException);
+  }
+
   /// Handles an authentication error and shows appropriate UI feedback
   static Future<void> handleError(
     BuildContext context,

@@ -137,34 +137,43 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
 
   void _loadNextQuestion() {
     if (!_questionsLoaded) return;
-    
-    // Eğer tüm sorular biterse, soruları yeniden karıştır
-    if (_answeredQuestionIds.length >= _availableQuestions.length) {
-      _answeredQuestionIds.clear(); // Soruları sıfırla, sonsuz devam et
-    }
-    
-    // BanditManager ile en uygun soruyu seç
-    final availableQuestions = _availableQuestions
+
+    var availableQuestions = _availableQuestions
         .where((q) => !_answeredQuestionIds.contains(q.id))
         .toList();
 
+    if (availableQuestions.isEmpty && _availableQuestions.isNotEmpty) {
+      _answeredQuestionIds.clear();
+      availableQuestions = _availableQuestions;
+    }
+
     if (availableQuestions.isNotEmpty) {
-      availableQuestions.shuffle();
-      final recommendedQuestion = availableQuestions.first;
+      final questionTypeGroups = <QuestionType, List<Question>>{};
+      for (var q in availableQuestions) {
+        (questionTypeGroups[q.type] ??= []).add(q);
+      }
 
-      setState(() {
-        _currentQuestion = recommendedQuestion;
-        _isAnswered = false;
-        _selectedAnswer = null;
-        _showingFeedback = false;
-        _questionIndex++;
-      });
+      final availableTypes = questionTypeGroups.keys.toList();
+      if (availableTypes.isNotEmpty) {
+        availableTypes.shuffle();
+        final selectedType = availableTypes.first;
+        final questionsOfType = questionTypeGroups[selectedType]!;
+        questionsOfType.shuffle();
+        final recommendedQuestion = questionsOfType.first;
 
-      _questionController.reset();
-      _questionController.forward();
+        setState(() {
+          _currentQuestion = recommendedQuestion;
+          _isAnswered = false;
+          _selectedAnswer = null;
+          _showingFeedback = false;
+          _questionIndex++;
+        });
 
-      // Progress animasyonu (artık sonsuz olduğu için döngüsel)
-      _progressController.animateTo((_questionIndex % 10) / 10);
+        _questionController.reset();
+        _questionController.forward();
+
+        _progressController.animateTo((_questionIndex % 10) / 10);
+      }
     }
   }
 
