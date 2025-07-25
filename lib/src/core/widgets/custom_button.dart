@@ -146,9 +146,9 @@ class _CustomButtonState extends State<CustomButton>
   Color _getShadowColor() {
     switch (widget.type) {
       case ButtonType.primary:
-        return AppColors.primary.withOpacity(0.3);
+        return AppColors.primary.withValues(alpha: 0.3);
       case ButtonType.secondary:
-        return AppColors.secondary.withOpacity(0.3);
+        return AppColors.secondary.withValues(alpha: 0.3);
       case ButtonType.outline:
         return Colors.transparent;
     }

@@ -28,7 +28,7 @@ class AuthErrorHandler {
       );
     }
 
-    if (showSnackBar) {
+    if (showSnackBar && context.mounted) {
       _showErrorSnackBar(context, localizedMessage);
     }
 
@@ -230,10 +230,10 @@ class AuthErrorHandler {
   static void _logError(Object originalError, AuthException mappedException) {
     // Only log in debug mode
     assert(() {
-      print('🔴 Auth Error:');
-      print('  Original: $originalError');
-      print('  Mapped: ${mappedException.code} - ${mappedException.message}');
-      print('  Localized: ${mappedException.localizedMessage}');
+      debugPrint('🔴 Auth Error:');
+      debugPrint('  Original: $originalError');
+      debugPrint('  Mapped: ${mappedException.code} - ${mappedException.message}');
+      debugPrint('  Localized: ${mappedException.localizedMessage}');
       return true;
     }());
   }

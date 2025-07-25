@@ -236,7 +236,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.primaryLight.withOpacity(0.1),
+        color: AppColors.primaryLight.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -346,7 +346,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
             builder: (context, child) {
               return LinearProgressIndicator(
                 value: _progressAnimation.value,
-                backgroundColor: Colors.white.withOpacity(0.3),
+                backgroundColor: Colors.white.withValues(alpha: 0.3),
                 valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
                 minHeight: 8,
               );
@@ -393,7 +393,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             offset: const Offset(0, 8),
             blurRadius: 24,
           ),
@@ -404,7 +404,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: _getDifficultyColor().withOpacity(0.1),
+              color: _getDifficultyColor().withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
@@ -452,14 +452,14 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
 
         if (_isAnswered) {
           if (isCorrect) {
-            backgroundColor = Colors.green.withOpacity(0.1);
+            backgroundColor = Colors.green.withValues(alpha: 0.1);
             borderColor = Colors.green;
           } else if (isSelected && !isCorrect) {
-            backgroundColor = Colors.red.withOpacity(0.1);
+            backgroundColor = Colors.red.withValues(alpha: 0.1);
             borderColor = Colors.red;
           }
         } else if (isSelected) {
-          backgroundColor = AppColors.primary.withOpacity(0.1);
+          backgroundColor = AppColors.primary.withValues(alpha: 0.1);
           borderColor = AppColors.primary;
         }
 
@@ -476,7 +476,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha: 0.05),
                     offset: const Offset(0, 2),
                     blurRadius: 8,
                   ),
@@ -539,7 +539,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
             margin: const EdgeInsets.only(top: 16),
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: _feedbackColor.withOpacity(0.1),
+              color: _feedbackColor.withValues(alpha: 0.1),
               border: Border.all(color: _feedbackColor),
               borderRadius: BorderRadius.circular(12),
             ),

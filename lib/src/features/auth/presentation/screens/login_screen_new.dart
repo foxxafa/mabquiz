@@ -131,7 +131,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: AppColors.primary.withOpacity(0.3),
+                color: AppColors.primary.withValues(alpha: 0.3),
                 offset: const Offset(0, 8),
                 blurRadius: 24,
                 spreadRadius: 0,
@@ -281,8 +281,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
       ref.read(authErrorProvider.notifier).state = e.toString();
 
       if (context.mounted) {
-        showErrorDialog(
-          context: context,
+        AuthErrorDialog.show(
+          context,
           title: 'Giriş Hatası',
           message: _getErrorMessage(e.toString()),
         );

@@ -131,7 +131,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: AppColors.primary.withOpacity(0.3),
+                color: AppColors.primary.withValues(alpha: 0.3),
                 offset: const Offset(0, 8),
                 blurRadius: 24,
                 spreadRadius: 0,
@@ -280,7 +280,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     } catch (e) {
       ref.read(authErrorProvider.notifier).state = e.toString();
 
-      if (context.mounted) {
+      if (mounted) {
         await AuthErrorHandler.handleError(
           context,
           e,
@@ -300,19 +300,5 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
         content: Text('Google ile giriş yakında eklenecek'),
       ),
     );
-  }
-
-  String _getErrorMessage(String error) {
-    if (error.contains('invalid-email')) {
-      return 'Geçersiz e-posta adresi';
-    } else if (error.contains('user-not-found')) {
-      return 'Bu e-posta adresi ile kayıtlı kullanıcı bulunamadı';
-    } else if (error.contains('wrong-password')) {
-      return 'Hatalı şifre';
-    } else if (error.contains('network')) {
-      return 'İnternet bağlantınızı kontrol edin';
-    } else {
-      return 'Bir hata oluştu. Lütfen tekrar deneyin.';
-    }
   }
 }
