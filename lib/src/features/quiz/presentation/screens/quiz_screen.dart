@@ -2,12 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/theme.dart';
 import '../../domain/entities/question.dart';
-import '../../data/models/sample_questions.dart';
 import '../../application/bandit_manager.dart';
+import '../../application/providers.dart';
 
 /// Modern quiz screen with adaptive learning
 class QuizScreen extends ConsumerStatefulWidget {
-  const QuizScreen({super.key});
+  final String? subject;
+  
+  const QuizScreen({
+    super.key,
+    this.subject,
+  });
 
   @override
   ConsumerState<QuizScreen> createState() => _QuizScreenState();
@@ -37,12 +42,40 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
   Color _feedbackColor = Colors.green;
 
   final List<String> _answeredQuestionIds = [];
+  List<Question> _availableQuestions = [];
+  bool _questionsLoaded = false;
 
   @override
   void initState() {
     super.initState();
     _initializeAnimations();
-    _loadNextQuestion();
+    _loadQuestions();
+  }
+
+  void _loadQuestions() async {
+    if (widget.subject != null) {
+      try {
+        final quizService = ref.read(quizServiceProvider);
+        final questions = await quizService.getQuestionsBySubject(widget.subject!);
+        setState(() {
+          _availableQuestions = questions;
+          _questionsLoaded = true;
+        });
+        _loadNextQuestion();
+      } catch (e) {
+        // Fallback to default questions or show error
+        setState(() {
+          _availableQuestions = [];
+          _questionsLoaded = true;
+        });
+      }
+    } else {
+      // No subject specified, show error or navigate back
+      setState(() {
+        _availableQuestions = [];
+        _questionsLoaded = true;
+      });
+    }
   }
 
   void _initializeAnimations() {
@@ -103,8 +136,15 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
   }
 
   void _loadNextQuestion() {
+    if (!_questionsLoaded) return;
+    
+    // Eğer tüm sorular biterse, soruları yeniden karıştır
+    if (_answeredQuestionIds.length >= _availableQuestions.length) {
+      _answeredQuestionIds.clear(); // Soruları sıfırla, sonsuz devam et
+    }
+    
     // BanditManager ile en uygun soruyu seç
-    final availableQuestions = SampleQuestions.getAllSampleQuestions()
+    final availableQuestions = _availableQuestions
         .where((q) => !_answeredQuestionIds.contains(q.id))
         .toList();
 
@@ -123,10 +163,8 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
       _questionController.reset();
       _questionController.forward();
 
-      // Progress animasyonu
-      _progressController.animateTo(_questionIndex / 10);
-    } else {
-      _showQuizComplete();
+      // Progress animasyonu (artık sonsuz olduğu için döngüsel)
+      _progressController.animateTo((_questionIndex % 10) / 10);
     }
   }
 
@@ -163,10 +201,8 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
         if (mounted) {
           _feedbackController.reverse();
           Future.delayed(const Duration(milliseconds: 300), () {
-            if (mounted && _questionIndex < 10) {
-              _loadNextQuestion();
-            } else {
-              _showQuizComplete();
+            if (mounted) {
+              _loadNextQuestion(); // Sonsuz devam et
             }
           });
         }
@@ -174,108 +210,49 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
     });
   }
 
-  void _showQuizComplete() {
-    final accuracy = _totalQuestions > 0 ? (_correctAnswers / _totalQuestions * 100) : 0;
-
+  void _showExitDialog() {
     showDialog(
       context: context,
-      barrierDismissible: false,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
         ),
-        title: Row(
-          children: [
-            Icon(
-              accuracy >= 70 ? Icons.emoji_events : Icons.thumb_up,
-              color: accuracy >= 70 ? Colors.amber : Colors.blue,
-              size: 32,
-            ),
-            const SizedBox(width: 12),
-            const Text('Quiz Tamamlandı!'),
-          ],
-        ),
+        title: const Text('Quiz\'den Çık'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              'Başarı Oranın: %${accuracy.toStringAsFixed(1)}',
-              style: AppTextStyles.h3.copyWith(
-                color: AppColors.primary,
-                fontWeight: FontWeight.bold,
+            const Text('Quiz\'i sonlandırmak istediğinizden emin misiniz?'),
+            const SizedBox(height: 16),
+            if (_totalQuestions > 0) ...[
+              Text(
+                'Şu ana kadar $_correctAnswers/$_totalQuestions doğru cevap verdiniz.',
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
-            ),
-            const SizedBox(height: 16),
-            Text('Doğru: $_correctAnswers / $_totalQuestions'),
-            const SizedBox(height: 16),
-            _buildLearningInsights(),
+            ],
           ],
         ),
         actions: [
           TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              Navigator.of(context).pop();
-            },
-            child: const Text('Ana Menü'),
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Devam Et'),
           ),
           ElevatedButton(
             onPressed: () {
               Navigator.of(context).pop();
-              _restartQuiz();
+              Navigator.of(context).pop();
             },
-            child: const Text('Tekrar Dene'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLearningInsights() {
-    final insights = _banditManager.getLearningInsights();
-
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppColors.primaryLight.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'AI Öğrenme Raporu:',
-            style: AppTextStyles.bodySmall.copyWith(
-              fontWeight: FontWeight.bold,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
             ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'En başarılı olduğun konu: ${insights.bestCategory}',
-            style: AppTextStyles.bodySmall,
-          ),
-          Text(
-            'Gelişim alanın: ${insights.improvementArea}',
-            style: AppTextStyles.bodySmall,
-          ),
-          Text(
-            'Önerilen zorluk: ${insights.recommendedDifficulty}',
-            style: AppTextStyles.bodySmall,
+            child: const Text('Çık'),
           ),
         ],
       ),
     );
-  }
-
-  void _restartQuiz() {
-    setState(() {
-      _questionIndex = 0;
-      _correctAnswers = 0;
-      _totalQuestions = 0;
-      _answeredQuestionIds.clear();
-    });
-    _progressController.reset();
-    _loadNextQuestion();
   }
 
   @override
@@ -317,7 +294,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
           Row(
             children: [
               IconButton(
-                onPressed: () => Navigator.pop(context),
+                onPressed: () => _showExitDialog(),
                 icon: const Icon(
                   Icons.arrow_back,
                   color: Colors.white,
@@ -325,7 +302,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
               ),
               Expanded(
                 child: Text(
-                  'Soru $_questionIndex / 10',
+                  widget.subject ?? 'Quiz',
                   style: AppTextStyles.h3.copyWith(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -333,11 +310,22 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
                   textAlign: TextAlign.center,
                 ),
               ),
-              Text(
-                '$_correctAnswers doğru',
-                style: AppTextStyles.bodyMedium.copyWith(
-                  color: Colors.white,
-                ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    'Soru $_questionIndex',
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: Colors.white,
+                    ),
+                  ),
+                  Text(
+                    '$_correctAnswers doğru',
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -346,7 +334,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
             animation: _progressAnimation,
             builder: (context, child) {
               return LinearProgressIndicator(
-                value: _progressAnimation.value,
+                value: (_questionIndex % 10) / 10, // Döngüsel progress
                 backgroundColor: Colors.white.withValues(alpha: 0.3),
                 valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
                 minHeight: 8,

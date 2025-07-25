@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/config/config_providers.dart';
 import '../data/data_sources/firebase_quiz_datasource.dart';
 import '../data/data_sources/mock_quiz_datasource.dart';
+import '../data/services/asset_question_loader.dart';
 import '../domain/entities/question.dart';
 import '../domain/entities/quiz_score.dart';
 import '../data/repositories/firebase_quiz_repository.dart';
@@ -81,6 +82,22 @@ final quizSessionProvider = StreamProvider.autoDispose<QuizSessionData?>((ref) {
 final availableSubjectsProvider = FutureProvider<List<String>>((ref) async {
   final service = ref.watch(quizServiceProvider);
   return await service.getAvailableSubjects();
+});
+
+/// Provider for asset-based subject questions
+///
+/// Fetches questions from assets for a specific subject
+final assetQuestionsBySubjectProvider = FutureProvider.family<List<Question>, String>((ref, subject) async {
+  return await AssetQuestionLoader.loadAllQuestionsForSubject(subject);
+});
+
+/// Provider for available asset subjects
+///
+/// Provides available subjects from assets
+final availableAssetSubjectsProvider = FutureProvider<List<String>>((ref) async {
+  // For now, we know Farmakoloji is available
+  // This can be expanded to dynamically scan assets folder
+  return ['farmakoloji'];
 });
 
 /// Provider family for questions by subject

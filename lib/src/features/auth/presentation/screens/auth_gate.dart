@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mabquiz/src/features/quiz/presentation/screens/subject_selection_screen.dart';
 
 import '../../application/providers.dart';
 import 'login_screen.dart';
-import 'home_screen.dart';
 
 /// AuthGate widget that handles authentication state routing
 ///
 /// This widget listens to the authentication state and routes users
 /// to the appropriate screen based on their authentication status:
-/// - If user is authenticated: shows HomeScreen
+/// - If user is authenticated: shows SubjectSelectionScreen
 /// - If user is not authenticated: shows LoginScreen
 /// - While loading: shows loading indicator
 /// - On error: shows error screen
@@ -24,7 +24,7 @@ class AuthGate extends ConsumerWidget {
       data: (user) {
         // If user is authenticated, show home screen
         if (user != null) {
-          return const HomeScreen();
+          return const SubjectSelectionScreen();
         }
         // If user is not authenticated, show login screen
         return const LoginScreen();
