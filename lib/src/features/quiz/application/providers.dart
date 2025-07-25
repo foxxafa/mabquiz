@@ -47,8 +47,8 @@ final quizRepositoryProvider = Provider<QuizRepository>((ref) {
     return MockQuizRepository(dataSource);
   } else {
     // For Firebase implementation, we need to cast properly
-    final firebaseDataSource = dataSource is FirebaseQuizDataSourceImpl 
-        ? dataSource 
+    final firebaseDataSource = dataSource is FirebaseQuizDataSourceImpl
+        ? dataSource
         : FirebaseQuizDataSourceImpl();
     return FirebaseQuizRepository(firebaseDataSource);
   }

@@ -449,7 +449,7 @@ void main() {
         );
 
         final notifier = container.read(currentQuizProvider.notifier);
-        
+
         // Manually set initial state with a question
         notifier.state = CurrentQuizState(
           questions: [testQuestion],
@@ -492,7 +492,7 @@ void main() {
         );
 
         final notifier = container.read(currentQuizProvider.notifier);
-        
+
         // Set initial state
         notifier.state = CurrentQuizState(
           questions: testQuestions,
@@ -545,7 +545,7 @@ void main() {
         );
 
         final notifier = container.read(currentQuizProvider.notifier);
-        
+
         // Set initial state
         notifier.state = CurrentQuizState(
           questions: testQuestions,
@@ -569,7 +569,7 @@ void main() {
         );
 
         final notifier = container.read(currentQuizProvider.notifier);
-        
+
         // Set some state
         notifier.state = const CurrentQuizState(
           currentQuestionIndex: 5,

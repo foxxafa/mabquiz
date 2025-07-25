@@ -13,10 +13,10 @@ import 'mock_quiz_datasource.dart';
 abstract class FirebaseQuizDataSource extends QuizDataSource {
   /// Initialize quiz data in Firebase
   Future<void> initializeQuestions();
-  
+
   /// Check if questions exist in Firebase
   Future<bool> questionsExist();
-  
+
   /// Upload sample questions to Firebase
   Future<void> uploadSampleQuestions();
 }
@@ -28,7 +28,7 @@ abstract class FirebaseQuizDataSource extends QuizDataSource {
 class FirebaseQuizDataSourceImpl extends QuizDataSource implements FirebaseQuizDataSource {
   final FirebaseFirestore _firestore;
   final Duration simulatedDelay;
-  
+
   // Cache for better performance
   final Map<String, List<Question>> _cache = {};
   final Duration _cacheExpiry = const Duration(minutes: 10);
@@ -69,16 +69,16 @@ class FirebaseQuizDataSourceImpl extends QuizDataSource implements FirebaseQuizD
     try {
       final batch = _firestore.batch();
       final mockDataSource = MockQuizDataSource();
-      
+
       // Get all sample questions from the mock data source
       final allQuestions = await mockDataSource.getAllQuestions();
-      
+
       for (final question in allQuestions) {
         final docRef = _firestore.collection('questions').doc(question.id);
         final questionModel = QuestionModel.fromEntity(question);
         batch.set(docRef, questionModel.toJson());
       }
-      
+
       await batch.commit();
     } catch (e) {
       throw FirebaseQuizException('Failed to upload sample questions: $e');

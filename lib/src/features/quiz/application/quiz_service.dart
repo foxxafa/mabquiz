@@ -33,7 +33,7 @@ class QuizService {
   }) async {
     try {
       _validateQuizParameters(limit: limit);
-      
+
       return await _repository.getRandomQuestions(
         limit: limit,
         subject: subject,
@@ -60,7 +60,7 @@ class QuizService {
   Future<List<Question>> getQuestionsBySubject(String subject) async {
     try {
       _validateSubject(subject);
-      
+
       return await _repository.getQuestionsBySubject(subject);
     } on QuizRepositoryException {
       rethrow;
@@ -102,7 +102,7 @@ class QuizService {
   Future<Question?> getQuestionById(String id) async {
     try {
       _validateQuestionId(id);
-      
+
       return await _repository.getQuestionById(id);
     } on QuizRepositoryException {
       rethrow;
@@ -158,7 +158,7 @@ class QuizService {
     for (final question in questions) {
       final userAnswer = answers[question.id];
       final isCorrect = userAnswer == question.correctAnswer;
-      
+
       if (isCorrect) {
         correctAnswers++;
         earnedPoints += question.points;

@@ -14,7 +14,7 @@ enum DifficultyLevel {
 }
 
 /// A single question in the quiz system - Domain Entity
-/// 
+///
 /// This is the pure domain entity without any data-layer concerns.
 /// Data models in the data layer will extend or convert to/from this entity.
 class Question {

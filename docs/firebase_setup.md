@@ -28,16 +28,16 @@ Bu doküman MAB Quiz uygulaması için Firebase yapılandırmasını açıklar.
 dependencies:
   # Firebase Core
   firebase_core: ^2.24.0
-  
+
   # Firebase Authentication
   firebase_auth: ^4.15.0
-  
+
   # Cloud Firestore
   cloud_firestore: ^4.13.0
-  
+
   # Firebase Storage (opsiyonel - medya dosyaları için)
   firebase_storage: ^11.5.0
-  
+
   # Firebase Analytics (opsiyonel)
   firebase_analytics: ^10.7.0
 ```
@@ -62,7 +62,7 @@ apply plugin: 'com.google.gms.google-services'
 
 android {
     compileSdkVersion 34
-    
+
     defaultConfig {
         minSdkVersion 21
         targetSdkVersion 34
@@ -152,26 +152,26 @@ service cloud.firestore {
     // Questions - sadece okuma izni
     match /questions/{questionId} {
       allow read: if request.auth != null;
-      allow write: if request.auth != null && 
+      allow write: if request.auth != null &&
                       request.auth.token.admin == true;
     }
-    
+
     // Subjects - sadece okuma izni
     match /subjects/{subjectId} {
       allow read: if request.auth != null;
-      allow write: if request.auth != null && 
+      allow write: if request.auth != null &&
                       request.auth.token.admin == true;
     }
-    
+
     // Quiz Sessions - kullanıcı kendi sessionlarını yönetebilir
     match /quiz_sessions/{sessionId} {
-      allow read, write: if request.auth != null && 
+      allow read, write: if request.auth != null &&
                             request.auth.uid in resource.data.participantIds;
     }
-    
+
     // User Stats - kullanıcı sadece kendi istatistiklerini görebilir
     match /user_stats/{userId} {
-      allow read, write: if request.auth != null && 
+      allow read, write: if request.auth != null &&
                             request.auth.uid == userId;
     }
   }
@@ -215,7 +215,7 @@ Aşağıdaki composite indexleri oluşturun:
 ```dart
 final quizDataSourceProvider = Provider<QuizDataSource>((ref) {
   final useMockAuth = ref.watch(useMockAuthProvider);
-  
+
   if (useMockAuth) {
     return MockQuizDataSource();
   } else {
@@ -232,15 +232,15 @@ final quizDataSourceProvider = Provider<QuizDataSource>((ref) {
 ```dart
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // Firebase'i başlatın
   await Firebase.initializeApp();
-  
+
   // Geliştirme ortamında emulator kullanın
   if (kDebugMode) {
     FirebaseFirestore.instance.useFirestoreEmulator('localhost', 8080);
   }
-  
+
   runApp(const MyApp());
 }
 ```
@@ -261,7 +261,7 @@ void main() async {
 // Geliştirme ortamında test verileri eklemek için
 Future<void> seedDatabase() async {
   final firestore = FirebaseFirestore.instance;
-  
+
   // Örnek soru ekleme
   await firestore.collection('questions').doc('math_001').set({
     'text': '2 + 2 = ?',

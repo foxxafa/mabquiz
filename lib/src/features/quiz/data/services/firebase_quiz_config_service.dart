@@ -14,7 +14,7 @@ import '../models/question.dart';
 class FirebaseQuizConfigService {
   static FirebaseQuizConfigService? _instance;
   static FirebaseQuizConfigService get instance => _instance ??= FirebaseQuizConfigService._();
-  
+
   FirebaseQuizConfigService._();
 
   FirebaseFirestore? _firestore;
@@ -30,7 +30,7 @@ class FirebaseQuizConfigService {
     try {
       // Ensure Firebase is initialized
       await Firebase.initializeApp();
-      
+
       _firestore = FirebaseFirestore.instance;
 
       // Configure Firestore settings based on environment
@@ -104,7 +104,7 @@ class FirebaseQuizConfigService {
           .collection('questions')
           .limit(1)
           .get();
-      
+
       return snapshot.docs.isEmpty;
     } catch (e) {
       return true; // If we can't check, assume we need to initialize
@@ -112,7 +112,7 @@ class FirebaseQuizConfigService {
   }
 
   /// Create Firestore indexes programmatically
-  /// 
+  ///
   /// Note: In production, indexes should be created via Firebase Console
   /// or Firebase CLI. This is mainly for development/testing.
   Future<void> createIndexes() async {

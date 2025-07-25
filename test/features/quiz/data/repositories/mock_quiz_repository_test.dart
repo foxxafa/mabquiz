@@ -56,8 +56,8 @@ void main() {
         );
 
         expect(questions.length, lessThanOrEqualTo(5));
-        expect(questions.every((q) => 
-          q.subject == 'Matematik' && 
+        expect(questions.every((q) =>
+          q.subject == 'Matematik' &&
           q.difficulty == DifficultyLevel.beginner
         ), isTrue);
       });
@@ -182,7 +182,7 @@ void main() {
     group('test helper methods', () {
       test('should add question to data source', () {
         final initialCount = repository.getAllQuestions().length;
-        
+
         final newQuestion = Question(
           id: 'test_001',
           text: 'Test question?',

@@ -130,7 +130,7 @@ class FirebaseQuizRepository implements QuizRepository {
   }) async {
     try {
       final sessionId = 'session_${DateTime.now().millisecondsSinceEpoch}';
-      
+
       _currentSession = QuizSessionData(
         sessionId: sessionId,
         participantIds: participantIds,
@@ -158,10 +158,10 @@ class FirebaseQuizRepository implements QuizRepository {
   Future<void> updateQuizSession(QuizSessionData sessionData) async {
     try {
       _currentSession = sessionData;
-      
+
       // TODO: Update in Firebase when cloud_firestore is available
       // await _firestore.collection('quiz_sessions').doc(sessionData.sessionId).update(sessionData.toJson());
-      
+
       _quizSessionController.add(_currentSession);
     } catch (e) {
       throw QuizRepositoryException(
@@ -177,10 +177,10 @@ class FirebaseQuizRepository implements QuizRepository {
     try {
       if (_currentSession != null) {
         _currentSession = _currentSession!.copyWith(isActive: false);
-        
+
         // TODO: Update in Firebase when cloud_firestore is available
         // await _firestore.collection('quiz_sessions').doc(_currentSession!.sessionId).update({'isActive': false});
-        
+
         _quizSessionController.add(_currentSession);
       }
     } catch (e) {

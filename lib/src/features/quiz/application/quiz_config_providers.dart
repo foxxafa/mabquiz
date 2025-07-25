@@ -9,7 +9,7 @@ import '../data/services/firebase_quiz_config_service.dart';
 /// and provides access to the Firebase Quiz Config Service
 final quizConfigProvider = Provider<QuizConfig>((ref) {
   final useMockAuth = ref.watch(useMockAuthProvider);
-  
+
   if (useMockAuth) {
     return QuizConfig.development();
   } else {
@@ -34,19 +34,19 @@ final quizInitializationProvider = StateProvider<bool>((ref) => false);
 class QuizConfig {
   /// Whether to use mock quiz data
   final bool useMockData;
-  
+
   /// Mock data delay in milliseconds
   final int mockDataDelay;
-  
+
   /// Maximum number of questions per quiz
   final int maxQuestionsPerQuiz;
-  
+
   /// Whether to enable caching
   final bool enableCaching;
-  
+
   /// Cache TTL in minutes
   final int cacheTtlMinutes;
-  
+
   /// Whether to enable offline mode
   final bool enableOfflineMode;
 

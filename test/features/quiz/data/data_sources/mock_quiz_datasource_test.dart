@@ -101,8 +101,8 @@ void main() {
           limit: 5,
         );
 
-        expect(questions.every((q) => 
-          q.subject == 'Matematik' && 
+        expect(questions.every((q) =>
+          q.subject == 'Matematik' &&
           q.difficulty == DifficultyLevel.beginner &&
           q.id != 'math_001'
         ), isTrue);
@@ -146,7 +146,7 @@ void main() {
     group('test helper methods', () {
       test('should add question successfully', () {
         final initialCount = dataSource.getAllQuestions().length;
-        
+
         final newQuestion = Question(
           id: 'test_001',
           text: 'Test question?',

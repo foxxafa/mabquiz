@@ -1,7 +1,7 @@
 import '../../domain/entities/question.dart' as entities;
 
 /// Question data model for data layer
-/// 
+///
 /// This model extends the domain entity with data-specific functionality
 /// like JSON serialization and additional metadata for persistence.
 class QuestionModel extends entities.Question {

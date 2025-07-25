@@ -129,7 +129,7 @@ class MockQuizRepository implements QuizRepository {
     String? firstQuestionId,
   }) async {
     final sessionId = 'session_${DateTime.now().millisecondsSinceEpoch}';
-    
+
     _currentSession = QuizSessionData(
       sessionId: sessionId,
       participantIds: participantIds,

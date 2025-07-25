@@ -27,7 +27,7 @@ abstract class QuizDataSource {
 
   /// Get available subjects
   Future<List<String>> getAvailableSubjects();
-  
+
   /// Get all questions
   Future<List<Question>> getAllQuestions();
 }
@@ -100,7 +100,7 @@ class MockQuizDataSource implements QuizDataSource {
       subject: 'Matematik',
       points: 15,
     ),
-    
+
     // Türkçe soruları
     Question(
       id: 'tr_001',
@@ -143,10 +143,10 @@ class MockQuizDataSource implements QuizDataSource {
       subject: 'Türkçe',
       points: 5,
     ),
-    
+
     // Farmakoloji soruları
     ...SampleQuestions.getFarmakolojiQuestions(),
-    
+
     // Doğru-Yanlış soruları
     Question(
       id: 'tf_001',
@@ -172,7 +172,7 @@ class MockQuizDataSource implements QuizDataSource {
       subject: 'Fen Bilgisi',
       points: 5,
     ),
-    
+
     // Boşluk doldurma soruları
     Question(
       id: 'fill_001',
@@ -195,7 +195,7 @@ class MockQuizDataSource implements QuizDataSource {
   @override
   Future<List<Question>> getQuestionsBySubject(String subject) async {
     await Future.delayed(simulatedDelay);
-    
+
     return _allQuestions
         .where((question) => question.subject.toLowerCase() == subject.toLowerCase())
         .toList();
@@ -204,7 +204,7 @@ class MockQuizDataSource implements QuizDataSource {
   @override
   Future<List<Question>> getQuestionsByDifficulty(DifficultyLevel difficulty) async {
     await Future.delayed(simulatedDelay);
-    
+
     return _allQuestions
         .where((question) => question.difficulty == difficulty)
         .toList();
@@ -218,28 +218,28 @@ class MockQuizDataSource implements QuizDataSource {
     List<String>? excludeIds,
   }) async {
     await Future.delayed(simulatedDelay);
-    
+
     var filteredQuestions = List<Question>.from(_allQuestions);
-    
+
     // Apply filters
     if (subject != null) {
       filteredQuestions = filteredQuestions
           .where((q) => q.subject.toLowerCase() == subject.toLowerCase())
           .toList();
     }
-    
+
     if (difficulty != null) {
       filteredQuestions = filteredQuestions
           .where((q) => q.difficulty == difficulty)
           .toList();
     }
-    
+
     if (excludeIds != null && excludeIds.isNotEmpty) {
       filteredQuestions = filteredQuestions
           .where((q) => !excludeIds.contains(q.id))
           .toList();
     }
-    
+
     // Shuffle and return requested amount
     filteredQuestions.shuffle(_random);
     return filteredQuestions.take(limit).toList();
@@ -248,7 +248,7 @@ class MockQuizDataSource implements QuizDataSource {
   @override
   Future<Question?> getQuestionById(String id) async {
     await Future.delayed(simulatedDelay);
-    
+
     try {
       return _allQuestions.firstWhere((question) => question.id == id);
     } catch (e) {
@@ -259,12 +259,12 @@ class MockQuizDataSource implements QuizDataSource {
   @override
   Future<List<String>> getAvailableSubjects() async {
     await Future.delayed(simulatedDelay);
-    
+
     final subjects = _allQuestions
         .map((question) => question.subject)
         .toSet()
         .toList();
-    
+
     subjects.sort();
     return subjects;
   }
@@ -275,17 +275,17 @@ class MockQuizDataSource implements QuizDataSource {
     await Future.delayed(simulatedDelay);
     return List.unmodifiable(_allQuestions);
   }
-  
+
   /// Add a question (for testing purposes)
   void addQuestion(Question question) {
     _allQuestions.add(question);
   }
-  
+
   /// Clear all questions (for testing purposes)
   void clearQuestions() {
     _allQuestions.clear();
   }
-  
+
   /// Reset to default questions (for testing purposes)
   void resetToDefaults() {
     // This would reset to the original hardcoded questions

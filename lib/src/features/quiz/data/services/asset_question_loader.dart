@@ -15,7 +15,7 @@ class AssetQuestionLoader {
       final path = '$_basePath/$subject/$questionType.json';
       final jsonString = await rootBundle.loadString(path);
       final jsonList = json.decode(jsonString) as List;
-      
+
       return jsonList.map((questionJson) => _parseAssetQuestion(questionJson)).toList();
     } catch (e) {
       print('Error loading questions from $subject/$questionType: $e');
@@ -26,15 +26,15 @@ class AssetQuestionLoader {
   /// Load all questions for a subject
   static Future<List<Question>> loadAllQuestionsForSubject(String subject) async {
     final List<Question> allQuestions = [];
-    
+
     // Farklı soru tiplerini yükle
     final questionTypes = ['multiple_choice', 'true_false', 'fill_in_blank', 'match_text_text'];
-    
+
     for (final type in questionTypes) {
       final questions = await loadQuestions(subject: subject, questionType: type);
       allQuestions.addAll(questions);
     }
-    
+
     return allQuestions;
   }
 
@@ -78,7 +78,7 @@ class AssetQuestionLoader {
 
   static DifficultyLevel _parseDifficulty(Map<String, dynamic> json) {
     final knowledgeType = json['knowledgeType'] as String?;
-    
+
     // Asset dosyalarında difficulty yok, knowledge type'a göre belirle
     if (knowledgeType == 'dosage' || knowledgeType == 'active_ingredient') {
       return DifficultyLevel.beginner;
@@ -104,16 +104,16 @@ class AssetQuestionLoader {
 
   static List<String> _parseTags(Map<String, dynamic> json) {
     final tags = <String>[];
-    
+
     if (json['tags'] != null) {
       tags.addAll(List<String>.from(json['tags']));
     }
-    
+
     // Metadata'dan ek tag'ler ekle
     if (json['topic'] != null) tags.add(json['topic'] as String);
     if (json['subtopic'] != null) tags.add(json['subtopic'] as String);
     if (json['knowledgeType'] != null) tags.add(json['knowledgeType'] as String);
-    
+
     return tags;
   }
 
@@ -128,7 +128,7 @@ class AssetQuestionLoader {
 
   static int _calculatePoints(Map<String, dynamic> json) {
     final knowledgeType = json['knowledgeType'] as String?;
-    
+
     switch (knowledgeType) {
       case 'dosage':
       case 'active_ingredient':
