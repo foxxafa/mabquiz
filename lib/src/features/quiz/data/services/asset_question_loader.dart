@@ -18,8 +18,8 @@ class AssetQuestionLoader {
 
       return jsonList.map((questionJson) => _parseAssetQuestion(questionJson)).toList();
     } catch (e) {
-      // It's okay if a file doesn't exist, just print for debugging
-      // print('Info: Could not load questions from $subject/$questionType: $e');
+      // Log missing or malformed asset files
+      print('AssetQuestionLoader: could not load $subject/$questionType.json -> $e');
       return [];
     }
   }

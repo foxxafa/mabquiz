@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../domain/entities/question.dart';
 import '../../application/bandit_manager.dart';
-import '../../application/providers.dart';
+import '../../data/services/asset_question_loader.dart';
 
 /// Modern quiz screen with adaptive learning
 class QuizScreen extends ConsumerStatefulWidget {
@@ -55,9 +55,11 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
   void _loadQuestions() async {
     if (widget.subject != null) {
       try {
-        final quizService = ref.read(quizServiceProvider);
+        // Load questions directly from assets for mock mode
+        print('[QuizScreen] Loading questions for subject: ${widget.subject}');
         final questions =
-            await quizService.getQuestionsBySubject(widget.subject!);
+            await AssetQuestionLoader.loadAllQuestionsForSubject(widget.subject!);
+        print('[QuizScreen] Questions loaded: ${questions.length}');
         _banditManager.initializeQuestions(questions); // Initialize BanditManager
         setState(() {
           _availableQuestions = questions;
@@ -286,11 +288,18 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
           children: [
             _buildQuizHeader(theme),
             Expanded(
-              child: _questionsLoaded
-                  ? _currentQuestion == null
-                      ? const Center(child: CircularProgressIndicator())
-                      : _buildQuestionContent(theme)
-                  : const Center(child: CircularProgressIndicator()),
+            child: !_questionsLoaded
+                ? const Center(child: CircularProgressIndicator())
+                : _availableQuestions.isEmpty
+                    ? const Center(
+                        child: Text(
+                          'Sorular yüklenemedi.',
+                          style: TextStyle(color: Colors.white70),
+                        ),
+                      )
+                    : _currentQuestion == null
+                        ? const Center(child: CircularProgressIndicator())
+                        : _buildQuestionContent(theme),
             ),
           ],
         ),
