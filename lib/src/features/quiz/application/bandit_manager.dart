@@ -1,5 +1,5 @@
 import 'dart:math';
-import '../data/models/question.dart';
+import '../domain/entities/question.dart';
 
 /// Multi-Armed Bandit algorithm for adaptive question selection
 ///

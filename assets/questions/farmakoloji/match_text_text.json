@@ -1,0 +1,107 @@
+[
+  {
+    "id": "farma_match_001",
+    "course": "farmakoloji",
+    "topic": "antibiyotikler",
+    "subtopic": "etki_mekanizmasi",
+    "knowledgeType": "pharmacodynamics",
+    "type": "match_text",
+    "prompt": "Antibiyotikleri etki mekanizmalarıyla eşleştirin:",
+    "matchPairs": [
+      {"left": "Penisilin", "right": "Hücre duvarı sentezi inhibisyonu"},
+      {"left": "Gentamisin", "right": "Protein sentezi inhibisyonu (30S)"},
+      {"left": "Siprofloksasin", "right": "DNA giraz inhibisyonu"},
+      {"left": "Vankomisisn", "right": "Hücre duvarı sentezi inhibisyonu"}
+    ],
+    "explanation": "Her antibiyotik grubunun kendine özgü etki mekanizması vardır. Beta-laktamlar hücre duvarını, aminoglikozidler protein sentezini, kinolonlar DNA replikasyonunu hedefler.",
+    "targetProfiles": ["medical_student", "pharmacy_student"],
+    "metadata": {
+      "tags": ["antibiyotik", "etki_mekanizmasi", "penisilin", "gentamisin", "siprofloksasin"],
+      "source": "farmakoloji_ders_notlari"
+    }
+  },
+  {
+    "id": "farma_match_002",
+    "course": "farmakoloji",
+    "topic": "analjezikler",
+    "subtopic": "siniflandirma",
+    "knowledgeType": "active_ingredient",
+    "type": "match_text",
+    "prompt": "Ağrı kesici ilaçları sınıflarıyla eşleştirin:",
+    "matchPairs": [
+      {"left": "Morfin", "right": "Opioid analjezik"},
+      {"left": "İbuprofen", "right": "NSAID"},
+      {"left": "Parasetamol", "right": "Non-opioid analjezik"},
+      {"left": "Lidokain", "right": "Lokal anestezik"}
+    ],
+    "explanation": "Analjezikler etki mekanizmalarına göre opioid, non-opioid ve NSAID olarak sınıflandırılır. Lokal anestezikler ise bölgesel anestezi sağlar.",
+    "targetProfiles": ["medical_student", "pharmacy_student", "nursing_student"],
+    "metadata": {
+      "tags": ["analjezik", "siniflandirma", "opioid", "nsaid", "parasetamol"],
+      "source": "farmakoloji_ders_notlari"
+    }
+  },
+  {
+    "id": "farma_match_003",
+    "course": "farmakoloji",
+    "topic": "kardiyovaskuler",
+    "subtopic": "antihipertansif",
+    "knowledgeType": "active_ingredient",
+    "type": "match_text",
+    "prompt": "Antihipertansif ilaçları sınıflarıyla eşleştirin:",
+    "matchPairs": [
+      {"left": "Enalapril", "right": "ACE inhibitörü"},
+      {"left": "Metoprolol", "right": "Beta bloker"},
+      {"left": "Amlodipin", "right": "Kalsiyum kanal blokeri"},
+      {"left": "Losartan", "right": "ARB (Anjiyotensin reseptör blokeri)"}
+    ],
+    "explanation": "Antihipertansif ilaçlar farklı mekanizmalarla kan basıncını düşürür. ACE inhibitörleri ve ARB'ler renin-anjiyotensin sistemini, beta blokerler kalp hızını, kalsiyum kanal blokerleri vasküler tonusu etkiler.",
+    "targetProfiles": ["medical_student", "pharmacy_student"],
+    "metadata": {
+      "tags": ["antihipertansif", "ace_inhibitor", "beta_bloker", "kalsiyum_kanal_blokeri"],
+      "source": "farmakoloji_ders_notlari"
+    }
+  },
+  {
+    "id": "farma_match_004",
+    "course": "farmakoloji",
+    "topic": "antibiyotikler",
+    "subtopic": "yan_etkiler",
+    "knowledgeType": "side_effect",
+    "type": "match_text",
+    "prompt": "Antibiyotikleri önemli yan etkileriyle eşleştirin:",
+    "matchPairs": [
+      {"left": "Gentamisin", "right": "Nefrotoksisite ve ototoksisite"},
+      {"left": "Penisilin", "right": "Alerjik reaksiyonlar"},
+      {"left": "Tetrasiklin", "right": "Diş renkleşmesi"},
+      {"left": "Kloramfenikol", "right": "Kemik iliği süpresyonu"}
+    ],
+    "explanation": "Her antibiyotik grubunun karakteristik yan etkileri vardır. Bu yan etkiler tedavi öncesi değerlendirilmeli ve izlenmelidir.",
+    "targetProfiles": ["medical_student", "pharmacy_student", "nursing_student"],
+    "metadata": {
+      "tags": ["antibiyotik", "yan_etki", "toksisite", "guvenlik"],
+      "source": "farmakoloji_ders_notlari"
+    }
+  },
+  {
+    "id": "farma_match_005",
+    "course": "farmakoloji",
+    "topic": "anestezikler",
+    "subtopic": "lokal_anestezik",
+    "knowledgeType": "pharmacokinetics",
+    "type": "match_text",
+    "prompt": "Lokal anestezikleri etki sürelerine göre eşleştirin:",
+    "matchPairs": [
+      {"left": "Prokain", "right": "Kısa süreli (30-60 dk)"},
+      {"left": "Lidokain", "right": "Orta süreli (60-120 dk)"},
+      {"left": "Bupivakain", "right": "Uzun süreli (240-480 dk)"},
+      {"left": "Benzokain", "right": "Topikal kullanım"}
+    ],
+    "explanation": "Lokal anestezikler etki sürelerine göre kısa, orta ve uzun süreli olarak sınıflandırılır. Etki süresi prosedürün türüne göre seçim yapılmasında önemlidir.",
+    "targetProfiles": ["medical_student", "dentistry_student"],
+    "metadata": {
+      "tags": ["lokal_anestezik", "etki_suresi", "prokain", "lidokain", "bupivakain"],
+      "source": "farmakoloji_ders_notlari"
+    }
+  }
+]

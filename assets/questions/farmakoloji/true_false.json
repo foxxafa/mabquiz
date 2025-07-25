@@ -1,0 +1,82 @@
+[
+  {
+    "id": "farma_tf_001",
+    "course": "farmakoloji",
+    "topic": "antibiyotikler",
+    "subtopic": "beta_laktam",
+    "knowledgeType": "contraindication",
+    "type": "true_false",
+    "prompt": "Penisilin alerjisi olan hastalara sefazolin güvenle verilebilir.",
+    "correctAnswer": "false",
+    "explanation": "Penisilin alerjisi olan hastalarda çapraz alerji riski nedeniyle sefalosporinler dikkatli kullanılmalıdır. Özellikle ciddi penisilin alerjisi durumunda kaçınılmalıdır.",
+    "targetProfiles": ["medical_student", "pharmacy_student", "nursing_student"],
+    "metadata": {
+      "tags": ["penisilin", "sefazolin", "alerji", "capraz_alerji"],
+      "source": "farmakoloji_ders_notlari"
+    }
+  },
+  {
+    "id": "farma_tf_002",
+    "course": "farmakoloji",
+    "topic": "analjezikler",
+    "subtopic": "parasetamol",
+    "knowledgeType": "dosage",
+    "type": "true_false",
+    "prompt": "Parasetamol günde 4 gramdan fazla kullanımı hepatotoksisiteye neden olabilir.",
+    "correctAnswer": "true",
+    "explanation": "Parasetamolün günlük maksimum dozu 4 gramdır. Bu dozun üzerinde kullanım ciddi karaciğer hasarına ve hatta karaciğer yetmezliğine neden olabilir.",
+    "targetProfiles": ["medical_student", "pharmacy_student", "nursing_student"],
+    "metadata": {
+      "tags": ["parasetamol", "hepatotoksisite", "maksimum_doz"],
+      "source": "farmakoloji_ders_notlari"
+    }
+  },
+  {
+    "id": "farma_tf_003",
+    "course": "farmakoloji",
+    "topic": "kardiyovaskuler",
+    "subtopic": "beta_bloker",
+    "knowledgeType": "contraindication",
+    "type": "true_false",
+    "prompt": "Beta blokerler astım hastalarında güvenle kullanılabilir.",
+    "correctAnswer": "false",
+    "explanation": "Beta blokerler bronkospazma neden olabilir ve astım ataklarını tetikleyebilir. Bu nedenle astım hastalarında kontrendikedir.",
+    "targetProfiles": ["medical_student", "pharmacy_student"],
+    "metadata": {
+      "tags": ["beta_bloker", "astim", "bronkospazm", "kontraendikasyon"],
+      "source": "farmakoloji_ders_notlari"
+    }
+  },
+  {
+    "id": "farma_tf_004",
+    "course": "farmakoloji",
+    "topic": "antibiyotikler",
+    "subtopic": "aminoglikozid",
+    "knowledgeType": "pharmacokinetics",
+    "type": "true_false",
+    "prompt": "Gentamisin böbreklerden değişmeden atılır.",
+    "correctAnswer": "true",
+    "explanation": "Gentamisin ve diğer aminoglikozidler böbreklerden glomerüler filtrasyon ile değişmeden atılır. Bu nedenle böbrek yetmezliğinde doz ayarlaması gereklidir.",
+    "targetProfiles": ["medical_student", "pharmacy_student"],
+    "metadata": {
+      "tags": ["gentamisin", "eliminasyon", "bobrek"],
+      "source": "farmakoloji_ders_notlari"
+    }
+  },
+  {
+    "id": "farma_tf_005",
+    "course": "farmakoloji",
+    "topic": "analjezikler",
+    "subtopic": "nsaid",
+    "knowledgeType": "side_effect",
+    "type": "true_false",
+    "prompt": "NSAID'ler uzun süreli kullanımda gastrik ülser riskini artırır.",
+    "correctAnswer": "true",
+    "explanation": "NSAID'ler COX-1 enzimini inhibe ederek gastrik mukoza koruyucu prostaglandin sentezini azaltır. Bu durum gastrik ülser ve kanama riskini artırır.",
+    "targetProfiles": ["medical_student", "pharmacy_student", "nursing_student"],
+    "metadata": {
+      "tags": ["nsaid", "gastrik_ulser", "cox1", "prostaglandin"],
+      "source": "farmakoloji_ders_notlari"
+    }
+  }
+]

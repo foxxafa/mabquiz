@@ -1,0 +1,82 @@
+[
+  {
+    "id": "farma_fib_001",
+    "course": "farmakoloji",
+    "topic": "analjezikler",
+    "subtopic": "parasetamol",
+    "knowledgeType": "dosage",
+    "type": "fill_in_blank",
+    "prompt": "Erişkinlerde parasetamolün maksimum günlük dozu ___ gramdır.",
+    "correctAnswer": "4",
+    "explanation": "Parasetamolün erişkinlerde maksimum günlük dozu 4 gramdır. Bu dozun üzerinde kullanım hepatotoksisiteye neden olabilir.",
+    "targetProfiles": ["medical_student", "pharmacy_student", "nursing_student"],
+    "metadata": {
+      "tags": ["parasetamol", "maksimum_doz", "hepatotoksisite"],
+      "source": "farmakoloji_ders_notlari"
+    }
+  },
+  {
+    "id": "farma_fib_002",
+    "course": "farmakoloji",
+    "topic": "antibiyotikler",
+    "subtopic": "beta_laktam",
+    "knowledgeType": "pharmacodynamics",
+    "type": "fill_in_blank",
+    "prompt": "Beta-laktam antibiyotikler bakteriyel ___ ___ sentezini inhibe eder.",
+    "correctAnswer": "hücre duvarı",
+    "explanation": "Beta-laktam antibiyotikler, bakteriyel hücre duvarının temel yapı taşı olan peptidoglikan sentezini engelleyerek bakterisid etki gösterir.",
+    "targetProfiles": ["medical_student", "pharmacy_student"],
+    "metadata": {
+      "tags": ["beta_laktam", "hucre_duvari", "peptidoglikan", "etki_mekanizmasi"],
+      "source": "farmakoloji_ders_notlari"
+    }
+  },
+  {
+    "id": "farma_fib_003",
+    "course": "farmakoloji",
+    "topic": "kardiyovaskuler",
+    "subtopic": "ace_inhibitor",
+    "knowledgeType": "pharmacokinetics",
+    "type": "fill_in_blank",
+    "prompt": "Enalapril ___ saatte maksimum plazma konsantrasyonuna ulaşır.",
+    "correctAnswer": "1",
+    "explanation": "Enalapril oral alımdan sonra yaklaşık 1 saatte maksimum plazma konsantrasyonuna ulaşır ve karaciğerde enalaprilata dönüşerek etki gösterir.",
+    "targetProfiles": ["medical_student", "pharmacy_student"],
+    "metadata": {
+      "tags": ["enalapril", "farmakokinetik", "tmax"],
+      "source": "farmakoloji_ders_notlari"
+    }
+  },
+  {
+    "id": "farma_fib_004",
+    "course": "farmakoloji",
+    "topic": "anestezikler",
+    "subtopic": "lokal_anestezi",
+    "knowledgeType": "pharmacodynamics",
+    "type": "fill_in_blank",
+    "prompt": "Lokal anestezikler ___ kanallarını bloke ederek etki gösterir.",
+    "correctAnswer": "sodyum",
+    "explanation": "Lokal anestezikler voltaj bağımlı sodyum kanallarını bloke ederek sinir iletimini durdurur ve anestezi sağlar.",
+    "targetProfiles": ["medical_student", "dentistry_student", "nursing_student"],
+    "metadata": {
+      "tags": ["lokal_anestezik", "sodyum_kanali", "sinir_iletimi"],
+      "source": "farmakoloji_ders_notlari"
+    }
+  },
+  {
+    "id": "farma_fib_005",
+    "course": "farmakoloji",
+    "topic": "antibiyotikler",
+    "subtopic": "kinolonlar",
+    "knowledgeType": "pharmacodynamics",
+    "type": "fill_in_blank",
+    "prompt": "Siprofloksasin bakteriyel DNA ___ enzimini inhibe eder.",
+    "correctAnswer": "giraz",
+    "explanation": "Siprofloksasin ve diğer kinolon antibiyotikler DNA giraz ve topoizomeraz IV enzimlerini inhibe ederek bakteriyel DNA replikasyonunu engeller.",
+    "targetProfiles": ["medical_student", "pharmacy_student"],
+    "metadata": {
+      "tags": ["siprofloksasin", "dna_giraz", "topoizomeraz", "kinolon"],
+      "source": "farmakoloji_ders_notlari"
+    }
+  }
+]

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/theme.dart';
-import '../../data/models/question.dart' show Question, DifficultyLevel, sampleQuestions;
+import '../../domain/entities/question.dart';
+import '../../data/models/sample_questions.dart';
 import '../../application/bandit_manager.dart';
 
 /// Modern quiz screen with adaptive learning
@@ -103,7 +104,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
 
   void _loadNextQuestion() {
     // BanditManager ile en uygun soruyu seç
-    final availableQuestions = sampleQuestions
+    final availableQuestions = SampleQuestions.getAllSampleQuestions()
         .where((q) => !_answeredQuestionIds.contains(q.id))
         .toList();
 

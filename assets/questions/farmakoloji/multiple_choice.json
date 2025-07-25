@@ -1,0 +1,117 @@
+[
+  {
+    "id": "farma_mc_001",
+    "course": "farmakoloji",
+    "topic": "antibiyotikler",
+    "subtopic": "beta_laktam",
+    "knowledgeType": "side_effect",
+    "type": "multiple_choice",
+    "prompt": "Penisilin'in en sık görülen yan etkisi nedir?",
+    "options": [
+      "Alerjik reaksiyon",
+      "Nefrotoksisite",
+      "Ototoksisite",
+      "Hepatotoksisite"
+    ],
+    "correctAnswer": "Alerjik reaksiyon",
+    "explanation": "Penisilin'in en sık görülen yan etkisi alerjik reaksiyonlardır. Bu durum anafilaktik şok gibi ciddi komplikasyonlara yol açabilir.",
+    "targetProfiles": ["medical_student", "pharmacy_student", "nursing_student"],
+    "metadata": {
+      "tags": ["penisilin", "yan_etki", "alerji"],
+      "source": "farmakoloji_ders_notlari",
+      "chapter": "antibiyotikler"
+    }
+  },
+  {
+    "id": "farma_mc_002",
+    "course": "farmakoloji",
+    "topic": "antibiyotikler",
+    "subtopic": "aminoglikozid",
+    "knowledgeType": "side_effect",
+    "type": "multiple_choice",
+    "prompt": "Gentamisin kullanımında en çok hangi yan etki izlenmeli?",
+    "options": [
+      "Nefrotoksisite ve ototoksisite",
+      "Kardiyotoksisite",
+      "Hepatotoksisite",
+      "Hematolojik toksisite"
+    ],
+    "correctAnswer": "Nefrotoksisite ve ototoksisite",
+    "explanation": "Aminoglikozidler özellikle böbrek ve kulak toksisitesi yaparlar. Bu nedenle tedavi sırasında böbrek fonksiyonları ve işitme düzenli izlenmelidir.",
+    "targetProfiles": ["medical_student", "pharmacy_student"],
+    "metadata": {
+      "tags": ["gentamisin", "aminoglikozid", "nefrotoksisite", "ototoksisite"],
+      "source": "farmakoloji_ders_notlari",
+      "chapter": "antibiyotikler"
+    }
+  },
+  {
+    "id": "farma_mc_003",
+    "course": "farmakoloji",
+    "topic": "analjezikler",
+    "subtopic": "nsaid",
+    "knowledgeType": "dosage",
+    "type": "multiple_choice",
+    "prompt": "Erişkinlerde ibuprofen'in maksimum günlük dozu nedir?",
+    "options": [
+      "1200 mg",
+      "2400 mg",
+      "3200 mg",
+      "4800 mg"
+    ],
+    "correctAnswer": "2400 mg",
+    "explanation": "İbuprofen'in erişkinlerde maksimum günlük dozu 2400 mg'dır. Bu doz günde 3-4 doza bölünerek verilir.",
+    "targetProfiles": ["medical_student", "pharmacy_student", "nursing_student"],
+    "metadata": {
+      "tags": ["ibuprofen", "nsaid", "doz"],
+      "source": "farmakoloji_ders_notlari",
+      "chapter": "analjezikler"
+    }
+  },
+  {
+    "id": "farma_mc_004",
+    "course": "farmakoloji",
+    "topic": "kardiyovaskuler",
+    "subtopic": "ace_inhibitor",
+    "knowledgeType": "pharmacodynamics",
+    "type": "multiple_choice",
+    "prompt": "ACE inhibitörlerinin etki mekanizması nedir?",
+    "options": [
+      "Anjiyotensin Converting Enzyme'i inhibe eder",
+      "Beta reseptörleri bloke eder",
+      "Kalsiyum kanallarını bloke eder",
+      "Diüretik etki yapar"
+    ],
+    "correctAnswer": "Anjiyotensin Converting Enzyme'i inhibe eder",
+    "explanation": "ACE inhibitörleri, anjiyotensin I'in anjiyotensin II'ye dönüşümünü katalize eden enzimi inhibe ederek kan basıncını düşürür.",
+    "targetProfiles": ["medical_student", "pharmacy_student"],
+    "metadata": {
+      "tags": ["ace_inhibitor", "etki_mekanizmasi", "kardiyovaskuler"],
+      "source": "farmakoloji_ders_notlari",
+      "chapter": "kardiyovaskuler_sistem"
+    }
+  },
+  {
+    "id": "farma_mc_005",
+    "course": "farmakoloji",
+    "topic": "anestezikler",
+    "subtopic": "lokal_anestezi",
+    "knowledgeType": "pharmacokinetics",
+    "type": "multiple_choice",
+    "prompt": "Lidokain'in etki süresi ortalama ne kadardır?",
+    "options": [
+      "30-60 dakika",
+      "60-120 dakika",
+      "120-240 dakika",
+      "240-480 dakika"
+    ],
+    "correctAnswer": "60-120 dakika",
+    "explanation": "Lidokain orta süreli bir lokal anestezik olup etki süresi yaklaşık 1-2 saattir. Vazokonstriktör eklenmesi ile bu süre uzatılabilir.",
+    "targetProfiles": ["medical_student", "dentistry_student", "nursing_student"],
+    "metadata": {
+      "tags": ["lidokain", "lokal_anestezi", "etki_suresi"],
+      "source": "farmakoloji_ders_notlari",
+      "chapter": "anestezikler"
+    }
+  }
+]

@@ -1,0 +1,258 @@
+{
+  "questions": {
+    "math_001": {
+      "text": "2 + 2 = ?",
+      "type": "multipleChoice",
+      "difficulty": "beginner",
+      "options": ["3", "4", "5", "6"],
+      "correctAnswer": "4",
+      "explanation": "2 + 2 = 4. Temel toplama işlemi.",
+      "tags": ["toplama", "temel"],
+      "subject": "Matematik",
+      "points": 5,
+      "initialConfidence": 0.5,
+      "createdAt": "2024-01-01T00:00:00Z",
+      "updatedAt": "2024-01-01T00:00:00Z",
+      "isActive": true
+    },
+    "math_002": {
+      "text": "√16 = ?",
+      "type": "multipleChoice",
+      "difficulty": "intermediate",
+      "options": ["2", "4", "8", "16"],
+      "correctAnswer": "4",
+      "explanation": "16'nın karekökü 4'tür çünkü 4 × 4 = 16.",
+      "tags": ["karekök", "orta"],
+      "subject": "Matematik",
+      "points": 15,
+      "initialConfidence": 0.5,
+      "createdAt": "2024-01-01T00:00:00Z",
+      "updatedAt": "2024-01-01T00:00:00Z",
+      "isActive": true
+    },
+    "math_003": {
+      "text": "x² - 5x + 6 = 0 denkleminin kökleri toplamı kaçtır?",
+      "type": "multipleChoice",
+      "difficulty": "advanced",
+      "options": ["5", "6", "-5", "-6"],
+      "correctAnswer": "5",
+      "explanation": "Vieta formülüne göre köklerin toplamı -b/a = -(-5)/1 = 5'tir.",
+      "tags": ["denklem", "ileri"],
+      "subject": "Matematik",
+      "points": 25,
+      "initialConfidence": 0.5,
+      "createdAt": "2024-01-01T00:00:00Z",
+      "updatedAt": "2024-01-01T00:00:00Z",
+      "isActive": true
+    },
+    "tr_001": {
+      "text": "\"Kitap\" kelimesinin çoğul hali nedir?",
+      "type": "multipleChoice",
+      "difficulty": "beginner",
+      "options": ["Kitaplar", "Kitapları", "Kitaba", "Kitaptan"],
+      "correctAnswer": "Kitaplar",
+      "explanation": "\"Kitap\" kelimesinin çoğul hali \"+lar\" eki alarak \"kitaplar\" olur.",
+      "tags": ["çoğul", "isim"],
+      "subject": "Türkçe",
+      "points": 5,
+      "initialConfidence": 0.5,
+      "createdAt": "2024-01-01T00:00:00Z",
+      "updatedAt": "2024-01-01T00:00:00Z",
+      "isActive": true
+    },
+    "tr_002": {
+      "text": "Aşağıdakilerden hangisi mecaz anlamlı kullanılmıştır?",
+      "type": "multipleChoice",
+      "difficulty": "intermediate",
+      "options": [
+        "Elma ağacından düştü",
+        "Kalbi taş gibi sert",
+        "Okula yürüdü",
+        "Dün geldi"
+      ],
+      "correctAnswer": "Kalbi taş gibi sert",
+      "explanation": "\"Kalbi taş gibi sert\" ifadesinde \"taş\" mecazi olarak sertlik anlamında kullanılmıştır.",
+      "tags": ["mecaz", "anlam"],
+      "subject": "Türkçe",
+      "points": 15,
+      "initialConfidence": 0.5,
+      "createdAt": "2024-01-01T00:00:00Z",
+      "updatedAt": "2024-01-01T00:00:00Z",
+      "isActive": true
+    },
+    "pharm_001": {
+      "text": "Parasetamolün günlük maksimum dozu nedir?",
+      "type": "multipleChoice",
+      "difficulty": "intermediate",
+      "options": ["2 gram", "3 gram", "4 gram", "5 gram"],
+      "correctAnswer": "4 gram",
+      "explanation": "Parasetamolün günlük maksimum dozu yetişkinlerde 4 gramdır.",
+      "tags": ["doz", "analjezik"],
+      "subject": "Farmakoloji",
+      "points": 15,
+      "initialConfidence": 0.5,
+      "createdAt": "2024-01-01T00:00:00Z",
+      "updatedAt": "2024-01-01T00:00:00Z",
+      "isActive": true
+    },
+    "pharm_002": {
+      "text": "Aşağıdakilerden hangisi ACE inhibitörüdür?",
+      "type": "multipleChoice",
+      "difficulty": "advanced",
+      "options": ["Amlodipine", "Enalapril", "Metoprolol", "Hydrochlorothiazide"],
+      "correctAnswer": "Enalapril",
+      "explanation": "Enalapril bir ACE (Anjiyotensin Dönüştürücü Enzim) inhibitörüdür.",
+      "tags": ["antihipertansif", "ACE inhibitörü"],
+      "subject": "Farmakoloji",
+      "points": 25,
+      "initialConfidence": 0.5,
+      "createdAt": "2024-01-01T00:00:00Z",
+      "updatedAt": "2024-01-01T00:00:00Z",
+      "isActive": true
+    },
+    "tf_001": {
+      "text": "Türkiye'nin başkenti Ankara'dır.",
+      "type": "trueFalse",
+      "difficulty": "beginner",
+      "options": ["Doğru", "Yanlış"],
+      "correctAnswer": "Doğru",
+      "explanation": "Türkiye Cumhuriyeti'nin başkenti Ankara'dır.",
+      "tags": ["genel kültür", "başkent"],
+      "subject": "Genel Kültür",
+      "points": 5,
+      "initialConfidence": 0.5,
+      "createdAt": "2024-01-01T00:00:00Z",
+      "updatedAt": "2024-01-01T00:00:00Z",
+      "isActive": true
+    },
+    "fill_001": {
+      "text": "Türkiye'nin en uzun nehri _____ nehridir.",
+      "type": "fillInBlank",
+      "difficulty": "intermediate",
+      "options": ["Kızılırmak", "Sakarya", "Fırat", "Dicle"],
+      "correctAnswer": "Kızılırmak",
+      "explanation": "Kızılırmak, Türkiye'nin en uzun nehridir (1355 km).",
+      "tags": ["coğrafya", "nehir"],
+      "subject": "Coğrafya",
+      "points": 15,
+      "initialConfidence": 0.5,
+      "createdAt": "2024-01-01T00:00:00Z",
+      "updatedAt": "2024-01-01T00:00:00Z",
+      "isActive": true
+    }
+  },
+  "subjects": {
+    "matematik": {
+      "name": "Matematik",
+      "description": "Temel matematik ve ileri düzey matematik soruları",
+      "icon": "calculator",
+      "color": "#2196F3",
+      "isActive": true,
+      "questionCount": 0
+    },
+    "turkce": {
+      "name": "Türkçe",
+      "description": "Türk dili ve edebiyatı soruları",
+      "icon": "book",
+      "color": "#FF5722",
+      "isActive": true,
+      "questionCount": 0
+    },
+    "farmakoloji": {
+      "name": "Farmakoloji",
+      "description": "İlaç bilimi ve tedavi soruları",
+      "icon": "medical",
+      "color": "#4CAF50",
+      "isActive": true,
+      "questionCount": 0
+    },
+    "genel_kultur": {
+      "name": "Genel Kültür",
+      "description": "Genel bilgi ve kültür soruları",
+      "icon": "globe",
+      "color": "#FF9800",
+      "isActive": true,
+      "questionCount": 0
+    },
+    "cografya": {
+      "name": "Coğrafya",
+      "description": "Dünya ve Türkiye coğrafyası soruları",
+      "icon": "map",
+      "color": "#9C27B0",
+      "isActive": true,
+      "questionCount": 0
+    }
+  },
+  "quiz_sessions": {
+    "session_example": {
+      "sessionId": "session_1234567890",
+      "participantIds": ["user1", "user2"],
+      "currentQuestionId": "math_001",
+      "scores": {
+        "user1": 25,
+        "user2": 15
+      },
+      "startTime": "2024-01-01T10:00:00Z",
+      "endTime": null,
+      "isActive": true,
+      "settings": {
+        "questionCount": 10,
+        "timeLimit": 600,
+        "subject": "Matematik",
+        "difficulty": "intermediate"
+      },
+      "answers": {
+        "user1": {
+          "math_001": "4",
+          "math_002": "4"
+        },
+        "user2": {
+          "math_001": "3",
+          "math_002": "4"
+        }
+      }
+    }
+  },
+  "user_stats": {
+    "user_example": {
+      "userId": "user1",
+      "totalQuizzesCompleted": 25,
+      "totalQuestionsAnswered": 250,
+      "correctAnswers": 200,
+      "totalPoints": 3750,
+      "averageScore": 80.0,
+      "subjectStats": {
+        "Matematik": {
+          "questionsAnswered": 100,
+          "correctAnswers": 85,
+          "accuracy": 85.0,
+          "averageTime": 45.5
+        },
+        "Türkçe": {
+          "questionsAnswered": 75,
+          "correctAnswers": 65,
+          "accuracy": 86.7,
+          "averageTime": 38.2
+        }
+      },
+      "difficultyStats": {
+        "beginner": {
+          "questionsAnswered": 80,
+          "correctAnswers": 75,
+          "accuracy": 93.8
+        },
+        "intermediate": {
+          "questionsAnswered": 120,
+          "correctAnswers": 95,
+          "accuracy": 79.2
+        },
+        "advanced": {
+          "questionsAnswered": 50,
+          "correctAnswers": 30,
+          "accuracy": 60.0
+        }
+      },
+      "lastUpdated": "2024-01-01T12:00:00Z"
+    }
+  }
+}
