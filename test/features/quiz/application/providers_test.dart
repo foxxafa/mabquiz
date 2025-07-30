@@ -7,10 +7,10 @@ import 'package:mockito/mockito.dart';
 import 'package:mabquiz/src/core/config/app_config.dart';
 import 'package:mabquiz/src/core/config/config_providers.dart';
 import 'package:mabquiz/src/features/quiz/application/providers.dart';
-import 'package:mabquiz/src/features/quiz/application/quiz_config_providers.dart';
 import 'package:mabquiz/src/features/quiz/application/quiz_service.dart';
 import 'package:mabquiz/src/features/quiz/data/data_sources/mock_quiz_datasource.dart';
-import 'package:mabquiz/src/features/quiz/data/models/question.dart';
+import 'package:mabquiz/src/features/quiz/domain/entities/question.dart';
+import 'package:mabquiz/src/features/quiz/domain/entities/quiz_score.dart';
 import 'package:mabquiz/src/features/quiz/data/repositories/quiz_repository.dart';
 
 import 'providers_test.mocks.dart';

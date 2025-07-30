@@ -9,7 +9,7 @@ import '../domain/entities/quiz_score.dart';
 import '../data/repositories/firebase_quiz_repository.dart';
 import '../data/repositories/mock_quiz_repository.dart';
 import '../data/repositories/quiz_repository.dart';
-import 'quiz_config_providers.dart';
+import '../data/services/firebase_quiz_config_service.dart';
 import 'quiz_service.dart';
 
 /// Provider for the quiz data source implementation
@@ -17,17 +17,16 @@ import 'quiz_service.dart';
 /// Automatically selects between mock and Firebase implementation
 /// based on the application configuration
 final quizDataSourceProvider = Provider<QuizDataSource>((ref) {
-  final useMockAuth = ref.watch(useMockAuthProvider);
-  final authConfig = ref.watch(authConfigProvider);
+  final useMockQuiz = ref.watch(useMockQuizProvider);
   final quizConfig = ref.watch(quizConfigProvider);
 
-  if (useMockAuth || quizConfig.useMockData) {
+  if (useMockQuiz) {
     return MockQuizDataSource(
       simulatedDelay: Duration(milliseconds: quizConfig.mockDataDelay),
     );
   } else {
     return FirebaseQuizDataSourceImpl(
-      simulatedDelay: Duration(milliseconds: authConfig.mockAuthDelay),
+      simulatedDelay: Duration.zero,
     );
   }
 });
@@ -40,10 +39,9 @@ final quizDataSourceProvider = Provider<QuizDataSource>((ref) {
 /// - Firebase: FirebaseQuizRepository for production use
 final quizRepositoryProvider = Provider<QuizRepository>((ref) {
   final dataSource = ref.watch(quizDataSourceProvider);
-  final useMockAuth = ref.watch(useMockAuthProvider);
-  final quizConfig = ref.watch(quizConfigProvider);
+  final useMockQuiz = ref.watch(useMockQuizProvider);
 
-  if (useMockAuth || quizConfig.useMockData) {
+  if (useMockQuiz) {
     return MockQuizRepository(dataSource);
   } else {
     // For Firebase implementation, we need to cast properly
@@ -62,6 +60,16 @@ final quizServiceProvider = Provider<QuizService>((ref) {
   final repository = ref.watch(quizRepositoryProvider);
   return QuizService(repository);
 });
+
+// --- Providers moved from quiz_config_providers.dart ---
+
+/// Provider for Firebase Quiz Config Service
+final firebaseQuizConfigServiceProvider = Provider<FirebaseQuizConfigService>((ref) {
+  return FirebaseQuizConfigService.instance;
+});
+
+/// Provider for quiz initialization status
+final quizInitializationProvider = StateProvider<bool>((ref) => false);
 
 /// Stream provider for quiz session changes
 ///

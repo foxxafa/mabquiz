@@ -12,10 +12,14 @@ class AppConfig {
   /// Authentication configuration
   final AuthConfig auth;
 
+  /// Quiz configuration
+  final QuizConfig quiz;
+
   const AppConfig({
     required this.environment,
     required this.firebase,
     required this.auth,
+    required this.quiz,
   });
 
   /// Factory constructor for development environment
@@ -24,6 +28,7 @@ class AppConfig {
       environment: AppEnvironment.development,
       firebase: FirebaseConfig.development(),
       auth: AuthConfig.development(),
+      quiz: QuizConfig.development(),
     );
   }
 
@@ -33,6 +38,7 @@ class AppConfig {
       environment: AppEnvironment.production,
       firebase: FirebaseConfig.production(),
       auth: AuthConfig.production(),
+      quiz: QuizConfig.production(),
     );
   }
 
@@ -128,6 +134,42 @@ class AuthConfig {
       useMockAuth: BuildConfig.forceMockAuth || BuildConfig.disableFirebase,
       mockAuthDelay: 0,
       enablePersistence: true,
+    );
+  }
+}
+
+/// Quiz-specific configuration
+class QuizConfig {
+  /// Whether to use mock quiz data
+  final bool useMockData;
+
+  /// Mock data delay in milliseconds
+  final int mockDataDelay;
+
+  /// Maximum number of questions per quiz
+  final int maxQuestionsPerQuiz;
+
+  const QuizConfig({
+    required this.useMockData,
+    required this.mockDataDelay,
+    required this.maxQuestionsPerQuiz,
+  });
+
+  /// Development configuration with mock data
+  factory QuizConfig.development() {
+    return const QuizConfig(
+      useMockData: true,
+      mockDataDelay: 1000,
+      maxQuestionsPerQuiz: 10,
+    );
+  }
+
+  /// Production configuration with Firebase
+  factory QuizConfig.production() {
+    return const QuizConfig(
+      useMockData: false,
+      mockDataDelay: 0,
+      maxQuestionsPerQuiz: 20,
     );
   }
 }

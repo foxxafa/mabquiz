@@ -28,6 +28,12 @@ final authConfigProvider = Provider<AuthConfig>((ref) {
   return config.auth;
 });
 
+/// QuizConfig provider
+final quizConfigProvider = Provider<QuizConfig>((ref) {
+  final config = ref.watch(appConfigProvider);
+  return config.quiz;
+});
+
 /// Provider that determines if we should use mock authentication
 ///
 /// This is used by the auth repository provider to decide between
@@ -35,6 +41,15 @@ final authConfigProvider = Provider<AuthConfig>((ref) {
 final useMockAuthProvider = Provider<bool>((ref) {
   final authConfig = ref.watch(authConfigProvider);
   return authConfig.useMockAuth;
+});
+
+/// Provider that determines if we should use mock quiz data
+///
+/// This is used by the quiz repository provider to decide between
+/// mock and Firebase quiz implementations.
+final useMockQuizProvider = Provider<bool>((ref) {
+  final quizConfig = ref.watch(quizConfigProvider);
+  return quizConfig.useMockData;
 });
 
 /// Provider that determines if Firebase emulator should be used
