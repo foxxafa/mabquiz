@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mabquiz/src/features/shell/presentation/widgets/bottom_nav_bar.dart';
 
+/// MainShell, uygulamanın alt navigasyon çubuğunu içeren ana çerçevesidir.
+/// GoRouter'daki ShellRoute tarafından kullanılır.
 class MainShell extends StatelessWidget {
   final Widget child;
 
@@ -10,7 +12,7 @@ class MainShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: child,
+      body: child, // Gelen sayfa içeriği burada gösterilir
       bottomNavigationBar: BottomNavBar(
         currentIndex: _calculateSelectedIndex(context),
         onTap: (index) => _onItemTapped(index, context),
@@ -18,6 +20,7 @@ class MainShell extends StatelessWidget {
     );
   }
 
+  /// Mevcut URL'ye göre hangi navigasyon sekmesinin aktif olduğunu hesaplar.
   int _calculateSelectedIndex(BuildContext context) {
     final String location = GoRouterState.of(context).uri.toString();
     if (location.startsWith('/home')) {
@@ -32,9 +35,10 @@ class MainShell extends StatelessWidget {
     if (location.startsWith('/settings')) {
       return 3;
     }
-    return 0;
+    return 0; // Varsayılan olarak ana sayfa
   }
 
+  /// Navigasyon çubuğundaki bir öğeye tıklandığında ilgili sayfaya yönlendirir.
   void _onItemTapped(int index, BuildContext context) {
     switch (index) {
       case 0:
