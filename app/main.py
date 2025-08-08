@@ -2,12 +2,29 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.ext.asyncio import AsyncEngine
 from sqlalchemy.ext.asyncio import create_async_engine
+from contextlib import asynccontextmanager
 
 from .routers import router
 from .models import Base
 from .db import DATABASE_URL
 
-app = FastAPI(title="MAB Quiz API", version="0.1.0")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
+    try:
+        engine: AsyncEngine = create_async_engine(DATABASE_URL, echo=False)
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+        print("✅ Database tables created successfully")
+    except Exception as e:
+        print(f"❌ Database connection error: {e}")
+    
+    yield
+    
+    # Shutdown (cleanup if needed)
+    pass
+
+app = FastAPI(title="MAB Quiz API", version="0.1.0", lifespan=lifespan)
 
 # CORS (Flutter için localhost ve mobil emülatör adresleri)
 origins = [
@@ -28,13 +45,13 @@ app.add_middleware(
 # Register routes
 app.include_router(router)
 
-@app.on_event("startup")
-async def on_startup():
-    # Auto-create tables if not exist (development convenience)
-    engine: AsyncEngine = create_async_engine(DATABASE_URL, echo=False)
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-
 @app.get("/health")
 async def health():
-    return {"status": "ok"}
+    try:
+        # Test database connection
+        from .db import engine
+        async with engine.begin() as conn:
+            await conn.execute("SELECT 1")
+        return {"status": "ok", "database": "connected"}
+    except Exception as e:
+        return {"status": "error", "database": "disconnected", "error": str(e)}
