@@ -5,6 +5,7 @@ import 'package:mabquiz/src/features/auth/presentation/screens/login_screen.dart
 import 'package:mabquiz/src/features/auth/presentation/screens/register_screen.dart';
 import 'package:mabquiz/src/features/quiz/presentation/screens/quiz_screen.dart';
 import 'package:mabquiz/src/features/quiz/presentation/screens/subject_selection_screen.dart';
+import 'package:mabquiz/src/features/quiz/presentation/screens/api_test_screen.dart';
 import 'package:mabquiz/src/features/home/presentation/screens/home_screen.dart';
 import 'package:mabquiz/src/features/settings/presentation/screens/settings_screen.dart';
 import 'package:mabquiz/src/features/analysis/presentation/screens/analysis_screen.dart';
@@ -59,6 +60,10 @@ final appRouterProvider = GoRouter(
         GoRoute(
           path: '/settings',
           builder: (context, state) => const SettingsScreen(),
+        ),
+        GoRoute(
+          path: '/api-test',
+          builder: (context, state) => const ApiTestScreen(),
         ),
       ],
     ),

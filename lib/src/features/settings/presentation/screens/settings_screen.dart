@@ -34,6 +34,14 @@ class SettingsScreen extends ConsumerWidget {
               // Tema değiştirme
             },
           ),
+          ListTile(
+            leading: Icon(Icons.api, color: theme.colorScheme.secondary),
+            title: const Text('API Test'),
+            subtitle: const Text('Backend bağlantısını test et'),
+            onTap: () {
+              context.go('/api-test');
+            },
+          ),
           const Divider(),
           ListTile(
             leading: Icon(Icons.logout, color: theme.colorScheme.error),

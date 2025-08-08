@@ -1,21 +1,30 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/config/config_providers.dart';
+import '../../../core/services/http_service.dart';
 import '../data/data_sources/mock_quiz_datasource.dart';
+import '../data/data_sources/http_quiz_datasource.dart';
 import '../data/services/asset_question_loader.dart';
 import '../domain/entities/question.dart';
 import '../domain/entities/quiz_score.dart';
 import '../data/repositories/mock_quiz_repository.dart';
+import '../data/repositories/http_quiz_repository.dart';
 import '../data/repositories/quiz_repository.dart';
 import 'quiz_service.dart';
 
 /// Provider for the quiz data source implementation
 ///
-/// Currently uses MockQuizDataSource for development
-/// based on the application configuration
+/// Kullanım moduna göre HTTP veya Mock veri kaynağı seçer
 final quizDataSourceProvider = Provider<QuizDataSource>((ref) {
   final quizConfig = ref.watch(quizConfigProvider);
-  // Firebase kaldırıldığı için şimdilik sadece mock veri kaynağı
+  
+  // Eğer mock data kullanılmıyorsa HTTP data source kullan
+  if (!quizConfig.useMockData) {
+    final httpService = HttpService();
+    return HttpQuizDataSource(httpService);
+  }
+  
+  // Mock data kullan
   return MockQuizDataSource(
     simulatedDelay: Duration(milliseconds: quizConfig.mockDataDelay),
   );
@@ -23,10 +32,18 @@ final quizDataSourceProvider = Provider<QuizDataSource>((ref) {
 
 /// Provider for the quiz repository implementation
 ///
-/// Currently uses MockQuizRepository for development
+/// HTTP veya Mock repository'yi veri kaynağına göre seçer
 final quizRepositoryProvider = Provider<QuizRepository>((ref) {
   final dataSource = ref.watch(quizDataSourceProvider);
-  return MockQuizRepository(dataSource);
+  
+  if (dataSource is HttpQuizDataSource) {
+    return HttpQuizRepository(dataSource);
+  } else if (dataSource is MockQuizDataSource) {
+    return MockQuizRepository(dataSource);
+  }
+  
+  // Fallback olarak mock repository
+  return MockQuizRepository(dataSource as MockQuizDataSource);
 });
 
 /// Provider for the quiz service facade
