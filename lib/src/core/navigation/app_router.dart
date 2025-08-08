@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mabquiz/src/features/auth/presentation/screens/auth_gate.dart';
 import 'package:mabquiz/src/features/auth/presentation/screens/login_screen.dart';
+import 'package:mabquiz/src/features/auth/presentation/screens/register_screen.dart';
 import 'package:mabquiz/src/features/quiz/presentation/screens/quiz_screen.dart';
 import 'package:mabquiz/src/features/quiz/presentation/screens/subject_selection_screen.dart';
 import 'package:mabquiz/src/features/home/presentation/screens/home_screen.dart';
@@ -29,6 +30,11 @@ final appRouterProvider = GoRouter(
     GoRoute(
       path: '/login',
       builder: (context, state) => const LoginScreen(),
+    ),
+    // Kayıt ekranı
+    GoRoute(
+      path: '/register',
+      builder: (context, state) => const RegisterScreen(),
     ),
     // ShellRoute, alt navigasyon çubuğu (BottomNavigationBar) olan ana ekranları sarmalar.
     ShellRoute(

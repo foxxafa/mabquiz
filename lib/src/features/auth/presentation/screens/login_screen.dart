@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mabquiz/src/features/auth/application/providers.dart';
 import 'package:mabquiz/src/features/auth/presentation/utils/error_handler.dart';
 
@@ -232,7 +234,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
             width: double.infinity,
             child: ElevatedButton.icon(
               onPressed: isLoading ? null : _handleGoogleLogin,
-              icon: const Icon(Icons.g_translate), // Placeholder
+              icon: SizedBox(
+                width: 20,
+                height: 20,
+                child: SvgPicture.asset('assets/icons/google.svg'),
+              ),
               label: const Text('Google ile Giriş Yap'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,
@@ -251,9 +257,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
       children: [
         const Text("Hesabın yok mu?"),
         TextButton(
-          onPressed: () {
-            // TODO: Navigate to Register Screen using GoRouter
-          },
+          onPressed: () => context.go('/register'),
           child: const Text('Kayıt Ol'),
         ),
       ],
