@@ -12,9 +12,12 @@ from .db import DATABASE_URL
 async def lifespan(app: FastAPI):
     # Startup
     try:
+        from sqlalchemy import text
         engine: AsyncEngine = create_async_engine(DATABASE_URL, echo=False)
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
+            # Test connection
+            await conn.execute(text("SELECT 1"))
         print("✅ Database tables created successfully")
     except Exception as e:
         print(f"❌ Database connection error: {e}")
@@ -48,10 +51,12 @@ app.include_router(router)
 @app.get("/health")
 async def health():
     try:
-        # Test database connection
-        from .db import engine
-        async with engine.begin() as conn:
-            await conn.execute("SELECT 1")
-        return {"status": "ok", "database": "connected"}
+        # Simple database connection test
+        from .db import SessionLocal
+        async with SessionLocal() as session:
+            from sqlalchemy import text
+            result = await session.execute(text("SELECT 1 as test"))
+            test_result = result.scalar()
+        return {"status": "ok", "database": "connected", "test_query": test_result}
     except Exception as e:
         return {"status": "error", "database": "disconnected", "error": str(e)}
