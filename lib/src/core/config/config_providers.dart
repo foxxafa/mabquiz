@@ -16,12 +16,6 @@ final environmentProvider = Provider<AppEnvironment>((ref) {
   return config.environment;
 });
 
-/// Provider for Firebase configuration
-final firebaseConfigProvider = Provider<FirebaseConfig>((ref) {
-  final config = ref.watch(appConfigProvider);
-  return config.firebase;
-});
-
 /// Provider for authentication configuration
 final authConfigProvider = Provider<AuthConfig>((ref) {
   final config = ref.watch(appConfigProvider);
@@ -50,10 +44,4 @@ final useMockAuthProvider = Provider<bool>((ref) {
 final useMockQuizProvider = Provider<bool>((ref) {
   final quizConfig = ref.watch(quizConfigProvider);
   return quizConfig.useMockData;
-});
-
-/// Provider that determines if Firebase emulator should be used
-final useFirebaseEmulatorProvider = Provider<bool>((ref) {
-  final firebaseConfig = ref.watch(firebaseConfigProvider);
-  return firebaseConfig.useEmulator;
 });

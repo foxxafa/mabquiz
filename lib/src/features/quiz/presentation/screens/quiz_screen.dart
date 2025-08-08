@@ -56,10 +56,10 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
     if (widget.subject != null) {
       try {
         // Load questions directly from assets for mock mode
-        print('[QuizScreen] Loading questions for subject: ${widget.subject}');
+        // print('[QuizScreen] Loading questions for subject: ${widget.subject}');
         final questions =
             await AssetQuestionLoader.loadAllQuestionsForSubject(widget.subject!);
-        print('[QuizScreen] Questions loaded: ${questions.length}');
+        // print('Questions loaded successfully: ${questions.length} questions');
         _banditManager.initializeQuestions(questions); // Initialize BanditManager
         setState(() {
           _availableQuestions = questions;
@@ -282,7 +282,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
-      backgroundColor: theme.colorScheme.background,
+      backgroundColor: theme.colorScheme.surface,
       body: SafeArea(
         child: Column(
           children: [
@@ -356,7 +356,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
             builder: (context, child) {
               return LinearProgressIndicator(
                 value: _progressAnimation.value,
-                backgroundColor: Colors.white.withOpacity(0.2),
+                backgroundColor: Colors.white.withValues(alpha: 0.2),
                 valueColor: AlwaysStoppedAnimation<Color>(theme.colorScheme.primary),
               );
             },
@@ -399,7 +399,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
                 padding:
                     const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 decoration: BoxDecoration(
-                  color: _feedbackColor.withOpacity(0.8),
+                  color: _feedbackColor.withValues(alpha: 0.8),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
@@ -429,12 +429,12 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
       if (_isAnswered) {
         if (isSelected) {
           tileColor = isCorrect
-              ? Colors.green.withOpacity(0.3)
-              : Colors.red.withOpacity(0.3);
+              ? Colors.green.withValues(alpha: 0.3)
+              : Colors.red.withValues(alpha: 0.3);
           borderColor = isCorrect ? Colors.green : Colors.red;
           trailingIcon = isCorrect ? Icons.check_circle : Icons.cancel;
         } else if (isCorrect) {
-          tileColor = Colors.green.withOpacity(0.3);
+          tileColor = Colors.green.withValues(alpha: 0.3);
           borderColor = Colors.green;
         }
       }

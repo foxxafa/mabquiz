@@ -7,4 +7,4 @@ library;
 export 'app_config.dart';
 export 'build_config.dart';
 export 'config_providers.dart';
-export 'firebase_config_service.dart';
+// firebase_config_service kaldırıldı

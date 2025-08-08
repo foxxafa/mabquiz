@@ -199,7 +199,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
             alignment: Alignment.centerRight,
             child: TextButton(
               onPressed: () {
-                // TODO: Şifre sıfırlama
+                // Şifre sıfırlama özelliği backend entegrasyonu sonrası eklenecek
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Şifre sıfırlama özelliği yakında eklenecek'),
+                  ),
+                );
               },
               child: Text(
                 'Şifremi Unuttum',

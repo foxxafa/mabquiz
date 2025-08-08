@@ -9,7 +9,7 @@ class HomeScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Ana Sayfa'),
-        backgroundColor: theme.colorScheme.background,
+                backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
       ),
       body: Center(

@@ -74,7 +74,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              theme.colorScheme.background,
+              theme.colorScheme.surface,
               theme.colorScheme.surface,
             ],
             begin: Alignment.topLeft,
@@ -132,7 +132,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: theme.colorScheme.primary.withOpacity(0.3),
+                color: theme.colorScheme.primary.withValues(alpha: 0.3),
                 offset: const Offset(0, 8),
                 blurRadius: 24,
                 spreadRadius: 0,
@@ -212,7 +212,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
             alignment: Alignment.centerRight,
             child: TextButton(
               onPressed: () {
-                // TODO: Implement password reset
+                // Şifre sıfırlama özelliği backend entegrasyonu sonrası eklenecek
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Şifre sıfırlama özelliği yakında eklenecek'),
+                  ),
+                );
               },
               child: const Text('Şifremi Unuttum'),
             ),

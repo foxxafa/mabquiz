@@ -59,7 +59,7 @@ class _SubjectSelectionScreenState extends ConsumerState<SubjectSelectionScreen>
     return Scaffold(
       appBar: AppBar(
         title: const Text('Ders Seçimi'),
-        backgroundColor: theme.colorScheme.background,
+                backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
       ),
       body: SafeArea(
@@ -232,15 +232,15 @@ class __SubjectCardState extends State<_SubjectCard>
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                color.withOpacity(0.9),
-                color.withOpacity(0.7),
+                color.withValues(alpha: 0.9),
+                color.withValues(alpha: 0.7),
               ],
             ),
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: Colors.white.withOpacity(0.1), width: 1),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.1), width: 1),
             boxShadow: [
               BoxShadow(
-                color: color.withOpacity(0.3),
+                color: color.withValues(alpha: 0.3),
                 blurRadius: 15,
                 offset: const Offset(0, 8),
               ),
@@ -256,7 +256,7 @@ class __SubjectCardState extends State<_SubjectCard>
                   child: Icon(
                     _getSubjectIcon(widget.subject),
                     size: 100,
-                    color: Colors.white.withOpacity(0.08),
+                    color: Colors.white.withValues(alpha: 0.08),
                   ),
                 ),
               ),
@@ -286,7 +286,7 @@ class __SubjectCardState extends State<_SubjectCard>
                     Text(
                       'Sınırsız Mod',
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.8),
+                        color: Colors.white.withValues(alpha: 0.8),
                         fontSize: 12,
                       ),
                     ),

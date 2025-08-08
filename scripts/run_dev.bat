@@ -1,3 +1,0 @@
-@echo off
-echo Starting app in development mode with Firebase emulator...
-flutter run --dart-define=ENVIRONMENT=development

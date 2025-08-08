@@ -6,9 +6,6 @@ class AppConfig {
   /// Current environment mode
   final AppEnvironment environment;
 
-  /// Firebase configuration
-  final FirebaseConfig firebase;
-
   /// Authentication configuration
   final AuthConfig auth;
 
@@ -17,7 +14,6 @@ class AppConfig {
 
   const AppConfig({
     required this.environment,
-    required this.firebase,
     required this.auth,
     required this.quiz,
   });
@@ -26,7 +22,6 @@ class AppConfig {
   factory AppConfig.development() {
     return AppConfig(
       environment: AppEnvironment.development,
-      firebase: FirebaseConfig.development(),
       auth: AuthConfig.development(),
       quiz: QuizConfig.development(),
     );
@@ -36,7 +31,6 @@ class AppConfig {
   factory AppConfig.production() {
     return AppConfig(
       environment: AppEnvironment.production,
-      firebase: FirebaseConfig.production(),
       auth: AuthConfig.production(),
       quiz: QuizConfig.production(),
     );
@@ -60,48 +54,6 @@ enum AppEnvironment {
   production,
 }
 
-/// Firebase-specific configuration
-class FirebaseConfig {
-  /// Whether to use Firebase emulator
-  final bool useEmulator;
-
-  /// Emulator host (only used when useEmulator is true)
-  final String emulatorHost;
-
-  /// Auth emulator port
-  final int authEmulatorPort;
-
-  /// Whether Firebase is enabled
-  final bool enabled;
-
-  const FirebaseConfig({
-    required this.useEmulator,
-    required this.emulatorHost,
-    required this.authEmulatorPort,
-    required this.enabled,
-  });
-
-  /// Development configuration with emulator
-  factory FirebaseConfig.development() {
-    return FirebaseConfig(
-      useEmulator: !BuildConfig.disableFirebase, // Use emulator unless explicitly disabled
-      emulatorHost: BuildConfig.firebaseEmulatorHost,
-      authEmulatorPort: BuildConfig.firebaseAuthEmulatorPort,
-      enabled: !BuildConfig.disableFirebase,
-    );
-  }
-
-  /// Production configuration with real Firebase
-  factory FirebaseConfig.production() {
-    return FirebaseConfig(
-      useEmulator: false,
-      emulatorHost: '',
-      authEmulatorPort: 0,
-      enabled: !BuildConfig.disableFirebase,
-    );
-  }
-}
-
 /// Authentication-specific configuration
 class AuthConfig {
   /// Whether to use mock authentication
@@ -122,16 +74,16 @@ class AuthConfig {
   /// Development configuration with mock auth
   factory AuthConfig.development() {
     return AuthConfig(
-      useMockAuth: BuildConfig.forceMockAuth || BuildConfig.disableFirebase || true, // Always use mock in development
+      useMockAuth: true, // Always use mock in development
       mockAuthDelay: 1000,
       enablePersistence: true,
     );
   }
 
-  /// Production configuration with real auth
+  /// Production configuration with mock auth for now
   factory AuthConfig.production() {
     return AuthConfig(
-      useMockAuth: BuildConfig.forceMockAuth || BuildConfig.disableFirebase,
+      useMockAuth: true, // Use mock auth for now
       mockAuthDelay: 0,
       enablePersistence: true,
     );
@@ -164,7 +116,7 @@ class QuizConfig {
     );
   }
 
-  /// Production configuration with Firebase
+  /// Production configuration with API data
   factory QuizConfig.production() {
     return const QuizConfig(
       useMockData: false,

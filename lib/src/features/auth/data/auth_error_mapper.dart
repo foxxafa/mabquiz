@@ -1,56 +1,11 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'exceptions.dart';
 
-/// Maps Firebase Auth exceptions to domain-specific auth exceptions
+/// Maps exceptions to domain-specific auth exceptions
 class AuthErrorMapper {
-  /// Maps a FirebaseAuthException to an appropriate AuthException
-  static AuthException mapFirebaseException(FirebaseAuthException e) {
-    switch (e.code) {
-      case 'invalid-credential':
-      case 'user-not-found':
-      case 'wrong-password':
-        return const InvalidCredentialsException();
-
-      case 'weak-password':
-        return const WeakPasswordException();
-
-      case 'email-already-in-use':
-        return const EmailAlreadyInUseException();
-
-      case 'user-disabled':
-        return const UnknownAuthException('User account has been disabled', 'user-disabled');
-
-      case 'too-many-requests':
-        return const UnknownAuthException('Too many requests. Please try again later', 'too-many-requests');
-
-      case 'operation-not-allowed':
-        return const UnknownAuthException('This operation is not allowed', 'operation-not-allowed');
-
-      case 'invalid-email':
-        return const UnknownAuthException('Invalid email address format', 'invalid-email');
-
-      case 'network-request-failed':
-        return const NetworkException();
-
-      case 'internal-error':
-        return const ServiceUnavailableException();
-
-      default:
-        return UnknownAuthException(
-          e.message ?? 'An unknown authentication error occurred',
-          e.code,
-        );
-    }
-  }
-
   /// Maps any exception to an AuthException
   static AuthException mapException(Object exception) {
     if (exception is AuthException) {
       return exception;
-    }
-
-    if (exception is FirebaseAuthException) {
-      return mapFirebaseException(exception);
     }
 
     // Handle network-related exceptions

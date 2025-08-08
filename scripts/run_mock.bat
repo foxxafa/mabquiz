@@ -1,3 +1,0 @@
-@echo off
-echo Starting app with mock authentication only...
-flutter run --dart-define=FORCE_MOCK_AUTH=true

@@ -1,55 +1,32 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/config/config_providers.dart';
-import '../data/data_sources/firebase_quiz_datasource.dart';
 import '../data/data_sources/mock_quiz_datasource.dart';
 import '../data/services/asset_question_loader.dart';
 import '../domain/entities/question.dart';
 import '../domain/entities/quiz_score.dart';
-import '../data/repositories/firebase_quiz_repository.dart';
 import '../data/repositories/mock_quiz_repository.dart';
 import '../data/repositories/quiz_repository.dart';
-import '../data/services/firebase_quiz_config_service.dart';
 import 'quiz_service.dart';
 
 /// Provider for the quiz data source implementation
 ///
-/// Automatically selects between mock and Firebase implementation
+/// Currently uses MockQuizDataSource for development
 /// based on the application configuration
 final quizDataSourceProvider = Provider<QuizDataSource>((ref) {
-  final useMockQuiz = ref.watch(useMockQuizProvider);
   final quizConfig = ref.watch(quizConfigProvider);
-
-  if (useMockQuiz) {
-    return MockQuizDataSource(
-      simulatedDelay: Duration(milliseconds: quizConfig.mockDataDelay),
-    );
-  } else {
-    return FirebaseQuizDataSourceImpl(
-      simulatedDelay: Duration.zero,
-    );
-  }
+  // Firebase kaldırıldığı için şimdilik sadece mock veri kaynağı
+  return MockQuizDataSource(
+    simulatedDelay: Duration(milliseconds: quizConfig.mockDataDelay),
+  );
 });
 
 /// Provider for the quiz repository implementation
 ///
-/// Automatically selects between mock and Firebase implementation
-/// based on the application configuration:
-/// - Mock: MockQuizRepository for development and testing
-/// - Firebase: FirebaseQuizRepository for production use
+/// Currently uses MockQuizRepository for development
 final quizRepositoryProvider = Provider<QuizRepository>((ref) {
   final dataSource = ref.watch(quizDataSourceProvider);
-  final useMockQuiz = ref.watch(useMockQuizProvider);
-
-  if (useMockQuiz) {
-    return MockQuizRepository(dataSource);
-  } else {
-    // For Firebase implementation, we need to cast properly
-    final firebaseDataSource = dataSource is FirebaseQuizDataSourceImpl
-        ? dataSource
-        : FirebaseQuizDataSourceImpl();
-    return FirebaseQuizRepository(firebaseDataSource);
-  }
+  return MockQuizRepository(dataSource);
 });
 
 /// Provider for the quiz service facade
@@ -61,15 +38,7 @@ final quizServiceProvider = Provider<QuizService>((ref) {
   return QuizService(repository);
 });
 
-// --- Providers moved from quiz_config_providers.dart ---
-
-/// Provider for Firebase Quiz Config Service
-final firebaseQuizConfigServiceProvider = Provider<FirebaseQuizConfigService>((ref) {
-  return FirebaseQuizConfigService.instance;
-});
-
-/// Provider for quiz initialization status
-final quizInitializationProvider = StateProvider<bool>((ref) => false);
+// Firebase konfigürasyonu kaldırıldı
 
 /// Stream provider for quiz session changes
 ///

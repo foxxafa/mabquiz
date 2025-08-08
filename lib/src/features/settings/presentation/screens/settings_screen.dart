@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../auth/application/providers.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Ayarlar'),
-        backgroundColor: theme.colorScheme.background,
+                backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
       ),
       body: ListView(
@@ -38,7 +39,8 @@ class SettingsScreen extends StatelessWidget {
             leading: Icon(Icons.logout, color: theme.colorScheme.error),
             title: const Text('Çıkış Yap'),
             onTap: () async {
-              await FirebaseAuth.instance.signOut();
+              final authService = ref.read(authServiceProvider);
+              await authService.logout();
               // ignore: use_build_context_synchronously
               context.go('/auth');
             },
