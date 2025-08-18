@@ -19,7 +19,7 @@ class AssetQuestionLoader {
       return jsonList.map((questionJson) => _parseAssetQuestion(questionJson)).toList();
     } catch (e) {
       // Log missing or malformed asset files
-      print('AssetQuestionLoader: could not load $subject/$questionType.json -> $e');
+      // print('Failed to load questions from $path: $e');
       return [];
     }
   }

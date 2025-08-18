@@ -1,3 +1,0 @@
-@echo off
-echo Starting app for Android emulator with correct Firebase emulator host...
-flutter run --dart-define=FIREBASE_EMULATOR_HOST=10.0.2.2

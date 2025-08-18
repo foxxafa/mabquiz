@@ -72,6 +72,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     final currentUser = ref.watch(currentUserProvider);
 
     return Scaffold(
+<<<<<<< HEAD
       backgroundColor: AppColors.background,
       body: Container(
         decoration: const BoxDecoration(
@@ -82,6 +83,40 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               Color(0xFF1a1a1a),
               Color(0xFF2d2d2d),
               Color(0xFF1a1a1a),
+=======
+      appBar: AppBar(
+        title: const Text('Ana Sayfa'),
+                backgroundColor: Theme.of(context).colorScheme.surface,
+        elevation: 0,
+      ),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.quiz_rounded,
+                size: 120,
+                color: theme.colorScheme.primary,
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'MABQuiz\'e Hoş Geldiniz!',
+                textAlign: TextAlign.center,
+                style: theme.textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Öğrenmeye başlamak için ders seçimi yapın veya istatistiklerinizi analiz edin.',
+                textAlign: TextAlign.center,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  color: Colors.white70,
+                ),
+              ),
+>>>>>>> a538e3ce29f4e2242174890ff6a020e0f11f7cd5
             ],
             stops: [0.0, 0.5, 1.0],
           ),

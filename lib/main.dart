@@ -1,14 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:mabquiz/src/core/navigation/app_router.dart';
-import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
   runApp(
     const ProviderScope(
       child: MyApp(),
@@ -31,11 +26,9 @@ class MyApp extends StatelessWidget {
         colorScheme: const ColorScheme.dark(
           primary: Color(0xFF4F9CF9),
           secondary: Color(0xFF2E5EAA),
-          background: Color(0xFF121212),
           surface: Color(0xFF1E1E1E),
           onPrimary: Colors.white,
           onSecondary: Colors.white,
-          onBackground: Colors.white,
           onSurface: Colors.white,
         ),
         inputDecorationTheme: InputDecorationTheme(

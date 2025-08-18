@@ -88,4 +88,49 @@ class Question {
       initialConfidence: initialConfidence ?? this.initialConfidence,
     );
   }
+
+  /// Check if the given answer is correct
+  bool isCorrectAnswer(String answer) {
+    return answer.trim().toLowerCase() == correctAnswer.trim().toLowerCase();
+  }
+
+  /// Create a Question from JSON data
+  factory Question.fromJson(Map<String, dynamic> json) {
+    return Question(
+      id: json['id']?.toString() ?? '',
+      text: json['text']?.toString() ?? '',
+      type: QuestionType.values.firstWhere(
+        (e) => e.name == json['type'],
+        orElse: () => QuestionType.multipleChoice,
+      ),
+      difficulty: DifficultyLevel.values.firstWhere(
+        (e) => e.name == json['difficulty'],
+        orElse: () => DifficultyLevel.beginner,
+      ),
+      options: List<String>.from(json['options'] ?? []),
+      correctAnswer: json['correctAnswer']?.toString() ?? '',
+      explanation: json['explanation']?.toString(),
+      tags: List<String>.from(json['tags'] ?? []),
+      subject: json['subject']?.toString() ?? '',
+      points: json['points']?.toInt() ?? 10,
+      initialConfidence: json['initialConfidence']?.toDouble() ?? 0.5,
+    );
+  }
+
+  /// Convert Question to JSON
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'text': text,
+      'type': type.name,
+      'difficulty': difficulty.name,
+      'options': options,
+      'correctAnswer': correctAnswer,
+      'explanation': explanation,
+      'tags': tags,
+      'subject': subject,
+      'points': points,
+      'initialConfidence': initialConfidence,
+    };
+  }
 }

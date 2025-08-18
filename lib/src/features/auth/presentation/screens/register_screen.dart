@@ -98,7 +98,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              theme.colorScheme.background,
+              theme.colorScheme.surface,
               theme.colorScheme.surface,
             ],
             begin: Alignment.topLeft,
@@ -150,7 +150,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: theme.colorScheme.primary.withOpacity(0.3),
+                color: theme.colorScheme.primary.withValues(alpha: 0.3),
                 offset: const Offset(0, 8),
                 blurRadius: 24,
                 spreadRadius: 0,
@@ -310,19 +310,19 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Theme.of(context).colorScheme.primary.withOpacity(0.6),
+                        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.6),
                         offset: const Offset(0, 8),
                         blurRadius: 32,
                         spreadRadius: 0,
                       ),
                       BoxShadow(
-                        color: Theme.of(context).colorScheme.primary.withOpacity(0.4),
+                        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.4),
                         offset: const Offset(0, 0),
                         blurRadius: 24,
                         spreadRadius: 4,
                       ),
                       BoxShadow(
-                        color: Colors.white.withOpacity(0.1),
+                        color: Colors.white.withValues(alpha: 0.1),
                         offset: Offset(_shimmerAnimation.value * 50, 0),
                         blurRadius: 20,
                         spreadRadius: 0,
@@ -334,9 +334,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
                       borderRadius: BorderRadius.circular(15),
                       gradient: LinearGradient(
                         colors: [
-                          Colors.white.withOpacity(0.0),
-                          Colors.white.withOpacity(0.1),
-                          Colors.white.withOpacity(0.0),
+                          Colors.white.withValues(alpha: 0.0),
+                          Colors.white.withValues(alpha: 0.1),
+                          Colors.white.withValues(alpha: 0.0),
                         ],
                         stops: [
                           (_shimmerAnimation.value + 2.0) / 4.0 - 0.3,
@@ -370,7 +370,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
                                 color: Colors.white,
                                 shadows: [
                                   Shadow(
-                                    color: Colors.black.withOpacity(0.3),
+                                    color: Colors.black.withValues(alpha: 0.3),
                                     offset: const Offset(0, 2),
                                     blurRadius: 4,
                                   ),
@@ -441,8 +441,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
       ref.read(authErrorProvider.notifier).state = null;
 
       final authService = ref.read(authServiceProvider);
-      // TODO: Update authService.register to accept new fields
-      // For now, we'll just use email and password
+      // Backend entegrasyonu sonrası ek alanlar (ad, soyad, departman) eklenecek
+      // Şu an için sadece email ve şifre kullanılıyor
       await authService.register(
         _emailController.text.trim(),
         _passwordController.text,

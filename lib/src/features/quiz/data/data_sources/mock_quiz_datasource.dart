@@ -54,17 +54,17 @@ class MockQuizDataSource implements QuizDataSource {
   Future<void> _initialize() async {
     if (_isInitialized) return;
 
-    print('[MockQuizDataSource] Starting initialization...');
+        // print('MockQuizDataSource: getQuestionsBySubject called with subject: $subject');
 
     // Load farmakoloji questions from assets
     final farmakolojiQuestions =
         await AssetQuestionLoader.loadAllQuestionsForSubject('farmakoloji');
-    print('[MockQuizDataSource] Loaded ${farmakolojiQuestions.length} farmakoloji questions');
+        // print('MockQuizDataSource: getSubjects called');
 
     // Load terminoloji questions from assets
     final terminolojiQuestions =
         await AssetQuestionLoader.loadAllQuestionsForSubject('terminoloji');
-    print('[MockQuizDataSource] Loaded ${terminolojiQuestions.length} terminoloji questions');
+        // print('MockQuizDataSource: Returning ${subjects.length} subjects');
 
     _allQuestions = [
       // Farmakoloji soruları
@@ -74,8 +74,8 @@ class MockQuizDataSource implements QuizDataSource {
       ...terminolojiQuestions,
     ];
 
-    print('[MockQuizDataSource] Total questions loaded: ${_allQuestions.length}');
-    print('[MockQuizDataSource] Available subjects: ${_allQuestions.map((q) => q.subject).toSet().toList()}');
+        // print('MockQuizDataSource: Found ${questions.length} questions');
+        // print('MockQuizDataSource: Returning ${randomQuestions.length} random questions');
 
     _isInitialized = true;
   }
