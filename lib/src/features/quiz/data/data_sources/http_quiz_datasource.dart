@@ -1,5 +1,5 @@
+import 'package:flutter/foundation.dart';
 import '../../../../core/services/http_service.dart';
-import '../../../../core/config/config.dart';
 import '../../domain/entities/question.dart';
 import 'mock_quiz_datasource.dart';
 
@@ -24,7 +24,7 @@ class HttpQuizDataSource implements QuizDataSource {
       return questionsJson.map((json) => Question.fromJson(json)).toList();
     } catch (e) {
       // Fallback to mock data if API fails
-      print('API call failed, falling back to mock data: $e');
+      debugPrint('API call failed, falling back to mock data: $e');
       return await _mockDataSource.getQuestionsBySubject(subject);
     }
   }
@@ -40,7 +40,7 @@ class HttpQuizDataSource implements QuizDataSource {
       return questionsJson.map((json) => Question.fromJson(json)).toList();
     } catch (e) {
       // Fallback to mock data if API fails
-      print('API call failed, falling back to mock data: $e');
+      debugPrint('API call failed, falling back to mock data: $e');
       return await _mockDataSource.getQuestionsByDifficulty(difficulty);
     }
   }
@@ -52,7 +52,7 @@ class HttpQuizDataSource implements QuizDataSource {
       return Question.fromJson(response);
     } catch (e) {
       // Fallback to mock data if API fails
-      print('API call failed, falling back to mock data: $e');
+      debugPrint('API call failed, falling back to mock data: $e');
       return await _mockDataSource.getQuestionById(id);
     }
   }
@@ -80,7 +80,7 @@ class HttpQuizDataSource implements QuizDataSource {
       return questionsJson.map((json) => Question.fromJson(json)).toList();
     } catch (e) {
       // Fallback to mock data if API fails
-      print('API call failed, falling back to mock data: $e');
+      debugPrint('API call failed, falling back to mock data: $e');
       return await _mockDataSource.getRandomQuestions(
         limit: limit,
         subject: subject,
@@ -98,7 +98,7 @@ class HttpQuizDataSource implements QuizDataSource {
       return subjects.cast<String>();
     } catch (e) {
       // Fallback to mock data if API fails
-      print('API call failed, falling back to mock data: $e');
+      debugPrint('API call failed, falling back to mock data: $e');
       return await _mockDataSource.getAvailableSubjects();
     }
   }
@@ -111,7 +111,7 @@ class HttpQuizDataSource implements QuizDataSource {
       return questionsJson.map((json) => Question.fromJson(json)).toList();
     } catch (e) {
       // Fallback to mock data if API fails
-      print('API call failed, falling back to mock data: $e');
+      debugPrint('API call failed, falling back to mock data: $e');
       return await _mockDataSource.getAllQuestions();
     }
   }

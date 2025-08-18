@@ -77,6 +77,7 @@ class QuestionModel extends entities.Question {
   }
 
   /// Convert to JSON
+  @override
   Map<String, dynamic> toJson() {
     return {
       'id': id,

@@ -12,7 +12,7 @@ class HttpService {
   // GET Request
   Future<Map<String, dynamic>> get(String endpoint, {Map<String, String>? queryParams}) async {
     try {
-      var uri = Uri.parse('${ApiConfig.BASE_URL}$endpoint');
+      var uri = Uri.parse('${ApiConfig.baseUrl}$endpoint');
       if (queryParams != null && queryParams.isNotEmpty) {
         uri = uri.replace(queryParameters: queryParams);
       }
@@ -36,7 +36,7 @@ class HttpService {
   Future<Map<String, dynamic>> post(String endpoint, Map<String, dynamic> data) async {
     try {
       final response = await http.post(
-        Uri.parse('${ApiConfig.BASE_URL}$endpoint'),
+        Uri.parse('${ApiConfig.baseUrl}$endpoint'),
         headers: ApiConfig.headers,
         body: json.encode(data),
       ).timeout(Duration(seconds: 30));
