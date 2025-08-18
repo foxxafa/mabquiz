@@ -13,6 +13,11 @@ class AppColors {
   static const Color surface = Colors.white;
   static const Color border = Color(0xFFE5E5E5);
 
+  // Navigation bar colors - Karanlık tema için
+  static const Color navBarBackground = Color(0xFF404040);     // Orta koyu gri
+  static const Color navBarBackgroundLight = Color(0xFF4a4a4a); // Biraz açık gri
+  static const Color navBarShadow = Color(0xFF2a2a2a);        // Koyu gri gölge
+
   static const Color error = Color(0xFFFF4B4B);
   static const Color success = Color(0xFF58CC02);
   static const Color warning = Color(0xFFFF9600);

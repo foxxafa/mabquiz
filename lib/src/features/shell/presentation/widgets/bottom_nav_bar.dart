@@ -13,31 +13,60 @@ class BottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BottomNavigationBar(
-      currentIndex: currentIndex,
-      onTap: onTap,
-      type: BottomNavigationBarType.fixed,
-      backgroundColor: AppColors.surface,
-      selectedItemColor: AppColors.primary,
-      unselectedItemColor: Colors.grey,
-      items: const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.home),
-          label: 'Ana Sayfa',
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            AppColors.navBarBackground,
+            AppColors.navBarBackgroundLight,
+          ],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
         ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.book),
-          label: 'Dersler',
+        border: Border(
+          top: BorderSide(
+            color: AppColors.primary.withValues(alpha: 0.2),
+            width: 1,
+          ),
         ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.analytics),
-          label: 'Analiz',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.settings),
-          label: 'Ayarlar',
-        ),
-      ],
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.navBarShadow.withValues(alpha: 0.3),
+            offset: const Offset(0, -2),
+            blurRadius: 12,
+            spreadRadius: 0,
+          ),
+        ],
+      ),
+      child: BottomNavigationBar(
+        currentIndex: currentIndex,
+        onTap: onTap,
+        type: BottomNavigationBarType.fixed,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        selectedItemColor: AppColors.primary,
+        unselectedItemColor: Colors.white.withValues(alpha: 0.6),
+        selectedFontSize: 12,
+        unselectedFontSize: 11,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home_rounded),
+            label: 'Ana Sayfa',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.quiz_rounded),
+            label: 'Quiz',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.analytics_rounded),
+            label: 'Analiz',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.settings_rounded),
+            label: 'Ayarlar',
+          ),
+        ],
+      ),
     );
   }
 }
