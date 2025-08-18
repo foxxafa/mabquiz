@@ -19,6 +19,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp.router(
       routerConfig: appRouterProvider,
       title: 'MAB Quiz',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         brightness: Brightness.dark,
         primaryColor: const Color(0xFF4F9CF9),
@@ -58,7 +59,6 @@ class MyApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      debugShowCheckedModeBanner: false,
     );
   }
 }

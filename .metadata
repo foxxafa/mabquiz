@@ -5,7 +5,7 @@
 
 version:
   revision: "46ecb28f7edadbe82313401270a9e591b8bcbadf"
-  channel: "master"
+  channel: "[user-branch]"
 
 project_type: app
 
@@ -15,7 +15,7 @@ migration:
     - platform: root
       create_revision: 46ecb28f7edadbe82313401270a9e591b8bcbadf
       base_revision: 46ecb28f7edadbe82313401270a9e591b8bcbadf
-    - platform: android
+    - platform: web
       create_revision: 46ecb28f7edadbe82313401270a9e591b8bcbadf
       base_revision: 46ecb28f7edadbe82313401270a9e591b8bcbadf
 
