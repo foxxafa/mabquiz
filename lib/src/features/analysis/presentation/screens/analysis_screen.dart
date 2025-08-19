@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class AnalysisScreen extends StatelessWidget {
   const AnalysisScreen({super.key});
@@ -8,7 +9,7 @@ class AnalysisScreen extends StatelessWidget {
     final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Analiz'),
+        title: Text('analysis_screen.title'.tr()),
                 backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
       ),
@@ -23,14 +24,14 @@ class AnalysisScreen extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             Text(
-              'Analizleriniz Yakında Burada!',
+              'analysis.coming_soon'.tr(),
               style: theme.textTheme.headlineSmall,
             ),
             const SizedBox(height: 8),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 40.0),
               child: Text(
-                'Çözdüğünüz quizlere göre performansınız burada gösterilecek.',
+                'analysis_screen.description'.tr(),
                 textAlign: TextAlign.center,
                 style: theme.textTheme.titleMedium?.copyWith(color: Colors.white70),
               ),

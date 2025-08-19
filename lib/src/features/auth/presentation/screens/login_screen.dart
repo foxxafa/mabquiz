@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:mabquiz/src/features/auth/application/providers.dart';
 import 'package:mabquiz/src/features/auth/presentation/utils/error_handler.dart';
 
@@ -147,14 +148,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
         ),
         const SizedBox(height: 24),
         Text(
-          'Hoş Geldin!',
+          'login.welcome_back'.tr(),
           style: theme.textTheme.headlineLarge?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
         ),
         const SizedBox(height: 8),
         Text(
-          'Öğrenmeye devam etmek için giriş yap',
+          'login.login_subtitle'.tr(),
           style: theme.textTheme.bodyMedium?.copyWith(
                 color: Colors.grey[400],
               ),
@@ -171,18 +172,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
         children: [
           TextFormField(
             controller: _emailController,
-            decoration: const InputDecoration(
-              labelText: 'E-posta',
+            decoration: InputDecoration(
+              labelText: 'login.email'.tr(),
               prefixIcon: Icon(Icons.email_outlined),
             ),
             keyboardType: TextInputType.emailAddress,
             textInputAction: TextInputAction.next,
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return 'Lütfen e-posta adresinizi girin';
+                return 'login.email_required'.tr();
               }
               if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
-                return 'Lütfen geçerli bir e-posta adresi girin';
+                return 'login.valid_email'.tr();
               }
               return null;
             },
@@ -190,18 +191,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
           const SizedBox(height: 20),
           TextFormField(
             controller: _passwordController,
-            decoration: const InputDecoration(
-              labelText: 'Şifre',
+            decoration: InputDecoration(
+              labelText: 'login.password'.tr(),
               prefixIcon: Icon(Icons.lock_outlined),
             ),
             obscureText: true,
             textInputAction: TextInputAction.done,
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return 'Lütfen şifrenizi girin';
+                return 'login.password_required'.tr();
               }
               if (value.length < 6) {
-                return 'Şifre en az 6 karakter olmalıdır';
+                return 'login.password_min_length'.tr();
               }
               return null;
             },
@@ -219,7 +220,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                   ),
                 );
               },
-              child: const Text('Şifremi Unuttum'),
+              child: Text('login.forgot_password'.tr()),
             ),
           ),
           const SizedBox(height: 32),
@@ -231,7 +232,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                   ? const CircularProgressIndicator(
                       valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                     )
-                  : const Text('Giriş Yap'),
+                  : Text('login.login_button'.tr()),
             ),
           ),
           const SizedBox(height: 16),

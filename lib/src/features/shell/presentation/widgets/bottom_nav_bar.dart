@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:easy_localization/easy_localization.dart';
 
-class BottomNavBar extends StatelessWidget {
+class BottomNavBar extends ConsumerWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
 
@@ -11,7 +13,7 @@ class BottomNavBar extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {    
     return Container(
       decoration: BoxDecoration(
         gradient: const LinearGradient(
@@ -47,36 +49,35 @@ class BottomNavBar extends StatelessWidget {
       ),
       child: SafeArea(
         child: Container(
-          height: 60,
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               _buildNavItem(
                 context,
                 icon: Icons.home_rounded,
-                label: 'Ana Sayfa',
+                label: 'home.title'.tr(),
                 index: 0,
                 isSelected: currentIndex == 0,
               ),
               _buildNavItem(
                 context,
                 icon: Icons.quiz_rounded,
-                label: 'Quiz',
+                label: 'courses'.tr(),
                 index: 1,
                 isSelected: currentIndex == 1,
               ),
               _buildNavItem(
                 context,
                 icon: Icons.analytics_rounded,
-                label: 'Analiz',
+                label: 'analysis'.tr(),
                 index: 2,
                 isSelected: currentIndex == 2,
               ),
               _buildNavItem(
                 context,
                 icon: Icons.settings_rounded,
-                label: 'Ayarlar',
+                label: 'settings.title'.tr(),
                 index: 3,
                 isSelected: currentIndex == 3,
               ),
@@ -99,7 +100,7 @@ class BottomNavBar extends StatelessWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeInOut,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
           gradient: isSelected
@@ -131,7 +132,7 @@ class BottomNavBar extends StatelessWidget {
               color: isSelected 
                   ? Colors.white 
                   : Colors.white.withValues(alpha: 0.6),
-              size: 22,
+              size: 20,
             ),
             const SizedBox(height: 2),
             Text(
@@ -140,7 +141,7 @@ class BottomNavBar extends StatelessWidget {
                 color: isSelected 
                     ? Colors.white 
                     : Colors.white.withValues(alpha: 0.6),
-                fontSize: 11,
+                fontSize: 14,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
               ),
             ),

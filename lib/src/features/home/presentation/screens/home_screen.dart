@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 import '../../../../core/theme/theme.dart';
 import '../../../quiz/presentation/screens/quiz_screen.dart';
@@ -164,7 +165,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     Icons.logout,
                     color: Colors.white,
                   ),
-            tooltip: 'Çıkış Yap',
+            tooltip: 'settings.logout'.tr(),
           ),
         ],
       ),
@@ -177,7 +178,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       if (currentUser?.email != null) {
         return currentUser!.email!.split('@').first;
       }
-      return 'Kullanıcı';
+      return 'home.user'.tr();
     }
 
     return Container(
@@ -217,19 +218,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         children: [
           // Kişiselleştirilmiş selamlama
           Text(
-            'Hoş geldin, ${getUserName()} 👋',
+            'home.welcome_user'.tr(namedArgs: {'name': getUserName()}),
             style: AppTextStyles.h2.copyWith(
               fontWeight: FontWeight.bold,
               color: Colors.white,
-              fontSize: 28,
+              fontSize: 32,
             ),
           ),
           const SizedBox(height: 8),
           Text(
-            'Öğrenmeye hazır mısın?',
+            'home.ready_to_learn'.tr(),
             style: AppTextStyles.bodyLarge.copyWith(
               color: Colors.white.withValues(alpha: 0.7),
-              fontSize: 16,
+              fontSize: 18,
             ),
           ),
           const SizedBox(height: 24),
@@ -239,8 +240,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             children: [
               // Birinci sıra - Ana test butonu
               _buildMainActionButton(
-                title: 'Teste Başla',
-                subtitle: 'Hemen quiz çözmeye başla',
+                title: 'home.start_test'.tr(),
+                subtitle: 'home.start_test_desc'.tr(),
                 icon: Icons.play_circle_filled,
                 gradient: LinearGradient(
                   colors: [AppColors.primary, AppColors.primaryDark],
@@ -263,8 +264,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 children: [
                   Expanded(
                     child: _buildMainActionButton(
-                      title: 'Ders Seç',
-                      subtitle: 'Konu seç',
+                      title: 'home.select_course'.tr(),
+                      subtitle: 'home.select_course_desc'.tr(),
                       icon: Icons.library_books,
                       gradient: LinearGradient(
                         colors: [AppColors.secondary, const Color(0xFF1CB0F6)],
@@ -275,7 +276,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                       onTap: () {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: const Text('Ders seçimi özelliği yakında eklenecek!'),
+                            content: Text('home.course_selection_coming_soon'.tr()),
                             backgroundColor: AppColors.primary,
                           ),
                         );
@@ -285,8 +286,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                   const SizedBox(width: 12),
                   Expanded(
                     child: _buildMainActionButton(
-                      title: 'İstatistik',
-                      subtitle: 'İlerlemen',
+                      title: 'home.statistics'.tr(),
+                      subtitle: 'home.statistics_desc'.tr(),
                       icon: Icons.analytics_rounded,
                       gradient: LinearGradient(
                         colors: [AppColors.accent, AppColors.accent.withValues(alpha: 0.8)],
@@ -297,7 +298,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                       onTap: () {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: const Text('İstatistik özelliği yakında eklenecek!'),
+                            content: Text('home.statistics_coming_soon'.tr()),
                             backgroundColor: AppColors.accent,
                           ),
                         );
@@ -363,8 +364,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     children: [
                       Text(
                         currentUser?.emailVerified == true
-                            ? '✨ Hesabın Doğrulandı!'
-                            : '⚠️ Email Doğrulaması Gerekli',
+                            ? 'home.account_verified'.tr()
+                            : 'home.email_verification_needed'.tr(),
                         style: AppTextStyles.bodyLarge.copyWith(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
@@ -374,8 +375,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                       const SizedBox(height: 4),
                       Text(
                         currentUser?.emailVerified == true
-                            ? 'Tüm özelliklerden yararlanabilirsin'
-                            : 'Email adresini doğrulaman gerekiyor',
+                            ? 'home.account_verified_desc'.tr()
+                            : 'home.email_verification_desc'.tr(),
                         style: AppTextStyles.bodySmall.copyWith(
                           color: Colors.white.withValues(alpha: 0.9),
                           fontSize: 13,
@@ -465,7 +466,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                           style: AppTextStyles.h3.copyWith(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
-                            fontSize: 20,
+                            fontSize: 22,
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -473,7 +474,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                           subtitle,
                           style: AppTextStyles.bodyMedium.copyWith(
                             color: Colors.white.withValues(alpha: 0.9),
-                            fontSize: 14,
+                            fontSize: 16,
                           ),
                         ),
                       ],
@@ -509,7 +510,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     style: AppTextStyles.bodyLarge.copyWith(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
-                      fontSize: 16,
+                      fontSize: 18,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -517,7 +518,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     subtitle,
                     style: AppTextStyles.bodySmall.copyWith(
                       color: Colors.white.withValues(alpha: 0.9),
-                      fontSize: 12,
+                      fontSize: 14,
                     ),
                   ),
                 ],
@@ -531,10 +532,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'İstatistikler',
+          'home.stats_title'.tr(),
           style: AppTextStyles.h3.copyWith(
             color: Colors.white,
             fontWeight: FontWeight.bold,
+            fontSize: 20,
           ),
         ),
         const SizedBox(height: 12),
@@ -543,7 +545,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             Expanded(
               child: _buildStatCard(
                 icon: Icons.quiz,
-                title: 'Toplam Soru',
+                title: 'home.total_questions'.tr(),
                 value: '0',
                 color: const Color(0xFF4CAF50),
               ),
@@ -552,7 +554,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             Expanded(
               child: _buildStatCard(
                 icon: Icons.check_circle,
-                title: 'Doğru Cevap',
+                title: 'home.correct_answers'.tr(),
                 value: '0',
                 color: const Color(0xFF2196F3),
               ),
@@ -565,7 +567,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             Expanded(
               child: _buildStatCard(
                 icon: Icons.trending_up,
-                title: 'Başarı Oranı',
+                title: 'home.success_rate'.tr(),
                 value: '0%',
                 color: const Color(0xFFFF9800),
               ),
@@ -574,7 +576,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             Expanded(
               child: _buildStatCard(
                 icon: Icons.timer,
-                title: 'Ortalama Süre',
+                title: 'home.average_time'.tr(),
                 value: '0s',
                 color: const Color(0xFF9C27B0),
               ),
@@ -707,10 +709,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           Row(
             children: [
               Text(
-                'Son Aktiviteler',
+                'home.recent_activities'.tr(),
                 style: AppTextStyles.h3.copyWith(
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
+                  fontSize: 20,
                 ),
               ),
               const Spacer(),
@@ -725,7 +728,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                   ),
                 ),
                 child: Text(
-                  'Yeni',
+                  'home.new_badge'.tr(),
                   style: AppTextStyles.bodySmall.copyWith(
                     color: AppColors.primary,
                     fontWeight: FontWeight.w600,
@@ -737,8 +740,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           const SizedBox(height: 20),
           _buildProgressItem(
             icon: Icons.calculate,
-            title: 'Farmakoloji Quiz',
-            subtitle: 'Çoktan seçmeli sorular hazır',
+            title: 'home.pharmacology_quiz'.tr(),
+            subtitle: 'home.pharmacology_desc'.tr(),
             progress: 0.0,
             color: AppColors.multipleChoice,
             isRecommended: true,
@@ -746,16 +749,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           const SizedBox(height: 16),
           _buildProgressItem(
             icon: Icons.medical_services,
-            title: 'Terminoloji Quiz',
-            subtitle: 'Boşluk doldurma soruları',
+            title: 'home.terminology_quiz'.tr(),
+            subtitle: 'home.terminology_desc'.tr(),
             progress: 0.0,
             color: AppColors.fillBlank,
           ),
           const SizedBox(height: 16),
           _buildProgressItem(
             icon: Icons.quiz,
-            title: 'Karma Quiz',
-            subtitle: 'Farklı soru tiplerini dene',
+            title: 'home.mixed_quiz'.tr(),
+            subtitle: 'home.mixed_desc'.tr(),
             progress: 0.0,
             color: AppColors.matching,
           ),
@@ -766,13 +769,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               onPressed: () {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: const Text('Tüm quizler özelliği yakında eklenecek!'),
+                    content: Text('home.all_quizzes_coming_soon'.tr()),
                     backgroundColor: AppColors.primary,
                   ),
                 );
               },
               icon: const Icon(Icons.arrow_forward, size: 16),
-              label: const Text('Tüm Quizleri Gör'),
+              label: Text('home.view_all_quizzes'.tr()),
               style: TextButton.styleFrom(
                 foregroundColor: AppColors.primary,
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
@@ -864,24 +867,76 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             ),
             const SizedBox(width: 20),
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Row(
                 children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
                           title,
                           style: AppTextStyles.bodyLarge.copyWith(
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                             fontSize: 16,
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                      ),
-                      if (isRecommended)
+                        const SizedBox(height: 6),
+                        Text(
+                          subtitle,
+                          style: AppTextStyles.bodyMedium.copyWith(
+                            color: Colors.white.withValues(alpha: 0.7),
+                            fontSize: 14,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Container(
+                                height: 6,
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.2),
+                                  borderRadius: BorderRadius.circular(3),
+                                ),
+                                child: FractionallySizedBox(
+                                  alignment: Alignment.centerLeft,
+                                  widthFactor: progress,
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        colors: [itemColor, itemColor.withValues(alpha: 0.8)],
+                                      ),
+                                      borderRadius: BorderRadius.circular(3),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Text(
+                              progress > 0 ? '${(progress * 100).toInt()}%' : 'home.start'.tr(),
+                              style: AppTextStyles.bodySmall.copyWith(
+                                color: itemColor,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Column(
+                    children: [
+                      if (isRecommended) ...[
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
                               colors: [itemColor, itemColor.withValues(alpha: 0.8)],
@@ -896,78 +951,36 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                             ],
                           ),
                           child: Text(
-                            '🌟 Önerilen',
+                            'home.recommended'.tr(),
                             style: AppTextStyles.bodySmall.copyWith(
                               color: Colors.white,
-                              fontSize: 11,
+                              fontSize: 10,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    subtitle,
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: Colors.white.withValues(alpha: 0.7),
-                      fontSize: 14,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Container(
-                          height: 6,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(3),
-                          ),
-                          child: FractionallySizedBox(
-                            alignment: Alignment.centerLeft,
-                            widthFactor: progress,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [itemColor, itemColor.withValues(alpha: 0.8)],
-                                ),
-                                borderRadius: BorderRadius.circular(3),
-                              ),
-                            ),
+                        const SizedBox(height: 8),
+                      ],
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: itemColor.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: itemColor.withValues(alpha: 0.3),
+                            width: 1,
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      Text(
-                        progress > 0 ? '${(progress * 100).toInt()}%' : 'Başla',
-                        style: AppTextStyles.bodySmall.copyWith(
+                        child: Icon(
+                          Icons.play_arrow_rounded,
                           color: itemColor,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13,
+                          size: 24,
                         ),
                       ),
                     ],
                   ),
                 ],
-              ),
-            ),
-            const SizedBox(width: 12),
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: itemColor.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: itemColor.withValues(alpha: 0.3),
-                  width: 1,
-                ),
-              ),
-              child: Icon(
-                Icons.play_arrow_rounded,
-                color: itemColor,
-                size: 24,
               ),
             ),
           ],
@@ -981,16 +994,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Çıkış Yap'),
-        content: const Text('Hesabınızdan çıkış yapmak istediğinizden emin misiniz?'),
+        title: Text('home.logout_confirm_title'.tr()),
+        content: Text('home.logout_confirm_message'.tr()),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('İptal'),
+            child: Text('home.cancel'.tr()),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Çıkış Yap'),
+            child: Text('home.logout'.tr()),
           ),
         ],
       ),

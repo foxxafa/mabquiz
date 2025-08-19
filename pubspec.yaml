@@ -46,6 +46,9 @@ dependencies:
   flutter_riverpod: ^2.4.9
   go_router: ^16.0.0
 
+  # Localization
+  easy_localization: ^3.0.7
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -76,6 +79,7 @@ flutter:
     - assets/questions/farmakoloji/
     - assets/questions/terminoloji/
     - assets/icons/
+    - assets/translations/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

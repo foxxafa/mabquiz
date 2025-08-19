@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mabquiz/src/features/shell/presentation/widgets/bottom_nav_bar.dart';
 
 /// MainShell, uygulamanın alt navigasyon çubuğunu içeren ana çerçevesidir.
 /// GoRouter'daki ShellRoute tarafından kullanılır.
-class MainShell extends StatelessWidget {
+class MainShell extends ConsumerWidget {
   final Widget child;
 
   const MainShell({super.key, required this.child});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       body: child, // Gelen sayfa içeriği burada gösterilir
       bottomNavigationBar: BottomNavBar(
