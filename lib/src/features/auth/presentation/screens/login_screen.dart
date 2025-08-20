@@ -252,6 +252,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
               ),
             ),
           ),
+          const SizedBox(height: 16),
+          // Hızlı giriş butonu
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: isLoading ? null : _handleQuickLogin,
+              icon: const Icon(Icons.flash_on, size: 20),
+              label: const Text('Hızlı Giriş (Test)'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF4F9CF9),
+                foregroundColor: Colors.white,
+                side: BorderSide(color: const Color(0xFF4F9CF9).withOpacity(0.3)),
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -290,6 +305,31 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(AuthErrorHandler.getErrorMessage(e)),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        ref.read(authLoadingProvider.notifier).state = false;
+      }
+    }
+  }
+
+  Future<void> _handleQuickLogin() async {
+    try {
+      ref.read(authLoadingProvider.notifier).state = true;
+      ref.read(authErrorProvider.notifier).state = null;
+
+      // Direkt ana sayfaya yönlendir
+      if (mounted) {
+        context.go('/home');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Hızlı giriş başarısız oldu'),
             backgroundColor: Colors.red,
           ),
         );
