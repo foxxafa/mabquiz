@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/theme.dart';
 import '../../../quiz/presentation/screens/quiz_screen.dart';
@@ -274,12 +275,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                       ),
                       isFullWidth: false,
                       onTap: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('home.course_selection_coming_soon'.tr()),
-                            backgroundColor: AppColors.primary,
-                          ),
-                        );
+                        context.go('/courses');
                       },
                     ),
                   ),

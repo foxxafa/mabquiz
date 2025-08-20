@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'app_colors.dart';
 
 class AppTextStyles {
-  // Başlıklar
+  // Başlıklar - Koyu tema uyumlu
   static const TextStyle h1 = TextStyle(
     fontSize: 32,
     fontWeight: FontWeight.bold,
@@ -31,7 +31,7 @@ class AppTextStyles {
     height: 1.3,
   );
 
-  // Body text
+  // Body text - Koyu tema uyumlu
   static const TextStyle bodyLarge = TextStyle(
     fontSize: 18,
     fontWeight: FontWeight.normal,
@@ -58,15 +58,17 @@ class AppTextStyles {
     fontSize: 16,
     fontWeight: FontWeight.w600,
     height: 1.2,
+    color: Colors.white, // Buton text'leri beyaz kalacak
   );
 
   static const TextStyle buttonTextLarge = TextStyle(
     fontSize: 18,
     fontWeight: FontWeight.w600,
     height: 1.2,
+    color: Colors.white,
   );
 
-  // Caption
+  // Caption - Koyu tema uyumlu
   static const TextStyle caption = TextStyle(
     fontSize: 12,
     fontWeight: FontWeight.normal,
@@ -74,7 +76,7 @@ class AppTextStyles {
     height: 1.3,
   );
 
-  // Quiz specific
+  // Quiz specific - Koyu tema uyumlu
   static const TextStyle questionText = TextStyle(
     fontSize: 20,
     fontWeight: FontWeight.w600,
@@ -94,5 +96,6 @@ class AppTextStyles {
     fontSize: 12,
     fontWeight: FontWeight.w500,
     height: 1.2,
+    color: Colors.white, // Nav label'lar beyaz kalacak
   );
 }

@@ -62,7 +62,7 @@ class BottomNavBar extends ConsumerWidget {
               ),
               _buildNavItem(
                 context,
-                icon: Icons.quiz_rounded,
+                icon: Icons.school_rounded,
                 label: 'courses'.tr(),
                 index: 1,
                 isSelected: currentIndex == 1,

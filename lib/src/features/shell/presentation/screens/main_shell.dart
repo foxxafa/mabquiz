@@ -27,7 +27,7 @@ class MainShell extends ConsumerWidget {
     if (location.startsWith('/home')) {
       return 0;
     }
-    if (location.startsWith('/subjects')) {
+    if (location.startsWith('/courses') || location.startsWith('/subjects')) {
       return 1;
     }
     if (location.startsWith('/analysis')) {
@@ -46,7 +46,7 @@ class MainShell extends ConsumerWidget {
         GoRouter.of(context).go('/home');
         break;
       case 1:
-        GoRouter.of(context).go('/subjects');
+        GoRouter.of(context).go('/courses');
         break;
       case 2:
         GoRouter.of(context).go('/analysis');

@@ -9,6 +9,7 @@ import 'package:mabquiz/src/features/quiz/presentation/screens/api_test_screen.d
 import 'package:mabquiz/src/features/home/presentation/screens/home_screen.dart';
 import 'package:mabquiz/src/features/settings/presentation/screens/settings_screen.dart';
 import 'package:mabquiz/src/features/analysis/presentation/screens/analysis_screen.dart';
+import 'package:mabquiz/src/features/courses/presentation/screens/courses_screen.dart';
 import 'package:mabquiz/src/features/shell/presentation/screens/main_shell.dart';
 
 // Navigator key'leri, yönlendirme (routing) durumunu yönetmek için kullanılır.
@@ -52,6 +53,10 @@ final appRouterProvider = GoRouter(
         GoRoute(
           path: '/subjects',
           builder: (context, state) => const SubjectSelectionScreen(),
+        ),
+        GoRoute(
+          path: '/courses',
+          builder: (context, state) => const CoursesScreen(),
         ),
         GoRoute(
           path: '/analysis',
