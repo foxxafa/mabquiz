@@ -121,11 +121,11 @@ class _LanguageOption extends ConsumerWidget {
         border: Border.all(
           color: isSelected 
               ? theme.colorScheme.primary 
-              : theme.colorScheme.outline.withOpacity(0.3),
+              : theme.colorScheme.outline.withValues(alpha: 0.3),
           width: isSelected ? 2 : 1,
         ),
         color: isSelected 
-            ? theme.colorScheme.primary.withOpacity(0.1)
+            ? theme.colorScheme.primary.withValues(alpha: 0.1)
             : Colors.transparent,
       ),
       child: ListTile(
@@ -145,8 +145,8 @@ class _LanguageOption extends ConsumerWidget {
           language.countryCode,
           style: theme.textTheme.bodySmall?.copyWith(
             color: isSelected 
-                ? theme.colorScheme.primary.withOpacity(0.8) 
-                : theme.colorScheme.onSurface.withOpacity(0.6),
+                ? theme.colorScheme.primary.withValues(alpha: 0.8) 
+                : theme.colorScheme.onSurface.withValues(alpha: 0.6),
           ),
         ),
         trailing: isSelected

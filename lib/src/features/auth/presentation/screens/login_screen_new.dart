@@ -285,7 +285,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     } catch (e) {
       ref.read(authErrorProvider.notifier).state = e.toString();
 
-      if (context.mounted) {
+      if (mounted) {
         AuthErrorDialog.show(
           context,
           title: 'Giriş Hatası',

@@ -263,7 +263,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF4F9CF9),
                 foregroundColor: Colors.white,
-                side: BorderSide(color: const Color(0xFF4F9CF9).withOpacity(0.3)),
+                side: BorderSide(color: const Color(0xFF4F9CF9).withValues(alpha: 0.3)),
               ),
             ),
           ),

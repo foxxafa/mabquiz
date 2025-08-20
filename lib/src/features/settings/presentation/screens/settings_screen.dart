@@ -61,7 +61,7 @@ class SettingsScreen extends ConsumerWidget {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.1),
+                      color: Colors.white.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: const Icon(
@@ -121,15 +121,15 @@ class SettingsScreen extends ConsumerWidget {
     switch (title) {
       case 'Görünüm':
         iconColor = const Color(0xFF4F9CF9); // Mavi
-        backgroundColor = const Color(0xFF4F9CF9).withOpacity(0.1);
+        backgroundColor = const Color(0xFF4F9CF9).withValues(alpha: 0.1);
         break;
       case 'Dil ve Bölge':
         iconColor = const Color(0xFF58CC02); // Yeşil
-        backgroundColor = const Color(0xFF58CC02).withOpacity(0.1);
+        backgroundColor = const Color(0xFF58CC02).withValues(alpha: 0.1);
         break;
-      case 'Hesap':
+      case 'Gizlilik ve Güvenlik':
         iconColor = const Color(0xFFFF9600); // Turuncu
-        backgroundColor = const Color(0xFFFF9600).withOpacity(0.1);
+        backgroundColor = const Color(0xFFFF9600).withValues(alpha: 0.1);
         break;
       default:
         iconColor = Colors.white;
@@ -245,7 +245,7 @@ class SettingsScreen extends ConsumerWidget {
           boxShadow: [
             if (!isDark)
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withValues(alpha: 0.05),
                 offset: const Offset(0, 2),
                 blurRadius: 8,
                 spreadRadius: 0,
@@ -260,7 +260,7 @@ class SettingsScreen extends ConsumerWidget {
               decoration: BoxDecoration(
                 color: isSelected 
                     ? color
-                    : color.withOpacity(0.1),
+                    : color.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(

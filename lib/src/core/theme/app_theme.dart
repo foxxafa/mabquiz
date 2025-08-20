@@ -79,11 +79,9 @@ class AppTheme {
         primary: Color(0xFF4F9CF9),
         secondary: Color(0xFF2E5EAA),
         surface: Color(0xFF1E1E1E),
-        background: Color(0xFF121212),
         onPrimary: Colors.white,
         onSecondary: Colors.white,
         onSurface: Colors.white,
-        onBackground: Colors.white,
       ),
       scaffoldBackgroundColor: const Color(0xFF121212),
       appBarTheme: const AppBarTheme(
