@@ -46,15 +46,48 @@ app.include_router(auth_router)
 
 @app.on_event("startup")
 async def on_startup():
-    # Auto-create tables if not exist (development convenience)
-    async with async_engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+    """Application startup tasks"""
+    environment = os.getenv("RAILWAY_ENVIRONMENT_NAME", "development")
+    
+    if environment == "development":
+        # Auto-create tables in development
+        print("🔧 Development mode: Auto-creating tables...")
+        async with async_engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+        print("✅ Tables created/verified")
+    else:
+        # In production, just verify connection
+        print("🚀 Production mode: Verifying database connection...")
+        try:
+            async with async_engine.begin() as conn:
+                await conn.execute("SELECT 1")
+            print("✅ Database connection verified")
+        except Exception as e:
+            print(f"❌ Database connection failed: {e}")
+            raise
 
 @app.get("/health")
 async def health():
+    from .cache.redis_manager import redis_manager
+    
+    # Check Redis connection
+    redis_status = "connected" if redis_manager.health_check() else "disconnected"
+    
+    # Check database connection
+    db_status = "unknown"
+    try:
+        async with async_engine.begin() as conn:
+            await conn.execute("SELECT 1")
+        db_status = "connected"
+    except Exception:
+        db_status = "disconnected"
+    
     return {
         "status": "ok",
         "version": "1.0.0",
         "environment": os.getenv("RAILWAY_ENVIRONMENT_NAME", "development"),
-        "service": os.getenv("RAILWAY_SERVICE_NAME", "mabquiz-backend")
+        "service": os.getenv("RAILWAY_SERVICE_NAME", "mabquiz-backend"),
+        "database": db_status,
+        "redis": redis_status,
+        "timestamp": os.popen("date").read().strip()
     }
