@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/theme.dart';
 import '../../../quiz/presentation/screens/quiz_screen.dart';
@@ -405,12 +406,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                   colors: [Color(0xFFf093fb), Color(0xFFf5576c)],
                 ),
                 onTap: () {
-                  // TODO: Analytics ekranına yönlendir
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Analiz özelliği yakında eklenecek!'),
-                    ),
-                  );
+                  context.push('/analysis');
                 },
               ),
             ),
