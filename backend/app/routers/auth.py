@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from sqlalchemy.orm import Session
-from sqlalchemy import create_engine
+from sqlalchemy.ext.asyncio import AsyncSession
 from ..models.user import UserCreate, UserLogin, UserResponse, UserDB, GoogleAuthData
 from ..auth.jwt_handler import create_access_token, verify_token
 from ..auth.password_utils import hash_password, verify_password
+from ..db import get_session
 import uuid
 import os
 from datetime import datetime
@@ -15,25 +15,14 @@ from ..cache.redis_manager import redis_manager
 router = APIRouter(prefix="/auth", tags=["authentication"])
 security = HTTPBearer()
 
-# Database setup (will be moved to proper config later)
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./auth.db")
-engine = create_engine(DATABASE_URL)
-
-def get_db():
-    from sqlalchemy.orm import sessionmaker
-    SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
 @router.post("/register", response_model=UserResponse)
-async def register(user_data: UserCreate, db: Session = Depends(get_db)):
+async def register(user_data: UserCreate, db: AsyncSession = Depends(get_session)):
     """Register new user"""
     
     # Check if user already exists
-    existing_user = db.query(UserDB).filter(UserDB.email == user_data.email).first()
+    from sqlalchemy import select
+    result = await db.execute(select(UserDB).filter(UserDB.email == user_data.email))
+    existing_user = result.scalar_one_or_none()
     if existing_user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -56,8 +45,8 @@ async def register(user_data: UserCreate, db: Session = Depends(get_db)):
     )
     
     db.add(db_user)
-    db.commit()
-    db.refresh(db_user)
+    await db.commit()
+    await db.refresh(db_user)
     
     return UserResponse(
         uid=db_user.uid,
@@ -67,11 +56,13 @@ async def register(user_data: UserCreate, db: Session = Depends(get_db)):
     )
 
 @router.post("/login")
-async def login(login_data: UserLogin, db: Session = Depends(get_db)):
+async def login(login_data: UserLogin, db: AsyncSession = Depends(get_session)):
     """Login user and return JWT token"""
     
     # Find user by email
-    user = db.query(UserDB).filter(UserDB.email == login_data.email).first()
+    from sqlalchemy import select
+    result = await db.execute(select(UserDB).filter(UserDB.email == login_data.email))
+    user = result.scalar_one_or_none()
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -114,7 +105,7 @@ async def login(login_data: UserLogin, db: Session = Depends(get_db)):
     }
 
 @router.post("/google")
-async def google_auth(auth_data: GoogleAuthData, db: Session = Depends(get_db)):
+async def google_auth(auth_data: GoogleAuthData, db: AsyncSession = Depends(get_session)):
     """Authenticate with Google OAuth"""
     
     try:
@@ -130,7 +121,9 @@ async def google_auth(auth_data: GoogleAuthData, db: Session = Depends(get_db)):
         name = idinfo.get('name', '')
         
         # Check if user exists
-        user = db.query(UserDB).filter(UserDB.email == email).first()
+        from sqlalchemy import select
+        result = await db.execute(select(UserDB).filter(UserDB.email == email))
+        user = result.scalar_one_or_none()
         
         if not user:
             # Create new user
@@ -143,8 +136,8 @@ async def google_auth(auth_data: GoogleAuthData, db: Session = Depends(get_db)):
                 email_verified=True
             )
             db.add(user)
-            db.commit()
-            db.refresh(user)
+            await db.commit()
+            await db.refresh(user)
         
         # Create access token
         token_data = {
@@ -174,7 +167,7 @@ async def google_auth(auth_data: GoogleAuthData, db: Session = Depends(get_db)):
 @router.get("/me", response_model=UserResponse)
 async def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_session)
 ):
     """Get current user info"""
     
@@ -187,7 +180,9 @@ async def get_current_user(
         )
     
     # Get user from database
-    user = db.query(UserDB).filter(UserDB.uid == payload.get("uid")).first()
+    from sqlalchemy import select
+    result = await db.execute(select(UserDB).filter(UserDB.uid == payload.get("uid")))
+    user = result.scalar_one_or_none()
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
