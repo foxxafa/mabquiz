@@ -3,20 +3,24 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/config/config_providers.dart';
 import '../data/auth_repository.dart';
 import '../data/mock_auth_repository.dart';
+import '../data/railway_auth_repository.dart';
 import '../data/models/app_user.dart';
 import 'auth_service.dart';
 
 /// Provider for the auth repository implementation
 ///
-/// Currently uses MockAuthRepository for development
-/// based on the application configuration:
-/// - Mock: MockAuthRepository for development and testing
+/// Uses Railway backend for production and mock for development
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   final authConfig = ref.watch(authConfigProvider);
-  // Firebase kaldırıldığı için şimdilik MockAuthRepository tek kaynak
-  return MockAuthRepository(
-    simulatedDelay: Duration(milliseconds: authConfig.mockAuthDelay),
-  );
+  
+  // Production'da Railway, development'ta Mock kullan
+  if (authConfig.useProduction) {
+    return RailwayAuthRepository();
+  } else {
+    return MockAuthRepository(
+      simulatedDelay: Duration(milliseconds: authConfig.mockAuthDelay),
+    );
+  }
 });
 
 /// Provider for the auth service facade

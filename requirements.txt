@@ -2,5 +2,10 @@ fastapi==0.115.0
 uvicorn[standard]==0.30.0
 sqlalchemy==2.0.32
 aiomysql==0.2.0
-pydantic==2.8.2
+pydantic[email]==2.8.2
 python-multipart==0.0.9
+pyjwt==2.8.0
+bcrypt==4.1.2
+google-auth==2.28.1
+redis==5.0.1
+psycopg2-binary==2.9.9

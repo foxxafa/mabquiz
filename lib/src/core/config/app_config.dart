@@ -80,14 +80,17 @@ class AuthConfig {
     );
   }
 
-  /// Production configuration with mock auth for now
+  /// Production configuration with Railway auth
   factory AuthConfig.production() {
     return AuthConfig(
-      useMockAuth: true, // Use mock auth for now
+      useMockAuth: false, // Use Railway auth in production
       mockAuthDelay: 0,
       enablePersistence: true,
     );
   }
+  
+  /// Helper getter for production check
+  bool get useProduction => !useMockAuth;
 }
 
 /// Quiz-specific configuration

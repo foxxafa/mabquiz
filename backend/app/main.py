@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import create_async_engine
 
 from .routers import router
 from .routers.difficulty import router as difficulty_router
+from .routers.auth import router as auth_router
 from .models import Base
 from .db import async_engine
 
@@ -41,6 +42,7 @@ app.add_middleware(
 # Register routes
 app.include_router(router)
 app.include_router(difficulty_router)
+app.include_router(auth_router)
 
 @app.on_event("startup")
 async def on_startup():

@@ -300,7 +300,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
   }
 
   Future<void> _handleGoogleLogin() async {
-    // TODO: Google Sign-In implementasyonu
+    // Google Sign-In functionality will be implemented later
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Google ile giriş yakında eklenecek'),
