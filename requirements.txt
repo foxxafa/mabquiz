@@ -2,6 +2,7 @@ fastapi==0.115.0
 uvicorn[standard]==0.30.0
 sqlalchemy==2.0.32
 aiomysql==0.2.0
+aiosqlite==0.20.0
 pydantic[email]==2.8.2
 python-multipart==0.0.9
 pyjwt==2.8.0

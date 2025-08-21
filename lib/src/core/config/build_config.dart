@@ -18,7 +18,8 @@ class BuildConfig {
     if (_environmentOverride.isNotEmpty) {
       return _environmentOverride;
     }
-    return kDebugMode ? 'development' : 'production';
+    // Always use production for Railway backend
+    return 'production';
   }
 
   /// Check if mock auth should be forced

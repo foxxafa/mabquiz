@@ -8,8 +8,8 @@ from sqlalchemy.orm import sessionmaker, Session
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 if not DATABASE_URL:
-    # Development fallback
-    DATABASE_URL = "mysql+aiomysql://root:password@localhost:3306/mabquiz"
+    # SQLite fallback for Railway deployment
+    DATABASE_URL = "sqlite+aiosqlite:///./app.db"
 elif DATABASE_URL.startswith("postgres://"):
     # Railway PostgreSQL URL fix
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
