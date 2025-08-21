@@ -12,14 +12,24 @@ class AppUser {
     this.emailVerified = false,
   });
 
-  /// Creates an AppUser from Firebase User
-  factory AppUser.fromFirebaseUser(dynamic firebaseUser) {
+  /// Creates an AppUser from API response
+  factory AppUser.fromJson(Map<String, dynamic> json) {
     return AppUser(
-      uid: firebaseUser.uid,
-      email: firebaseUser.email,
-      displayName: firebaseUser.displayName,
-      emailVerified: firebaseUser.emailVerified ?? false,
+      uid: json['uid'] ?? '',
+      email: json['email'],
+      displayName: json['displayName'],
+      emailVerified: json['emailVerified'] ?? false,
     );
+  }
+  
+  /// Convert to JSON
+  Map<String, dynamic> toJson() {
+    return {
+      'uid': uid,
+      'email': email,
+      'displayName': displayName,
+      'emailVerified': emailVerified,
+    };
   }
 
   /// Creates a copy of this user with updated fields

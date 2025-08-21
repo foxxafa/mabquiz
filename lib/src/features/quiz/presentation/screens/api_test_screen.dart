@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../application/providers.dart';
+import '../../../../core/config/api_config.dart';
 
 /// API bağlantısını test etmek için basit ekran
 class ApiTestScreen extends ConsumerWidget {
@@ -64,11 +65,26 @@ class ApiTestScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'Heroku backend ile bağlantıyı test ediyoruz',
+            'Backend bağlantısını test ediyoruz',
             style: theme.textTheme.bodyMedium?.copyWith(
               color: Colors.white.withValues(alpha: 0.9),
             ),
             textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              'Platform: ${ApiConfig.environmentInfo['platform']}',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: Colors.white,
+                fontFamily: 'monospace',
+              ),
+            ),
           ),
         ],
       ),

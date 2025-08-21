@@ -6,7 +6,8 @@ import '../domain/entities/question.dart';
 /// Uses Thompson Sampling algorithm to balance exploration vs exploitation
 /// for optimal learning experience
 class BanditManager {
-  final Map<String, BanditArm> _arms = {};
+  final Map<String, BanditArm> _questionArms = {};
+  final Map<String, TopicArm> _topicArms = {};
   final Random _random = Random();
 
   /// Minimum number of attempts before algorithm becomes confident
@@ -23,11 +24,20 @@ class BanditManager {
   /// Initialize bandit arms for a set of questions
   void initializeQuestions(List<Question> questions) {
     for (final question in questions) {
-      _arms[question.id] = BanditArm(
+      _questionArms[question.id] = BanditArm(
         questionId: question.id,
         difficulty: question.difficulty,
         initialConfidence: question.initialConfidence,
       );
+      
+      // Initialize topic-level arms
+      final topicKey = question.mabKey;
+      _topicArms.putIfAbsent(topicKey, () => TopicArm(
+        topicKey: topicKey,
+        topic: question.topic,
+        knowledgeType: question.knowledgeType,
+        course: question.course,
+      ));
     }
   }
 
@@ -37,30 +47,25 @@ class BanditManager {
 
     // Ensure all questions are initialized
     for (final question in availableQuestions) {
-      if (!_arms.containsKey(question.id)) {
-        _arms[question.id] = BanditArm(
+      if (!_questionArms.containsKey(question.id)) {
+        _questionArms[question.id] = BanditArm(
           questionId: question.id,
           difficulty: question.difficulty,
           initialConfidence: question.initialConfidence,
         );
+        
+        final topicKey = question.mabKey;
+        _topicArms.putIfAbsent(topicKey, () => TopicArm(
+          topicKey: topicKey,
+          topic: question.topic,
+          knowledgeType: question.knowledgeType,
+          course: question.course,
+        ));
       }
     }
 
-    // Thompson Sampling: sample from Beta distribution for each arm
-    String? bestQuestionId;
-    double bestSample = -1;
-
-    for (final question in availableQuestions) {
-      final arm = _arms[question.id]!;
-      final sample = _sampleFromBeta(arm.alpha, arm.beta);
-
-      if (sample > bestSample) {
-        bestSample = sample;
-        bestQuestionId = question.id;
-      }
-    }
-
-    return availableQuestions.firstWhere((q) => q.id == bestQuestionId);
+    // Enhanced Thompson Sampling with topic-awareness
+    return _selectQuestionWithTopicAwareness(availableQuestions);
   }
 
   /// Update bandit statistics based on user performance
@@ -69,11 +74,12 @@ class BanditManager {
     required bool isCorrect,
     required Duration responseTime,
     double? confidence,
+    Question? question,
   }) {
-    final arm = _arms[questionId];
+    final arm = _questionArms[questionId];
     if (arm == null) return;
 
-    // Update success/failure counts
+    // Update question-level statistics
     if (isCorrect) {
       arm.successes++;
     } else {
@@ -83,18 +89,21 @@ class BanditManager {
     arm.attempts++;
     arm.totalResponseTime += responseTime.inMilliseconds;
 
-    // Update confidence based on response time and correctness
     if (confidence != null) {
       arm.userConfidence = confidence;
     }
 
-    // Adaptive learning: adjust parameters based on performance
     _updateArmParameters(arm, isCorrect, responseTime);
+    
+    // Update topic-level statistics
+    if (question != null) {
+      _updateTopicPerformance(question, isCorrect, responseTime);
+    }
   }
 
   /// Get current statistics for a question
   QuestionStats? getQuestionStats(String questionId) {
-    final arm = _arms[questionId];
+    final arm = _questionArms[questionId];
     if (arm == null) return null;
 
     return QuestionStats(
@@ -108,6 +117,26 @@ class BanditManager {
       successRate: arm.attempts > 0 ? arm.successes / arm.attempts : 0.0,
       confidence: _calculateConfidence(arm),
       difficulty: arm.difficulty,
+    );
+  }
+  
+  /// Get topic-level statistics
+  TopicStats? getTopicStats(String topicKey) {
+    final arm = _topicArms[topicKey];
+    if (arm == null) return null;
+
+    return TopicStats(
+      topicKey: topicKey,
+      topic: arm.topic,
+      knowledgeType: arm.knowledgeType,
+      attempts: arm.attempts,
+      successes: arm.successes,
+      failures: arm.failures,
+      averageResponseTime: arm.attempts > 0
+          ? Duration(milliseconds: arm.totalResponseTime ~/ arm.attempts)
+          : Duration.zero,
+      successRate: arm.attempts > 0 ? arm.successes / arm.attempts : 0.0,
+      confidence: _calculateTopicConfidence(arm),
     );
   }
 
@@ -126,16 +155,18 @@ class BanditManager {
     }).toList();
 
     sortedQuestions.sort((a, b) {
-      final armA = _arms[a.id];
-      final armB = _arms[b.id];
+      final armA = _questionArms[a.id];
+      final armB = _questionArms[b.id];
+      final topicA = _topicArms[a.mabKey];
+      final topicB = _topicArms[b.mabKey];
 
       if (armA == null && armB == null) return 0;
       if (armA == null) return 1;
       if (armB == null) return -1;
 
-      // Prioritize questions with lower confidence or high error rate
-      final priorityA = _calculateLearningPriority(armA);
-      final priorityB = _calculateLearningPriority(armB);
+      // Combined priority: question-level + topic-level
+      final priorityA = _calculateCombinedPriority(armA, topicA);
+      final priorityB = _calculateCombinedPriority(armB, topicB);
 
       return priorityB.compareTo(priorityA); // Higher priority first
     });
@@ -149,21 +180,21 @@ class BanditManager {
     int totalSuccesses = 0;
     Duration totalTime = Duration.zero;
 
-    for (final arm in _arms.values) {
+    for (final arm in _questionArms.values) {
       totalAttempts += arm.attempts;
       totalSuccesses += arm.successes;
       totalTime += Duration(milliseconds: arm.totalResponseTime);
     }
 
     return LearningStats(
-      totalQuestions: _arms.length,
+      totalQuestions: _questionArms.length,
       totalAttempts: totalAttempts,
       totalSuccesses: totalSuccesses,
       overallSuccessRate: totalAttempts > 0 ? totalSuccesses / totalAttempts : 0.0,
       averageResponseTime: totalAttempts > 0
           ? Duration(milliseconds: totalTime.inMilliseconds ~/ totalAttempts)
           : Duration.zero,
-      questionsAttempted: _arms.values.where((arm) => arm.attempts > 0).length,
+      questionsAttempted: _questionArms.values.where((arm) => arm.attempts > 0).length,
     );
   }
 
@@ -292,6 +323,146 @@ class BanditManager {
 
     return (errorRate * 0.4) + (uncertainty * 0.4) + (exploration * 0.2);
   }
+
+  // New methods for topic-aware MAB
+  
+  Question? _selectQuestionWithTopicAwareness(List<Question> availableQuestions) {
+    // Group questions by topic
+    final topicGroups = <String, List<Question>>{};
+    for (final question in availableQuestions) {
+      topicGroups.putIfAbsent(question.mabKey, () => []).add(question);
+    }
+
+    // Select topic first using Thompson Sampling
+    String? bestTopicKey;
+    double bestTopicSample = -1;
+
+    for (final topicKey in topicGroups.keys) {
+      final topicArm = _topicArms[topicKey];
+      if (topicArm == null) continue;
+
+      final sample = _sampleFromBeta(topicArm.alpha, topicArm.beta);
+      if (sample > bestTopicSample) {
+        bestTopicSample = sample;
+        bestTopicKey = topicKey;
+      }
+    }
+
+    if (bestTopicKey == null) {
+      return availableQuestions.first;
+    }
+
+    // Select best question from chosen topic
+    final topicQuestions = topicGroups[bestTopicKey]!;
+    String? bestQuestionId;
+    double bestQuestionSample = -1;
+
+    for (final question in topicQuestions) {
+      final arm = _questionArms[question.id]!;
+      final sample = _sampleFromBeta(arm.alpha, arm.beta);
+
+      if (sample > bestQuestionSample) {
+        bestQuestionSample = sample;
+        bestQuestionId = question.id;
+      }
+    }
+
+    return topicQuestions.firstWhere((q) => q.id == bestQuestionId);
+  }
+
+  void _updateTopicPerformance(Question question, bool isCorrect, Duration responseTime) {
+    final topicArm = _topicArms[question.mabKey];
+    if (topicArm == null) return;
+
+    if (isCorrect) {
+      topicArm.successes++;
+      topicArm.alpha += 1;
+    } else {
+      topicArm.failures++;
+      topicArm.beta += 1;
+    }
+
+    topicArm.attempts++;
+    topicArm.totalResponseTime += responseTime.inMilliseconds;
+  }
+
+  double _calculateTopicConfidence(TopicArm arm) {
+    if (arm.attempts < minAttempts) {
+      return 0.5;
+    }
+
+    final successRate = arm.successes / arm.attempts;
+    final n = arm.attempts.toDouble();
+    final z = 1.96;
+
+    final center = successRate + z * z / (2 * n);
+    final margin = z * sqrt((successRate * (1 - successRate) + z * z / (4 * n)) / n);
+    final denominator = 1 + z * z / n;
+
+    return (center - margin) / denominator;
+  }
+
+  double _calculateCombinedPriority(BanditArm questionArm, TopicArm? topicArm) {
+    final questionPriority = _calculateLearningPriority(questionArm);
+    
+    if (topicArm == null) return questionPriority;
+    
+    final topicPriority = topicArm.attempts == 0 
+        ? 1.0 
+        : (1.0 - (topicArm.successes / topicArm.attempts)) * 0.6;
+    
+    return (questionPriority * 0.7) + (topicPriority * 0.3);
+  }
+
+  LearningInsights _calculateRealLearningInsights() {
+    if (_topicArms.isEmpty) {
+      return LearningInsights(
+        bestCategory: 'Henüz veri yok',
+        improvementArea: 'Daha fazla soru çözün',
+        recommendedDifficulty: 'intermediate',
+        overallProgress: 0.0,
+      );
+    }
+
+    // Find best and worst performing topics
+    TopicArm? bestTopic;
+    TopicArm? worstTopic;
+    double bestRate = -1;
+    double worstRate = 2;
+    double totalProgress = 0;
+    int totalAttempts = 0;
+
+    for (final arm in _topicArms.values) {
+      if (arm.attempts < 3) continue; // Need minimum attempts
+
+      final rate = arm.successes / arm.attempts;
+      if (rate > bestRate) {
+        bestRate = rate;
+        bestTopic = arm;
+      }
+      if (rate < worstRate) {
+        worstRate = rate;
+        worstTopic = arm;
+      }
+      
+      totalProgress += rate;
+      totalAttempts++;
+    }
+
+    return LearningInsights(
+      bestCategory: bestTopic?.topic ?? 'Henüz belirlenmedi',
+      improvementArea: worstTopic?.topic ?? 'Daha fazla pratik',
+      recommendedDifficulty: _getRecommendedDifficulty(),
+      overallProgress: totalAttempts > 0 ? (totalProgress / totalAttempts) * 100 : 0.0,
+    );
+  }
+
+  String _getRecommendedDifficulty() {
+    final overallStats = getOverallStats();
+    if (overallStats.overallSuccessRate > 0.8) return 'advanced';
+    if (overallStats.overallSuccessRate > 0.6) return 'intermediate';
+    return 'beginner';
+  }
 }
 
 /// Represents a single arm in the multi-armed bandit
@@ -318,6 +489,30 @@ class BanditArm {
   }
 }
 
+/// Represents a topic-level arm for hierarchical MAB
+class TopicArm {
+  final String topicKey;
+  final String topic;
+  final String knowledgeType;
+  final String course;
+
+  int attempts = 0;
+  int successes = 0;
+  int failures = 0;
+  int totalResponseTime = 0;
+
+  // Beta distribution parameters for Thompson Sampling
+  double alpha = 1.0;
+  double beta = 1.0;
+
+  TopicArm({
+    required this.topicKey,
+    required this.topic,
+    required this.knowledgeType,
+    required this.course,
+  });
+}
+
 /// Statistics for a specific question
 class QuestionStats {
   final String questionId;
@@ -338,6 +533,31 @@ class QuestionStats {
     required this.successRate,
     required this.confidence,
     required this.difficulty,
+  });
+}
+
+/// Statistics for a specific topic
+class TopicStats {
+  final String topicKey;
+  final String topic;
+  final String knowledgeType;
+  final int attempts;
+  final int successes;
+  final int failures;
+  final Duration averageResponseTime;
+  final double successRate;
+  final double confidence;
+
+  const TopicStats({
+    required this.topicKey,
+    required this.topic,
+    required this.knowledgeType,
+    required this.attempts,
+    required this.successes,
+    required this.failures,
+    required this.averageResponseTime,
+    required this.successRate,
+    required this.confidence,
   });
 }
 
@@ -380,12 +600,7 @@ extension BanditManagerExtensions on BanditManager {
 
   /// Get comprehensive learning insights
   LearningInsights getLearningInsights() {
-    return LearningInsights(
-      bestCategory: 'Matematik',
-      improvementArea: 'Temel Kavramlar',
-      recommendedDifficulty: 'Orta',
-      overallProgress: 0.0,
-    );
+    return _calculateRealLearningInsights();
   }
 }
 

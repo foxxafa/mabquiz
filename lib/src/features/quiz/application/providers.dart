@@ -11,6 +11,7 @@ import '../data/repositories/mock_quiz_repository.dart';
 import '../data/repositories/http_quiz_repository.dart';
 import '../data/repositories/quiz_repository.dart';
 import 'quiz_service.dart';
+import 'bandit_manager.dart';
 
 /// Provider for the quiz data source implementation
 ///
@@ -52,10 +53,10 @@ final quizRepositoryProvider = Provider<QuizRepository>((ref) {
 /// based on the current environment
 final quizServiceProvider = Provider<QuizService>((ref) {
   final repository = ref.watch(quizRepositoryProvider);
-  return QuizService(repository);
+  final banditManager = BanditManager();
+  return QuizService(repository, banditManager);
 });
 
-// Firebase konfigürasyonu kaldırıldı
 
 /// Stream provider for quiz session changes
 ///

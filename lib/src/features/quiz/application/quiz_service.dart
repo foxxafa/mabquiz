@@ -1,6 +1,7 @@
 import '../domain/entities/question.dart';
 import '../domain/entities/quiz_score.dart';
 import '../data/repositories/quiz_repository.dart';
+import 'bandit_manager.dart';
 
 /// Facade service for quiz operations
 ///
@@ -9,19 +10,21 @@ import '../data/repositories/quiz_repository.dart';
 /// It follows the Facade pattern to hide complexity from the UI layer.
 class QuizService {
   final QuizRepository _repository;
+  final BanditManager _banditManager;
 
-  const QuizService(this._repository);
+  const QuizService(this._repository, this._banditManager);
 
   /// Stream that emits quiz session changes
   Stream<QuizSessionData?> get quizSessionStream => _repository.quizSessionStream;
 
-  /// Get questions for a quiz session
+  /// Get questions for a quiz session using MAB algorithm
   ///
   /// Parameters:
   /// - [limit]: Number of questions to fetch (default: 10)
   /// - [subject]: Optional subject filter
   /// - [difficulty]: Optional difficulty filter
   /// - [excludeIds]: List of question IDs to exclude
+  /// - [useMAB]: Whether to use Multi-Armed Bandit algorithm (default: true)
   ///
   /// Returns a list of questions for the quiz session
   /// Throws [QuizServiceException] if the operation fails
@@ -30,16 +33,39 @@ class QuizService {
     String? subject,
     DifficultyLevel? difficulty,
     List<String>? excludeIds,
+    bool useMAB = true,
   }) async {
     try {
       _validateQuizParameters(limit: limit);
 
-      return await _repository.getRandomQuestions(
-        limit: limit,
+      // Get all available questions
+      final allQuestions = await _repository.getRandomQuestions(
+        limit: limit * 3, // Get more questions for MAB selection
         subject: subject,
         difficulty: difficulty,
         excludeIds: excludeIds,
       );
+
+      if (!useMAB || allQuestions.isEmpty) {
+        return allQuestions.take(limit).toList();
+      }
+
+      // Initialize MAB with available questions
+      _banditManager.initializeQuestions(allQuestions);
+
+      // Use MAB to select optimal questions
+      final selectedQuestions = <Question>[];
+      final availableQuestions = List<Question>.from(allQuestions);
+
+      for (int i = 0; i < limit && availableQuestions.isNotEmpty; i++) {
+        final selected = _banditManager.selectNextQuestion(availableQuestions);
+        if (selected != null) {
+          selectedQuestions.add(selected);
+          availableQuestions.remove(selected);
+        }
+      }
+
+      return selectedQuestions;
     } on QuizRepositoryException {
       rethrow;
     } catch (e) {
@@ -131,14 +157,21 @@ class QuizService {
     }
   }
 
-  /// Calculate quiz score based on answers
+  /// Calculate quiz score and update MAB performance
   ///
   /// Parameters:
   /// - [questions]: List of questions in the quiz
   /// - [answers]: Map of question ID to user's answer
+  /// - [responseTimes]: Map of question ID to response time
+  /// - [confidenceScores]: Map of question ID to user confidence
   ///
   /// Returns the calculated score information
-  QuizScore calculateScore(List<Question> questions, Map<String, String> answers) {
+  QuizScore calculateScore(
+    List<Question> questions, 
+    Map<String, String> answers, {
+    Map<String, Duration>? responseTimes,
+    Map<String, double>? confidenceScores,
+  }) {
     if (questions.isEmpty) {
       return QuizScore(
         totalQuestions: 0,
@@ -172,6 +205,18 @@ class QuizService {
         pointsEarned: isCorrect ? question.points : 0,
         maxPoints: question.points,
       ));
+
+      // Update MAB performance
+      final responseTime = responseTimes?[question.id] ?? Duration(seconds: 30);
+      final confidence = confidenceScores?[question.id];
+      
+      _banditManager.updatePerformance(
+        questionId: question.id,
+        isCorrect: isCorrect,
+        responseTime: responseTime,
+        confidence: confidence,
+        question: question,
+      );
     }
 
     final percentage = (correctAnswers / questions.length) * 100;
@@ -220,6 +265,53 @@ class QuizService {
         'invalid-question-id',
       );
     }
+  }
+
+  /// Get MAB-powered question recommendations
+  Future<List<Question>> getRecommendedQuestions({
+    required String subject,
+    int count = 5,
+    DifficultyLevel? targetDifficulty,
+  }) async {
+    try {
+      final allQuestions = await getQuestionsBySubject(subject);
+      _banditManager.initializeQuestions(allQuestions);
+      
+      return _banditManager.getRecommendedQuestions(
+        allQuestions,
+        count: count,
+        targetDifficulty: targetDifficulty,
+      );
+    } catch (e) {
+      throw QuizServiceException(
+        'Failed to get recommended questions: ${e.toString()}',
+        'get-recommendations-failed',
+      );
+    }
+  }
+
+  /// Get learning insights from MAB
+  LearningInsights getLearningInsights() {
+    return _banditManager.getLearningInsights();
+  }
+
+  /// Get topic-level performance statistics
+  Map<String, TopicStats> getTopicPerformance(List<Question> questions) {
+    final topicStats = <String, TopicStats>{};
+    
+    for (final question in questions) {
+      final stats = _banditManager.getTopicStats(question.mabKey);
+      if (stats != null) {
+        topicStats[question.mabKey] = stats;
+      }
+    }
+    
+    return topicStats;
+  }
+
+  /// Get overall learning statistics
+  LearningStats getLearningStatistics() {
+    return _banditManager.getOverallStats();
   }
 }
 

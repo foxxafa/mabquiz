@@ -47,6 +47,10 @@ class AssetQuestionLoader {
   /// Parse asset question JSON to Question entity
   static Question _parseAssetQuestion(Map<String, dynamic> json) {
     // Asset formatını domain entity formatına çevir
+    final course = json['course'] as String? ?? 'Unknown';
+    final topic = json['topic'] as String? ?? 'general';
+    final knowledgeType = json['knowledgeType'] as String? ?? 'general';
+    
     return Question(
       id: json['id'] as String,
       text: json['prompt'] as String? ?? json['text'] as String,
@@ -56,7 +60,11 @@ class AssetQuestionLoader {
       correctAnswer: json['correctAnswer'] as String,
       explanation: json['explanation'] as String? ?? '',
       tags: _parseTags(json),
-      subject: _parseSubject(json['course'] as String? ?? 'Unknown'),
+      subject: _parseSubject(course),
+      course: course,
+      topic: topic,
+      subtopic: json['subtopic'] as String?,
+      knowledgeType: knowledgeType,
       points: _calculatePoints(json),
     );
   }

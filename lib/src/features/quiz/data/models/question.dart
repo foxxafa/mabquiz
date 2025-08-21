@@ -15,6 +15,10 @@ class QuestionModel extends entities.Question {
     super.explanation,
     super.tags = const [],
     required super.subject,
+    required super.course,
+    required super.topic,
+    super.subtopic,
+    required super.knowledgeType,
     super.points = 10,
     super.initialConfidence = 0.5,
   });
@@ -31,6 +35,10 @@ class QuestionModel extends entities.Question {
       explanation: question.explanation,
       tags: question.tags,
       subject: question.subject,
+      course: question.course,
+      topic: question.topic,
+      subtopic: question.subtopic,
+      knowledgeType: question.knowledgeType,
       points: question.points,
       initialConfidence: question.initialConfidence,
     );
@@ -48,29 +56,38 @@ class QuestionModel extends entities.Question {
       explanation: explanation,
       tags: tags,
       subject: subject,
+      course: course,
+      topic: topic,
+      subtopic: subtopic,
+      knowledgeType: knowledgeType,
       points: points,
       initialConfidence: initialConfidence,
     );
   }
 
-  /// Create from JSON (for firebase/API integration)
+  /// Create from JSON (for API integration)
   factory QuestionModel.fromJson(Map<String, dynamic> json) {
+    final knowledgeType = json['knowledgeType']?.toString() ?? 'general';
+    
     return QuestionModel(
       id: json['id'] as String,
-      text: json['text'] as String,
-      type: entities.QuestionType.values.firstWhere(
-        (e) => e.name == json['type'],
-        orElse: () => entities.QuestionType.multipleChoice,
-      ),
-      difficulty: entities.DifficultyLevel.values.firstWhere(
-        (e) => e.name == json['difficulty'],
-        orElse: () => entities.DifficultyLevel.intermediate,
-      ),
+      text: json['prompt']?.toString() ?? json['text'] as String,
+      type: entities.QuestionType.fromJson(json['type']?.toString()),
+      difficulty: json['difficulty'] != null 
+        ? entities.DifficultyLevel.values.firstWhere(
+            (e) => e.name == json['difficulty'],
+            orElse: () => entities.DifficultyLevel.intermediate,
+          )
+        : entities.DifficultyLevel.fromKnowledgeType(knowledgeType),
       options: List<String>.from(json['options'] ?? []),
       correctAnswer: json['correctAnswer'] as String,
       explanation: json['explanation'] as String?,
-      tags: List<String>.from(json['tags'] ?? []),
-      subject: json['subject'] as String,
+      tags: List<String>.from(json['tags'] ?? json['metadata']?['tags'] ?? []),
+      subject: json['subject']?.toString() ?? json['course']?.toString() ?? '',
+      course: json['course']?.toString() ?? json['subject']?.toString() ?? '',
+      topic: json['topic']?.toString() ?? 'general',
+      subtopic: json['subtopic']?.toString(),
+      knowledgeType: knowledgeType,
       points: json['points'] as int? ?? 10,
       initialConfidence: json['initialConfidence'] as double? ?? 0.5,
     );

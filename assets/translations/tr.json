@@ -153,8 +153,5 @@
     "system_theme": "Sistem teması",
     "dark_theme": "Koyu tema",
     "developer_tools": "🛠️ Geliştirici Araçları",
-    "setup_firebase": "Firebase Yapısını Kur",
-    "setting_up_firebase": "Firebase Kuruluyor...",
-    "check_firebase_status": "Firebase Durumunu Kontrol Et",
     "debug_mode_only": "Bu butonlar sadece development modunda görünür."
 } 

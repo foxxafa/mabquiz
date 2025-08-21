@@ -49,6 +49,9 @@ dependencies:
   # Localization
   easy_localization: ^3.0.7
 
+  # File system access for MAB persistence
+  path_provider: ^2.1.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

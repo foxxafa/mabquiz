@@ -1,16 +1,41 @@
 /// Question types for the MAB quiz system
 enum QuestionType {
-  multipleChoice,
-  trueFalse,
-  fillInBlank,
-  matching,
+  multipleChoice('multiple_choice'),
+  trueFalse('true_false'),
+  fillInBlank('fill_in_blank'),
+  matching('match_text_text');
+
+  const QuestionType(this.jsonValue);
+  final String jsonValue;
+
+  static QuestionType fromJson(String? value) {
+    return QuestionType.values.firstWhere(
+      (e) => e.jsonValue == value || e.name == value,
+      orElse: () => QuestionType.multipleChoice,
+    );
+  }
 }
 
 /// Difficulty levels for questions
 enum DifficultyLevel {
   beginner,
   intermediate,
-  advanced,
+  advanced;
+
+  static DifficultyLevel fromKnowledgeType(String knowledgeType) {
+    switch (knowledgeType.toLowerCase()) {
+      case 'terminology':
+        return DifficultyLevel.beginner;
+      case 'dosage':
+      case 'side_effect':
+        return DifficultyLevel.intermediate;
+      case 'pharmacodynamics':
+      case 'pharmacokinetics':
+        return DifficultyLevel.advanced;
+      default:
+        return DifficultyLevel.intermediate;
+    }
+  }
 }
 
 /// A single question in the quiz system - Domain Entity
@@ -29,6 +54,12 @@ class Question {
   final String subject;
   final int points;
 
+  // Enhanced metadata for MAB
+  final String course;
+  final String topic;
+  final String? subtopic;
+  final String knowledgeType;
+
   /// For tracking bandit algorithm performance
   final double initialConfidence;
 
@@ -43,6 +74,10 @@ class Question {
     this.tags = const [],
     required this.subject,
     this.points = 10,
+    required this.course,
+    required this.topic,
+    this.subtopic,
+    required this.knowledgeType,
     this.initialConfidence = 0.5,
   });
 
@@ -72,6 +107,10 @@ class Question {
     List<String>? tags,
     String? subject,
     int? points,
+    String? course,
+    String? topic,
+    String? subtopic,
+    String? knowledgeType,
     double? initialConfidence,
   }) {
     return Question(
@@ -85,6 +124,10 @@ class Question {
       tags: tags ?? this.tags,
       subject: subject ?? this.subject,
       points: points ?? this.points,
+      course: course ?? this.course,
+      topic: topic ?? this.topic,
+      subtopic: subtopic ?? this.subtopic,
+      knowledgeType: knowledgeType ?? this.knowledgeType,
       initialConfidence: initialConfidence ?? this.initialConfidence,
     );
   }
@@ -96,22 +139,27 @@ class Question {
 
   /// Create a Question from JSON data
   factory Question.fromJson(Map<String, dynamic> json) {
+    final knowledgeType = json['knowledgeType']?.toString() ?? 'general';
+    
     return Question(
       id: json['id']?.toString() ?? '',
-      text: json['text']?.toString() ?? '',
-      type: QuestionType.values.firstWhere(
-        (e) => e.name == json['type'],
-        orElse: () => QuestionType.multipleChoice,
-      ),
-      difficulty: DifficultyLevel.values.firstWhere(
-        (e) => e.name == json['difficulty'],
-        orElse: () => DifficultyLevel.beginner,
-      ),
+      text: json['prompt']?.toString() ?? json['text']?.toString() ?? '',
+      type: QuestionType.fromJson(json['type']?.toString()),
+      difficulty: json['difficulty'] != null 
+        ? DifficultyLevel.values.firstWhere(
+            (e) => e.name == json['difficulty'],
+            orElse: () => DifficultyLevel.intermediate,
+          )
+        : DifficultyLevel.fromKnowledgeType(knowledgeType),
       options: List<String>.from(json['options'] ?? []),
       correctAnswer: json['correctAnswer']?.toString() ?? '',
       explanation: json['explanation']?.toString(),
-      tags: List<String>.from(json['tags'] ?? []),
-      subject: json['subject']?.toString() ?? '',
+      tags: List<String>.from(json['tags'] ?? json['metadata']?['tags'] ?? []),
+      subject: json['subject']?.toString() ?? json['course']?.toString() ?? '',
+      course: json['course']?.toString() ?? json['subject']?.toString() ?? '',
+      topic: json['topic']?.toString() ?? 'general',
+      subtopic: json['subtopic']?.toString(),
+      knowledgeType: knowledgeType,
       points: json['points']?.toInt() ?? 10,
       initialConfidence: json['initialConfidence']?.toDouble() ?? 0.5,
     );
@@ -121,16 +169,31 @@ class Question {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'text': text,
-      'type': type.name,
+      'prompt': text,
+      'type': type.jsonValue,
       'difficulty': difficulty.name,
       'options': options,
       'correctAnswer': correctAnswer,
       'explanation': explanation,
       'tags': tags,
+      'course': course,
+      'topic': topic,
+      'subtopic': subtopic,
+      'knowledgeType': knowledgeType,
       'subject': subject,
       'points': points,
       'initialConfidence': initialConfidence,
     };
   }
+
+  /// Get composite key for MAB grouping
+  String get mabKey => '${topic}_$knowledgeType';
+  
+  /// Get hierarchical context for learning analytics
+  Map<String, String> get learningContext => {
+    'course': course,
+    'topic': topic,
+    'subtopic': subtopic ?? '',
+    'knowledgeType': knowledgeType,
+  };
 }

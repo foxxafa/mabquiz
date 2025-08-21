@@ -15,6 +15,9 @@ class SampleQuestions {
         explanation: '2 artı 2 eşittir 4\'tür.',
         tags: ['toplama', 'temel matematik'],
         subject: 'Matematik',
+        course: 'matematik',
+        topic: 'temel_matematik',
+        knowledgeType: 'hesaplama',
         points: 5,
       ),
       Question(
@@ -27,6 +30,9 @@ class SampleQuestions {
         explanation: '10 bölü 2 eşittir 5\'tir.',
         tags: ['bölme', 'temel matematik'],
         subject: 'Matematik',
+        course: 'matematik',
+        topic: 'temel_matematik',
+        knowledgeType: 'hesaplama',
         points: 5,
       ),
       Question(
@@ -39,6 +45,9 @@ class SampleQuestions {
         explanation: '3 çarpı 7 eşittir 21\'dir.',
         tags: ['çarpma', 'temel matematik'],
         subject: 'Matematik',
+        course: 'matematik',
+        topic: 'temel_matematik',
+        knowledgeType: 'hesaplama',
         points: 10,
       ),
       Question(
@@ -51,6 +60,9 @@ class SampleQuestions {
         explanation: 'x² = 16 denkleminin çözümü x = ±4\'tür.',
         tags: ['denklem', 'karekok'],
         subject: 'Matematik',
+        course: 'matematik',
+        topic: 'denklemler',
+        knowledgeType: 'problem_cozme',
         points: 20,
       ),
     ];
@@ -69,6 +81,9 @@ class SampleQuestions {
         explanation: '"Kitap" kelimesinin çoğulu "kitaplar"dır.',
         tags: ['dilbilgisi', 'çoğul'],
         subject: 'Türkçe',
+        course: 'turkce',
+        topic: 'dilbilgisi',
+        knowledgeType: 'terminology',
         points: 5,
       ),
       Question(
@@ -81,6 +96,9 @@ class SampleQuestions {
         explanation: '"Gözü tok" bir deyimdir, az ile yetinen anlamına gelir.',
         tags: ['deyim', 'anlam'],
         subject: 'Türkçe',
+        course: 'turkce',
+        topic: 'deyimler',
+        knowledgeType: 'terminology',
         points: 10,
       ),
     ];
@@ -99,6 +117,9 @@ class SampleQuestions {
         explanation: 'Ibuprofen, NSAID sınıfına ait bir anti-inflamatuar ve analjezik ilaçtır.',
         tags: ['NSAID', 'anti-inflamatuar', 'analjezi'],
         subject: 'Farmakoloji',
+        course: 'farmakoloji',
+        topic: 'analjezikler',
+        knowledgeType: 'side_effect',
         points: 15,
       ),
       Question(
@@ -111,6 +132,9 @@ class SampleQuestions {
         explanation: 'β1-adrenerjik reseptörler kalp kasında bulunur ve kalp hızını artırır.',
         tags: ['adrenerjik', 'kalp', 'reseptör'],
         subject: 'Farmakoloji',
+        course: 'farmakoloji',
+        topic: 'kardiyovaskuler',
+        knowledgeType: 'pharmacodynamics',
         points: 20,
       ),
       Question(
@@ -123,6 +147,9 @@ class SampleQuestions {
         explanation: 'Parasetamol primer olarak merkezi sinir sisteminde prostaglandin sentezini inhibe eder.',
         tags: ['paracetamol', 'analjezi', 'prostaglandin'],
         subject: 'Farmakoloji',
+        course: 'farmakoloji',
+        topic: 'analjezikler',
+        knowledgeType: 'pharmacodynamics',
         points: 18,
       ),
       Question(
@@ -135,6 +162,9 @@ class SampleQuestions {
         explanation: 'Metoprolol, kardiyoselektif beta-1 bloker olarak kullanılan bir ilaçtır.',
         tags: ['beta-bloker', 'kardiyovasküler', 'hipertansiyon'],
         subject: 'Farmakoloji',
+        course: 'farmakoloji',
+        topic: 'kardiyovaskuler',
+        knowledgeType: 'dosage',
         points: 15,
       ),
       Question(
@@ -147,6 +177,9 @@ class SampleQuestions {
         explanation: 'Morphine, μ-opioid reseptörlerine bağlanarak güçlü analjezik etki gösterir.',
         tags: ['morphine', 'opioid', 'analjezi', 'reseptör'],
         subject: 'Farmakoloji',
+        course: 'farmakoloji',
+        topic: 'analjezikler',
+        knowledgeType: 'pharmacodynamics',
         points: 22,
       ),
     ];
