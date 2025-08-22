@@ -34,8 +34,12 @@ class AuthGate extends ConsumerWidget {
         // If user is not authenticated, show login screen
         return const LoginScreen();
       },
-      loading: () => const _LoadingScreen(),
-      error: (error, stackTrace) => _ErrorScreen(error: error),
+      loading: () {
+        return const _LoadingScreen();
+      },
+      error: (error, stackTrace) {
+        return _ErrorScreen(error: error);
+      },
     );
   }
 }

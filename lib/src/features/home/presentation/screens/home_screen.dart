@@ -1005,7 +1005,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       ),
     );
 
-    if (confirmed != true) return;
+    if (confirmed != true) {
+      return;
+    }
 
     try {
       setState(() => _isLoggingOut = true);
@@ -1013,7 +1015,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       final authService = ref.read(authServiceProvider);
       await authService.logout();
 
-      // AuthGate will automatically redirect to login screen
+      if (mounted) {
+        // Navigate to auth route so AuthGate can handle the redirect to login
+        context.go('/auth');
+      }
     } catch (e) {
       if (mounted) {
         await AuthErrorDialog.showAuthError(context, e);

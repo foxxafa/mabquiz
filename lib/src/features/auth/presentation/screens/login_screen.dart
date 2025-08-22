@@ -298,7 +298,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
         _passwordController.text,
       );
       
-      print('🎉 Login successful! Waiting for navigation...');
       // On successful login, AuthGate will handle navigation
     } catch (e) {
       ref.read(authErrorProvider.notifier).state = e.toString();
