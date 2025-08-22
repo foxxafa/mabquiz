@@ -17,8 +17,8 @@ class AppUser {
     return AppUser(
       uid: json['uid'] ?? '',
       email: json['email'],
-      displayName: json['displayName'],
-      emailVerified: json['emailVerified'] ?? false,
+      displayName: json['display_name'] ?? json['displayName'],
+      emailVerified: json['email_verified'] ?? json['emailVerified'] ?? false,
     );
   }
   

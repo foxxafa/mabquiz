@@ -160,6 +160,41 @@ async def manual_login(request: Request, db: AsyncSession = Depends(get_session)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.get("/api/v1/auth/me")
+async def get_current_user(request: Request, db: AsyncSession = Depends(get_session)):
+    """Get current user info"""
+    try:
+        from .models.user import UserDB
+        from .auth.jwt_handler import verify_token
+        from sqlalchemy import select
+        
+        # Get token from header
+        auth_header = request.headers.get("authorization")
+        if not auth_header or not auth_header.startswith("Bearer "):
+            raise HTTPException(status_code=401, detail="Missing or invalid token")
+        
+        token = auth_header.split(" ")[1]
+        payload = verify_token(token)
+        if not payload:
+            raise HTTPException(status_code=401, detail="Invalid token")
+        
+        # Get user from database
+        result = await db.execute(select(UserDB).filter(UserDB.uid == payload.get("uid")))
+        user = result.scalar_one_or_none()
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        return {
+            "uid": user.uid,
+            "email": user.email,
+            "display_name": user.display_name,
+            "email_verified": user.email_verified
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.on_event("startup")
 async def on_startup():
     """Application startup tasks"""
