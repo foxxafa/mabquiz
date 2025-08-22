@@ -1,7 +1,6 @@
-from sqlalchemy.orm import declarative_base, Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import Integer, String, Text
-
-Base = declarative_base()
+from . import Base
 
 class Question(Base):
     __tablename__ = "questions"
