@@ -6,7 +6,16 @@ from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy import text
 
 # Import directly from routers/main.py
-from .routers.main import router
+print("🔧 Attempting to import main router...")
+try:
+    from .routers.main import router
+    print("✅ Main router imported successfully")
+    print(f"🔍 Main router routes: {[route.path for route in router.routes]}")
+except Exception as e:
+    print(f"❌ Main router import failed: {e}")
+    import traceback
+    print(f"❌ Full traceback: {traceback.format_exc()}")
+    raise
 from .models import Base
 from .models.user import UserDB
 from .db import async_engine
