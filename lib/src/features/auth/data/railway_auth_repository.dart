@@ -42,7 +42,7 @@ class RailwayAuthRepository implements AuthRepository {
   Future<void> signInWithEmailAndPassword(String email, String password) async {
     try {
       final response = await http.post(
-        Uri.parse('${ApiConfig.baseUrl}/auth/login'),
+        Uri.parse(ApiConfig.login),
         headers: ApiConfig.headers,
         body: jsonEncode({
           'email': email,
@@ -81,7 +81,7 @@ class RailwayAuthRepository implements AuthRepository {
   }) async {
     try {
       final response = await http.post(
-        Uri.parse('${ApiConfig.baseUrl}/auth/register'),
+        Uri.parse(ApiConfig.register),
         headers: ApiConfig.headers,
         body: jsonEncode({
           'email': email,
@@ -118,7 +118,7 @@ class RailwayAuthRepository implements AuthRepository {
     try {
       if (_currentToken != null) {
         await http.post(
-          Uri.parse('${ApiConfig.baseUrl}/auth/logout'),
+          Uri.parse(ApiConfig.logout),
           headers: {
             ...ApiConfig.headers,
             'Authorization': 'Bearer $_currentToken',
@@ -136,7 +136,7 @@ class RailwayAuthRepository implements AuthRepository {
     if (_currentToken == null) return;
 
     final response = await http.get(
-      Uri.parse('${ApiConfig.baseUrl}/auth/me'),
+      Uri.parse(ApiConfig.currentUser),
       headers: {
         ...ApiConfig.headers,
         'Authorization': 'Bearer $_currentToken',

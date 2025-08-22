@@ -13,12 +13,12 @@ from ..models.question import Question
 # Main router
 router = APIRouter(prefix="/api/v1", tags=["quiz"])
 
-# Auth router temporarily disabled for deployment fix
-# try:
-#     from .auth import router as auth_router
-#     router.include_router(auth_router, prefix="")  # auth already has /auth prefix
-# except ImportError:
-#     print("Auth router not found, skipping...")
+try:
+    from .auth import router as auth_router
+    router.include_router(auth_router)  # auth router will be included under /api/v1
+    print("✅ Auth router registered successfully")
+except ImportError as e:
+    print(f"❌ Auth router not found: {e}")
 
 @router.get("/health")
 async def health_check():

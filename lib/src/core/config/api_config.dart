@@ -6,22 +6,25 @@ class ApiConfig {
   static const bool _isDebug = bool.fromEnvironment('dart.vm.product', defaultValue: true) == false;
   
   // API URLs
-  static const String _railwayUrl = 'https://web-production-a4329.up.railway.app'; 
+  static const String _railwayUrl = 'https://mabquiz-production.up.railway.app'; 
   static const String _devUrl = 'http://localhost:8000';
   
   // Smart URL selection
   static String get baseUrl {
-    if (_isDebug) {
-      return _devUrl; // Development
-    } else {
-      return _railwayUrl; // Railway production
-    }
+    return _railwayUrl; // ALWAYS return Railway production URL
   }
   
   // API Endpoints
   static String get health => '$baseUrl/health';
   static String get questions => '$baseUrl/questions';
   static String get subjects => '$baseUrl/subjects';
+  
+  // Auth endpoints
+  static String get register => '$baseUrl/api/v1/auth/register';
+  static String get login => '$baseUrl/api/v1/auth/login';
+  static String get googleAuth => '$baseUrl/api/v1/auth/google';
+  static String get currentUser => '$baseUrl/api/v1/auth/me';
+  static String get logout => '$baseUrl/api/v1/auth/logout';
   
   // New difficulty endpoints
   static String get difficultyMetrics => '$baseUrl/api/difficulty/metrics';
