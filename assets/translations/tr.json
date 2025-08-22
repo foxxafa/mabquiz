@@ -6,6 +6,7 @@
         "welcome_back": "Hoş Geldin!",
         "login_subtitle": "Öğrenmeye devam etmek için giriş yap",
         "email": "E-posta",
+        "username": "Kullanıcı Adı",
         "password": "Şifre",
         "email_required": "Lütfen e-posta adresinizi girin",
         "valid_email": "Lütfen geçerli bir e-posta adresi girin",

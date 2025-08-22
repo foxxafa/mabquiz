@@ -173,17 +173,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
           TextFormField(
             controller: _emailController,
             decoration: InputDecoration(
-              labelText: 'login.email'.tr(),
-              prefixIcon: Icon(Icons.email_outlined),
+              labelText: 'login.username'.tr(),
+              prefixIcon: Icon(Icons.person_outlined),
             ),
-            keyboardType: TextInputType.emailAddress,
+            keyboardType: TextInputType.text,
             textInputAction: TextInputAction.next,
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return 'login.email_required'.tr();
+                return 'Kullanıcı adı gereklidir';
               }
-              if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
-                return 'login.valid_email'.tr();
+              if (value.length < 3) {
+                return 'Kullanıcı adı en az 3 karakter olmalıdır';
               }
               return null;
             },

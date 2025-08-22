@@ -6,6 +6,7 @@
         "welcome_back": "Welcome Back!",
         "login_subtitle": "Sign in to continue your learning journey",
         "email": "Email",
+        "username": "Username",
         "password": "Password",
         "email_required": "Please enter your email address",
         "valid_email": "Please enter a valid email address",

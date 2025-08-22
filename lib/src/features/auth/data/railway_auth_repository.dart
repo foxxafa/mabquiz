@@ -39,13 +39,13 @@ class RailwayAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<void> signInWithEmailAndPassword(String email, String password) async {
+  Future<void> signInWithEmailAndPassword(String usernameOrEmail, String password) async {
     try {
       final response = await http.post(
         Uri.parse(ApiConfig.login),
         headers: ApiConfig.headers,
         body: jsonEncode({
-          'email': email,
+          'username': usernameOrEmail,  // Changed to username
           'password': password,
         }),
       );
@@ -98,8 +98,8 @@ class RailwayAuthRepository implements AuthRepository {
       );
 
       if (response.statusCode == 200) {
-        // After registration, login automatically
-        await signInWithEmailAndPassword(email, password);
+        // After registration, login automatically with username  
+        await signInWithEmailAndPassword(username, password);
       } else if (response.statusCode == 400) {
         final error = jsonDecode(response.body);
         if (error['detail'].contains('already registered')) {
