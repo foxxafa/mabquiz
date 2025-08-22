@@ -52,14 +52,60 @@ app.add_middleware(
 # Register routes
 app.include_router(router)
 
-# Try to directly import auth router as fallback
-print("🔧 Attempting to directly import auth router to main app...")
-try:
-    from .routers.auth import router as direct_auth_router
-    app.include_router(direct_auth_router, prefix="/api/v1")
-    print("✅ Direct auth router registered successfully")
-except Exception as e:
-    print(f"❌ Direct auth router import failed: {e}")
+# Manual auth endpoints as fallback
+from fastapi import HTTPException, Depends
+from sqlalchemy.ext.asyncio import AsyncSession
+from .db import get_session
+import uuid
+import json
+
+@app.post("/api/v1/auth/register")
+async def manual_register(request: dict, db: AsyncSession = Depends(get_session)):
+    """Manual register endpoint"""
+    try:
+        from .models.user import UserDB
+        from .auth.password_utils import hash_password
+        from sqlalchemy import select
+        
+        # Extract data
+        email = request.get("email")
+        password = request.get("password")
+        first_name = request.get("first_name")
+        last_name = request.get("last_name")
+        department = request.get("department", "general")
+        
+        # Check if user exists
+        result = await db.execute(select(UserDB).filter(UserDB.email == email))
+        if result.scalar_one_or_none():
+            raise HTTPException(status_code=400, detail="Email already registered")
+        
+        # Create user
+        hashed_password = hash_password(password)
+        user_uid = str(uuid.uuid4())
+        
+        db_user = UserDB(
+            uid=user_uid,
+            email=email,
+            password_hash=hashed_password,
+            first_name=first_name,
+            last_name=last_name,
+            display_name=f"{first_name} {last_name}",
+            department=department,
+            email_verified=False
+        )
+        
+        db.add(db_user)
+        await db.commit()
+        await db.refresh(db_user)
+        
+        return {
+            "uid": db_user.uid,
+            "email": db_user.email,
+            "display_name": db_user.display_name,
+            "email_verified": db_user.email_verified
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.on_event("startup")
 async def on_startup():
