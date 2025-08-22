@@ -14,5 +14,6 @@ ENVIRONMENT = "production"
 DATABASE_URL = "${{DATABASE_URL}}"
 PYTHONPATH = "/app"
 
-[[services.deploy]]
-startCommand = "python create_tables.py && gunicorn app.main:app --bind 0.0.0.0:$PORT --workers 2 --worker-class uvicorn.workers.UvicornWorker"
+[[services]]
+name = "mabquiz-backend"
+source = "."
