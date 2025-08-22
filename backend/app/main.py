@@ -8,6 +8,7 @@ from .routers import router
 from .routers.difficulty import router as difficulty_router
 from .routers.auth import router as auth_router
 from .models import Base
+from .models.user import UserDB
 from .db import async_engine
 
 app = FastAPI(
@@ -68,11 +69,6 @@ async def on_startup():
 
 @app.get("/health")
 async def health():
-    from .cache.redis_manager import redis_manager
-    
-    # Check Redis connection
-    redis_status = "connected" if redis_manager.health_check() else "disconnected"
-    
     # Check database connection
     db_status = "unknown"
     try:
@@ -88,6 +84,5 @@ async def health():
         "environment": os.getenv("RAILWAY_ENVIRONMENT_NAME", "development"),
         "service": os.getenv("RAILWAY_SERVICE_NAME", "mabquiz-backend"),
         "database": db_status,
-        "redis": redis_status,
         "timestamp": os.popen("date").read().strip()
     }

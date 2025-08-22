@@ -12,7 +12,6 @@ restartPolicyMaxRetries = 10
 PORT = "8000"
 ENVIRONMENT = "production"
 DATABASE_URL = "${{DATABASE_URL}}"
-REDIS_URL = "${{REDIS_URL}}"
 PYTHONPATH = "/app"
 
 [[services]]

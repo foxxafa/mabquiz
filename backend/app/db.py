@@ -8,11 +8,14 @@ from sqlalchemy.orm import sessionmaker, Session
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 if not DATABASE_URL:
-    # SQLite fallback for Railway deployment
+    # SQLite fallback for development
     DATABASE_URL = "sqlite+aiosqlite:///./app.db"
 elif DATABASE_URL.startswith("postgres://"):
-    # Railway PostgreSQL URL fix
-    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+    # Railway PostgreSQL URL fix for async
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+asyncpg://", 1)
+elif DATABASE_URL.startswith("postgresql://") and "+asyncpg" not in DATABASE_URL:
+    # Add asyncpg driver for async operations
+    DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://", 1)
 
 # Async engine for FastAPI
 async_engine = create_async_engine(DATABASE_URL, echo=False, pool_pre_ping=True)

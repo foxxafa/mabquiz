@@ -10,7 +10,6 @@ import os
 from datetime import datetime
 from google.oauth2 import id_token
 from google.auth.transport import requests
-from ..cache.redis_manager import redis_manager
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
 security = HTTPBearer()
@@ -84,14 +83,6 @@ async def login(login_data: UserLogin, db: AsyncSession = Depends(get_session)):
     }
     access_token = create_access_token(token_data)
     
-    # Store session in Redis
-    session_data = {
-        "uid": user.uid,
-        "email": user.email,
-        "display_name": user.display_name,
-        "login_time": datetime.utcnow().isoformat()
-    }
-    await redis_manager.set_session(user.uid, session_data)
     
     return {
         "access_token": access_token,
@@ -200,14 +191,9 @@ async def get_current_user(
 async def logout(
     credentials: HTTPAuthorizationCredentials = Depends(security)
 ):
-    """Logout user and clear Redis session"""
+    """Logout user"""
     
-    # Get user from token
-    payload = verify_token(credentials.credentials)
-    if payload:
-        user_uid = payload.get("uid")
-        if user_uid:
-            # Clear Redis session
-            await redis_manager.delete_session(user_uid)
+    # Since we're using stateless JWT tokens, logout is handled client-side
+    # The token will expire based on its expiration time
     
     return {"message": "Logged out successfully"}
