@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.ext.asyncio import AsyncEngine
 from sqlalchemy.ext.asyncio import create_async_engine
+from sqlalchemy import text
 
 # Import directly from routers/main.py
 from .routers.main import router
@@ -58,7 +59,7 @@ async def on_startup():
         print("🚀 Production mode: Verifying database connection...")
         try:
             async with async_engine.begin() as conn:
-                await conn.execute("SELECT 1")
+                await conn.execute(text("SELECT 1"))
             print("✅ Database connection verified")
         except Exception as e:
             print(f"❌ Database connection failed: {e}")
@@ -70,7 +71,7 @@ async def health():
     db_status = "unknown"
     try:
         async with async_engine.begin() as conn:
-            await conn.execute("SELECT 1")
+            await conn.execute(text("SELECT 1"))
         db_status = "connected"
     except Exception:
         db_status = "disconnected"
