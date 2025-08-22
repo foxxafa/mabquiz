@@ -13,16 +13,22 @@ from ..models.question import Question
 # Main router
 router = APIRouter(prefix="/api/v1", tags=["quiz"])
 
+print("🔧 Attempting to import auth router...")
 try:
     from .auth import router as auth_router
+    print("✅ Auth router imported successfully")
     router.include_router(auth_router)  # auth router will be included under /api/v1
     print("✅ Auth router registered successfully")
     print(f"🔍 Auth router routes: {[route.path for route in auth_router.routes]}")
     print(f"🔍 Main router routes: {[route.path for route in router.routes]}")
 except ImportError as e:
-    print(f"❌ Auth router not found: {e}")
+    print(f"❌ Auth router import failed: {e}")
+    import traceback
+    print(f"❌ Full traceback: {traceback.format_exc()}")
 except Exception as e:
     print(f"❌ Error registering auth router: {e}")
+    import traceback
+    print(f"❌ Full traceback: {traceback.format_exc()}")
 
 @router.get("/health")
 async def health_check():

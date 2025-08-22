@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, Boolean, DateTime
 from sqlalchemy.sql import func
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional
 from . import Base
@@ -22,14 +22,14 @@ class UserDB(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
 class UserCreate(BaseModel):
-    email: EmailStr
+    email: str
     password: str
     first_name: str
     last_name: str
     department: str
 
 class UserLogin(BaseModel):
-    email: EmailStr
+    email: str
     password: str
 
 class UserResponse(BaseModel):
