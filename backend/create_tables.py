@@ -34,11 +34,13 @@ async def create_tables():
         # Create async engine
         engine = create_async_engine(database_url, echo=True)
         
-        # Create all tables
+        # Recreate all tables (drop and create for schema changes)
         async with engine.begin() as conn:
+            print("Dropping existing tables...")
+            await conn.run_sync(Base.metadata.drop_all)
             print("Creating all tables...")
             await conn.run_sync(Base.metadata.create_all)
-            print("✅ All tables created successfully!")
+            print("✅ All tables recreated with new schema!")
         
         # Close engine
         await engine.dispose()
