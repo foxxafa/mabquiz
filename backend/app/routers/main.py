@@ -7,8 +7,8 @@ from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 import json
 
-from .db import get_session
-from .models import Question
+from ..db import get_session
+from ..models.question import Question
 
 # Main router
 router = APIRouter(prefix="/api/v1", tags=["quiz"])
