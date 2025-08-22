@@ -346,7 +346,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
         _passwordController.text,
       );
       
-      // On successful login, AuthGate will handle navigation
+      print('🎉 Login successful! Navigating to home...');
+      
+      // Navigate directly to home after successful login
+      if (mounted) {
+        context.go('/home');
+      }
     } catch (e) {
       ref.read(authErrorProvider.notifier).state = e.toString();
 
@@ -389,6 +394,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
       // Test kullanıcısı ile giriş yap
       final authService = ref.read(authServiceProvider);
       await authService.login('testuser', '123');
+      
+      print('🎉 Quick login successful! Navigating to home...');
+      
+      // Navigate directly to home after successful login
+      if (mounted) {
+        context.go('/home');
+      }
     } catch (e) {
       if (mounted) {
         String errorMessage = 'Hızlı giriş başarısız oldu';

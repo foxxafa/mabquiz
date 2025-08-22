@@ -22,22 +22,29 @@ class AuthGate extends ConsumerWidget {
 
     return authState.when(
       data: (user) {
+        print('🚪 AuthGate: User state = $user');
         // If user is authenticated, navigate to home screen via router
         if (user != null) {
+          print('✅ AuthGate: User authenticated, navigating to /home');
+          print('👤 User: ${user.displayName} (${user.email})');
           // Use a post-frame callback to ensure the widget is built before navigating.
           WidgetsBinding.instance.addPostFrameCallback((_) {
+            print('🏠 AuthGate: Executing navigation to /home');
             context.go('/home');
           });
           // Return a loading screen while the navigation is happening.
           return const _LoadingScreen();
         }
+        print('❌ AuthGate: No user, showing LoginScreen');
         // If user is not authenticated, show login screen
         return const LoginScreen();
       },
       loading: () {
+        print('⏳ AuthGate: Loading auth state...');
         return const _LoadingScreen();
       },
       error: (error, stackTrace) {
+        print('💥 AuthGate: Auth error = $error');
         return _ErrorScreen(error: error);
       },
     );

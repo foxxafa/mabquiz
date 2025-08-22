@@ -40,26 +40,11 @@ final authServiceProvider = Provider<AuthService>((ref) {
 ///
 /// This provider automatically disposes when not in use but keeps alive
 /// to maintain authentication state across the app
-final authStateProvider = StreamProvider.autoDispose<AppUser?>((ref) {
-  // Keep the provider alive to maintain auth state
-  ref.keepAlive();
-
+final authStateProvider = StreamProvider<AppUser?>((ref) {
   final service = ref.watch(authServiceProvider);
   return service.authStateChanges;
 });
 
-/// Provider for current authenticated user
-///
-/// Returns the current user from the auth state stream
-/// This is a convenience provider for accessing the current user synchronously
-final currentUserProvider = Provider<AppUser?>((ref) {
-  final authState = ref.watch(authStateProvider);
-  return authState.when(
-    data: (user) => user,
-    loading: () => null,
-    error: (_, __) => null,
-  );
-});
 
 /// Provider for authentication loading state
 ///

@@ -59,8 +59,14 @@ class RailwayAuthRepository implements AuthRepository {
         _currentToken = data['access_token'];
         _currentUser = AppUser.fromJson(data['user']);
         
+        print('🔑 Token saved: ${_currentToken?.substring(0, 10)}...');
+        print('👤 User logged in: ${_currentUser?.displayName}');
+        
         await _saveAuth(_currentToken!);
+        
+        print('📡 Adding user to auth state stream: ${_currentUser?.displayName}');
         _authStateController.add(_currentUser);
+        print('✅ Auth state updated, should trigger AuthGate');
       } else if (response.statusCode == 401) {
         throw const InvalidCredentialsException();
       } else {

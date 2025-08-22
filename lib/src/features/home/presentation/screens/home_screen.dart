@@ -71,7 +71,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
   @override
   Widget build(BuildContext context) {
-    final currentUser = ref.watch(currentUserProvider);
+    final authState = ref.watch(authStateProvider);
+    final currentUser = authState.whenOrNull(data: (user) => user);
 
     return Scaffold(
       backgroundColor: AppColors.background,
