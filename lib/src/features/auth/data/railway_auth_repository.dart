@@ -72,7 +72,13 @@ class RailwayAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<void> createUserWithEmailAndPassword(String email, String password) async {
+  Future<void> createUserWithEmailAndPassword({
+    required String email,
+    required String password,
+    required String firstName,
+    required String lastName,
+    required String department,
+  }) async {
     try {
       final response = await http.post(
         Uri.parse('${ApiConfig.baseUrl}/auth/register'),
@@ -80,9 +86,9 @@ class RailwayAuthRepository implements AuthRepository {
         body: jsonEncode({
           'email': email,
           'password': password,
-          'first_name': email.split('@')[0], // Default
-          'last_name': '', // Default
-          'department': 'general', // Default
+          'first_name': firstName,
+          'last_name': lastName,
+          'department': department,
         }),
       );
 

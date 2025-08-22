@@ -28,7 +28,13 @@ abstract class AuthRepository {
   /// - [WeakPasswordException] when password is too weak
   /// - [NetworkException] when network error occurs
   /// - [ServiceUnavailableException] when service is unavailable
-  Future<void> createUserWithEmailAndPassword(String email, String password);
+  Future<void> createUserWithEmailAndPassword({
+    required String email,
+    required String password,
+    required String firstName,
+    required String lastName,
+    required String department,
+  });
 
   /// Signs out the current user
   ///

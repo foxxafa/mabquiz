@@ -59,7 +59,13 @@ class MockAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<void> createUserWithEmailAndPassword(String email, String password) async {
+  Future<void> createUserWithEmailAndPassword({
+    required String email,
+    required String password,
+    required String firstName,
+    required String lastName,
+    required String department,
+  }) async {
     // Use custom behavior if set
     if (_customRegistrationBehavior != null) {
       await _customRegistrationBehavior!(email, password);
@@ -87,7 +93,7 @@ class MockAuthRepository implements AuthRepository {
     }
 
     // Create new user and sign them in
-    _currentUser = MockUser(email: email);
+    _currentUser = MockUser(email: email, displayName: '$firstName $lastName');
     _authStateController.add(_currentUser);
   }
 

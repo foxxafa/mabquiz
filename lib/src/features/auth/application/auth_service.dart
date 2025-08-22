@@ -63,14 +63,26 @@ class AuthService {
   /// - [NetworkException] when network error occurs
   /// - [ServiceUnavailableException] when service is unavailable
   /// - [AuthException] for other authentication errors
-  Future<void> register(String email, String password) async {
+  Future<void> register({
+    required String email,
+    required String password,
+    required String firstName,
+    required String lastName,
+    required String department,
+  }) async {
     try {
       // Validate input parameters
       _validateEmail(email);
       _validatePassword(password);
 
       // Delegate to repository
-      await _repository.createUserWithEmailAndPassword(email, password);
+      await _repository.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+        firstName: firstName,
+        lastName: lastName,
+        department: department,
+      );
     } on AuthException {
       // Re-throw auth exceptions as-is
       rethrow;

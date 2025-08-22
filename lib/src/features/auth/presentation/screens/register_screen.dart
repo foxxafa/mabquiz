@@ -441,11 +441,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
       ref.read(authErrorProvider.notifier).state = null;
 
       final authService = ref.read(authServiceProvider);
-      // Backend entegrasyonu sonrası ek alanlar (ad, soyad, departman) eklenecek
-      // Şu an için sadece email ve şifre kullanılıyor
       await authService.register(
-        _emailController.text.trim(),
-        _passwordController.text,
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+        firstName: _nameController.text.trim(),
+        lastName: _surnameController.text.trim(),
+        department: 'general', // Or get from a form field if you add one
       );
       // On successful registration, AuthGate will handle navigation.
     } catch (e) {
