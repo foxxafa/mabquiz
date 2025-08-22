@@ -13,12 +13,12 @@ from .models import Question
 # Main router
 router = APIRouter(prefix="/api/v1", tags=["quiz"])
 
-# Import and include auth router 
-try:
-    from .auth import router as auth_router
-    router.include_router(auth_router, prefix="")  # auth already has /auth prefix
-except ImportError:
-    print("Auth router not found, skipping...")
+# Auth router temporarily disabled for deployment fix
+# try:
+#     from .auth import router as auth_router
+#     router.include_router(auth_router, prefix="")  # auth already has /auth prefix
+# except ImportError:
+#     print("Auth router not found, skipping...")
 
 @router.get("/health")
 async def health_check():

@@ -4,7 +4,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.ext.asyncio import AsyncEngine
 from sqlalchemy.ext.asyncio import create_async_engine
 
-from .routers import router  # This will import from routers.py, not routers/ folder
+# Import directly from routers/main.py
+from .routers.main import router
 from .models import Base
 from .models.user import UserDB
 from .db import async_engine
