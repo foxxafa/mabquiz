@@ -89,17 +89,11 @@ class RailwayAuthRepository implements AuthRepository {
         'department': department,
       };
       
-      print('🚀 Making registration request to: $url');
-      print('📦 Request body: ${jsonEncode(body)}');
-      
       final response = await http.post(
         Uri.parse(url),
         headers: ApiConfig.headers,
         body: jsonEncode(body),
       );
-      
-      print('📨 Response status: ${response.statusCode}');
-      print('📨 Response body: ${response.body}');
 
       if (response.statusCode == 200) {
         // After registration, login automatically
@@ -115,8 +109,6 @@ class RailwayAuthRepository implements AuthRepository {
         throw UnknownAuthException(error['detail'] ?? 'Registration failed', 'registration-failed');
       }
     } catch (e) {
-      print('❌ Registration error: $e');
-      print('❌ Error type: ${e.runtimeType}');
       if (e is AuthException) {
         rethrow;
       }

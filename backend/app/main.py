@@ -113,6 +113,53 @@ async def manual_register(request: Request, db: AsyncSession = Depends(get_sessi
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.post("/api/v1/auth/login")
+async def manual_login(request: Request, db: AsyncSession = Depends(get_session)):
+    """Manual login endpoint"""
+    try:
+        from .models.user import UserDB
+        from .auth.password_utils import verify_password
+        from .auth.jwt_handler import create_access_token
+        from sqlalchemy import select
+        
+        # Parse JSON from request
+        body = await request.json()
+        email = body.get("email")
+        password = body.get("password")
+        
+        # Find user
+        result = await db.execute(select(UserDB).filter(UserDB.email == email))
+        user = result.scalar_one_or_none()
+        if not user:
+            raise HTTPException(status_code=401, detail="Invalid credentials")
+        
+        # Verify password
+        if not verify_password(password, user.password_hash):
+            raise HTTPException(status_code=401, detail="Invalid credentials")
+        
+        # Create token
+        token_data = {
+            "uid": user.uid,
+            "email": user.email,
+            "display_name": user.display_name
+        }
+        access_token = create_access_token(token_data)
+        
+        return {
+            "access_token": access_token,
+            "token_type": "bearer",
+            "user": {
+                "uid": user.uid,
+                "email": user.email,
+                "display_name": user.display_name,
+                "email_verified": user.email_verified
+            }
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.on_event("startup")
 async def on_startup():
     """Application startup tasks"""
