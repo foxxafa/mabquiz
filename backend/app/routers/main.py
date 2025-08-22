@@ -17,8 +17,12 @@ try:
     from .auth import router as auth_router
     router.include_router(auth_router)  # auth router will be included under /api/v1
     print("✅ Auth router registered successfully")
+    print(f"🔍 Auth router routes: {[route.path for route in auth_router.routes]}")
+    print(f"🔍 Main router routes: {[route.path for route in router.routes]}")
 except ImportError as e:
     print(f"❌ Auth router not found: {e}")
+except Exception as e:
+    print(f"❌ Error registering auth router: {e}")
 
 @router.get("/health")
 async def health_check():

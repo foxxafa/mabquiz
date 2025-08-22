@@ -80,17 +80,26 @@ class RailwayAuthRepository implements AuthRepository {
     required String department,
   }) async {
     try {
+      final url = ApiConfig.register;
+      final body = {
+        'email': email,
+        'password': password,
+        'first_name': firstName,
+        'last_name': lastName,
+        'department': department,
+      };
+      
+      print('🚀 Making registration request to: $url');
+      print('📦 Request body: ${jsonEncode(body)}');
+      
       final response = await http.post(
-        Uri.parse(ApiConfig.register),
+        Uri.parse(url),
         headers: ApiConfig.headers,
-        body: jsonEncode({
-          'email': email,
-          'password': password,
-          'first_name': firstName,
-          'last_name': lastName,
-          'department': department,
-        }),
+        body: jsonEncode(body),
       );
+      
+      print('📨 Response status: ${response.statusCode}');
+      print('📨 Response body: ${response.body}');
 
       if (response.statusCode == 200) {
         // After registration, login automatically
@@ -106,6 +115,8 @@ class RailwayAuthRepository implements AuthRepository {
         throw UnknownAuthException(error['detail'] ?? 'Registration failed', 'registration-failed');
       }
     } catch (e) {
+      print('❌ Registration error: $e');
+      print('❌ Error type: ${e.runtimeType}');
       if (e is AuthException) {
         rethrow;
       }
