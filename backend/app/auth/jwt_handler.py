@@ -1,4 +1,4 @@
-import jwt
+from jose import jwt, JWTError
 from datetime import datetime, timedelta
 from typing import Optional, Dict, Any
 import os
@@ -25,9 +25,7 @@ def verify_token(token: str) -> Optional[Dict[str, Any]]:
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         return payload
-    except jwt.ExpiredSignatureError:
-        return None
-    except jwt.JWTError:
+    except JWTError:
         return None
 
 def get_token_data(token: str) -> Optional[Dict[str, Any]]:
