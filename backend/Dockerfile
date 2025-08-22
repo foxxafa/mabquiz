@@ -31,4 +31,5 @@ HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
 # Command to run the application
-CMD ["gunicorn", "app.main:app", "--bind", "0.0.0.0:8000", "--workers", "2", "--worker-class", "uvicorn.workers.UvicornWorker"]
+# Use $PORT environment variable provided by Railway
+CMD ["gunicorn", "app.main:app", "--bind", "0.0.0.0:$PORT", "--workers", "2", "--worker-class", "uvicorn.workers.UvicornWorker"]
