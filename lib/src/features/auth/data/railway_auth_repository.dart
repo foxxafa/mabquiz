@@ -41,6 +41,7 @@ class RailwayAuthRepository implements AuthRepository {
   @override
   Future<void> signInWithEmailAndPassword(String usernameOrEmail, String password) async {
     try {
+      print('🌐 Login isteği gönderiliyor: ${ApiConfig.login}');
       final response = await http.post(
         Uri.parse(ApiConfig.login),
         headers: ApiConfig.headers,
@@ -48,7 +49,10 @@ class RailwayAuthRepository implements AuthRepository {
           'username': usernameOrEmail,  // Changed to username
           'password': password,
         }),
-      );
+      ).timeout(const Duration(seconds: 10));
+      
+      print('📡 Response status: ${response.statusCode}');
+      print('📡 Response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -64,10 +68,17 @@ class RailwayAuthRepository implements AuthRepository {
         throw UnknownAuthException(error['detail'] ?? 'Login failed', 'login-failed');
       }
     } catch (e) {
+      print('❌ Login error: $e');
       if (e is AuthException) {
         rethrow;
       }
-      throw const NetworkException();
+      if (e.toString().contains('TimeoutException')) {
+        throw const NetworkException();
+      }
+      if (e.toString().contains('SocketException')) {
+        throw const NetworkException();
+      }
+      throw NetworkException();
     }
   }
 

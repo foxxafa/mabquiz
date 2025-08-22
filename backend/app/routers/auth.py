@@ -18,23 +18,28 @@ security = HTTPBearer()
 async def register(user_data: UserCreate, db: AsyncSession = Depends(get_session)):
     """Register new user"""
     
-    # Check if user already exists
-    from sqlalchemy import select
-    result = await db.execute(select(UserDB).filter(UserDB.email == user_data.email))
+    # Check if email already exists
+    from sqlalchemy import select, or_
+    result = await db.execute(
+        select(UserDB).filter(
+            or_(UserDB.email == user_data.email, UserDB.username == user_data.username)
+        )
+    )
     existing_user = result.scalar_one_or_none()
     if existing_user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Email already registered"
+            detail="Email or username already registered"
         )
     
-    # Create new user
+    # Create new user (no password validation)
     hashed_password = hash_password(user_data.password)
     user_uid = str(uuid.uuid4())
     
     db_user = UserDB(
         uid=user_uid,
         email=user_data.email,
+        username=user_data.username,
         password_hash=hashed_password,
         first_name=user_data.first_name,
         last_name=user_data.last_name,
@@ -58,9 +63,9 @@ async def register(user_data: UserCreate, db: AsyncSession = Depends(get_session
 async def login(login_data: UserLogin, db: AsyncSession = Depends(get_session)):
     """Login user and return JWT token"""
     
-    # Find user by email
+    # Find user by username
     from sqlalchemy import select
-    result = await db.execute(select(UserDB).filter(UserDB.email == login_data.email))
+    result = await db.execute(select(UserDB).filter(UserDB.username == login_data.username))
     user = result.scalar_one_or_none()
     if not user:
         raise HTTPException(

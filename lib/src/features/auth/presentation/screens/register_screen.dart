@@ -107,21 +107,29 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
         ),
         child: SafeArea(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24.0),
-            child: FadeTransition(
-              opacity: _fadeAnimation,
-              child: SlideTransition(
-                position: _slideAnimation,
-                child: Column(
-                  children: [
-                    const SizedBox(height: 40),
-                    _buildHeader(context),
-                    const SizedBox(height: 48),
-                    _buildForm(isLoading),
-                    const SizedBox(height: 32),
-                    _buildFooter(),
-                    const SizedBox(height: 24),
-                  ],
+            padding: EdgeInsets.all(MediaQuery.of(context).size.width * 0.06),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: MediaQuery.of(context).size.height -
+                    MediaQuery.of(context).padding.top -
+                    MediaQuery.of(context).padding.bottom,
+              ),
+              child: FadeTransition(
+                opacity: _fadeAnimation,
+                child: SlideTransition(
+                  position: _slideAnimation,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(height: MediaQuery.of(context).size.height * 0.03),
+                      _buildHeader(context),
+                      SizedBox(height: MediaQuery.of(context).size.height * 0.04),
+                      _buildForm(isLoading),
+                      SizedBox(height: MediaQuery.of(context).size.height * 0.03),
+                      _buildFooter(),
+                      SizedBox(height: MediaQuery.of(context).size.height * 0.03),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -133,11 +141,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
 
   Widget _buildHeader(BuildContext context) {
     final theme = Theme.of(context);
+    final screenWidth = MediaQuery.of(context).size.width;
+    final iconSize = screenWidth * 0.18;
+    
     return Column(
       children: [
         Container(
-          width: 80,
-          height: 80,
+          width: iconSize,
+          height: iconSize,
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
@@ -147,7 +158,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(iconSize * 0.25),
             boxShadow: [
               BoxShadow(
                 color: theme.colorScheme.primary.withValues(alpha: 0.3),
@@ -157,32 +168,43 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
               ),
             ],
           ),
-          child: const Icon(
+          child: Icon(
             Icons.person_add_alt_1_rounded,
             color: Colors.white,
-            size: 40,
+            size: iconSize * 0.5,
           ),
         ),
-        const SizedBox(height: 24),
+        SizedBox(height: MediaQuery.of(context).size.height * 0.025),
         Text(
           'Hesap Oluştur',
           style: theme.textTheme.headlineLarge?.copyWith(
                 fontWeight: FontWeight.bold,
-              ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          'Maceraya katılmak için bilgileri doldur',
-          style: theme.textTheme.bodyMedium?.copyWith(
-                color: Colors.grey[400],
+                fontSize: screenWidth * 0.065,
               ),
           textAlign: TextAlign.center,
+        ),
+        SizedBox(height: MediaQuery.of(context).size.height * 0.01),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.08),
+          child: Text(
+            'Maceraya katılmak için bilgileri doldur',
+            style: theme.textTheme.bodyMedium?.copyWith(
+                  color: Colors.grey[400],
+                  fontSize: screenWidth * 0.038,
+                ),
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
         ),
       ],
     );
   }
 
   Widget _buildForm(bool isLoading) {
+    final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
+    
     return Form(
       key: _formKey,
       child: Column(
@@ -192,23 +214,33 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
               Expanded(
                 child: TextFormField(
                   controller: _nameController,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: 'Ad',
-                    prefixIcon: Icon(Icons.person_outline),
+                    prefixIcon: const Icon(Icons.person_outline),
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: screenWidth * 0.04,
+                      vertical: screenHeight * 0.018,
+                    ),
                   ),
+                  style: TextStyle(fontSize: screenWidth * 0.04),
                   textInputAction: TextInputAction.next,
                   validator: (value) =>
                       value!.isEmpty ? 'Ad boş olamaz' : null,
                 ),
               ),
-              const SizedBox(width: 16),
+              SizedBox(width: screenWidth * 0.04),
               Expanded(
                 child: TextFormField(
                   controller: _surnameController,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: 'Soyad',
-                    prefixIcon: Icon(Icons.person_outline),
+                    prefixIcon: const Icon(Icons.person_outline),
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: screenWidth * 0.04,
+                      vertical: screenHeight * 0.018,
+                    ),
                   ),
+                  style: TextStyle(fontSize: screenWidth * 0.04),
                   textInputAction: TextInputAction.next,
                   validator: (value) =>
                       value!.isEmpty ? 'Soyad boş olamaz' : null,
@@ -216,13 +248,18 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
               ),
             ],
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: screenHeight * 0.022),
           TextFormField(
             controller: _usernameController,
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               labelText: 'Kullanıcı Adı',
-              prefixIcon: Icon(Icons.alternate_email),
+              prefixIcon: const Icon(Icons.alternate_email),
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: screenWidth * 0.04,
+                vertical: screenHeight * 0.018,
+              ),
             ),
+            style: TextStyle(fontSize: screenWidth * 0.04),
             textInputAction: TextInputAction.next,
             validator: (value) {
               if (value == null || value.isEmpty) {
@@ -234,7 +271,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
               return null;
             },
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: screenHeight * 0.022),
           TextFormField(
             controller: _emailController,
             decoration: const InputDecoration(
@@ -265,9 +302,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
             validator: (value) {
               if (value == null || value.isEmpty) {
                 return 'Lütfen şifrenizi girin';
-              }
-              if (value.length < 6) {
-                return 'Şifre en az 6 karakter olmalıdır';
               }
               return null;
             },

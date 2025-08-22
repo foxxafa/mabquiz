@@ -29,17 +29,13 @@ class AuthFormValidators {
     return null;
   }
 
-  /// Validates password strength (relaxed for testing)
+  /// Validates password (no restrictions)
   static String? validatePassword(String? value) {
     if (value == null || value.isEmpty) {
       return 'Şifre gereklidir';
     }
 
-    if (value.length < 3) {
-      return 'Şifre en az 3 karakter olmalıdır';
-    }
-
-    // Removed all complex validations for easier testing
+    // No length or complexity restrictions
     return null;
   }
 

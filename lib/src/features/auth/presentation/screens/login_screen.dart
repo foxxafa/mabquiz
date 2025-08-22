@@ -84,25 +84,27 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
         ),
         child: SafeArea(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24.0),
-            child: SizedBox(
-              height: MediaQuery.of(context).size.height -
-                  MediaQuery.of(context).padding.top -
-                  48,
+            padding: EdgeInsets.all(MediaQuery.of(context).size.width * 0.06),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: MediaQuery.of(context).size.height -
+                    MediaQuery.of(context).padding.top -
+                    MediaQuery.of(context).padding.bottom,
+              ),
               child: FadeTransition(
                 opacity: _fadeAnimation,
                 child: SlideTransition(
                   position: _slideAnimation,
                   child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const SizedBox(height: 40),
+                      SizedBox(height: MediaQuery.of(context).size.height * 0.05),
                       _buildHeader(context),
-                      const SizedBox(height: 48),
-                      Expanded(
-                        child: _buildForm(isLoading),
-                      ),
+                      SizedBox(height: MediaQuery.of(context).size.height * 0.06),
+                      _buildForm(isLoading),
+                      SizedBox(height: MediaQuery.of(context).size.height * 0.03),
                       _buildFooter(),
-                      const SizedBox(height: 24),
+                      SizedBox(height: MediaQuery.of(context).size.height * 0.03),
                     ],
                   ),
                 ),
@@ -116,11 +118,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
 
   Widget _buildHeader(BuildContext context) {
     final theme = Theme.of(context);
+    final screenWidth = MediaQuery.of(context).size.width;
+    final iconSize = screenWidth * 0.2;
+    
     return Column(
       children: [
         Container(
-          width: 80,
-          height: 80,
+          width: iconSize,
+          height: iconSize,
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
@@ -130,7 +135,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(iconSize * 0.25),
             boxShadow: [
               BoxShadow(
                 color: theme.colorScheme.primary.withValues(alpha: 0.3),
@@ -140,32 +145,43 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
               ),
             ],
           ),
-          child: const Icon(
+          child: Icon(
             Icons.quiz,
             color: Colors.white,
-            size: 40,
+            size: iconSize * 0.5,
           ),
         ),
-        const SizedBox(height: 24),
+        SizedBox(height: MediaQuery.of(context).size.height * 0.03),
         Text(
           'login.welcome_back'.tr(),
           style: theme.textTheme.headlineLarge?.copyWith(
                 fontWeight: FontWeight.bold,
-              ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          'login.login_subtitle'.tr(),
-          style: theme.textTheme.bodyMedium?.copyWith(
-                color: Colors.grey[400],
+                fontSize: screenWidth * 0.07,
               ),
           textAlign: TextAlign.center,
+        ),
+        SizedBox(height: MediaQuery.of(context).size.height * 0.01),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.1),
+          child: Text(
+            'login.login_subtitle'.tr(),
+            style: theme.textTheme.bodyMedium?.copyWith(
+                  color: Colors.grey[400],
+                  fontSize: screenWidth * 0.04,
+                ),
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
         ),
       ],
     );
   }
 
   Widget _buildForm(bool isLoading) {
+    final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
+    
     return Form(
       key: _formKey,
       child: Column(
@@ -174,8 +190,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
             controller: _usernameController,
             decoration: InputDecoration(
               labelText: 'login.username'.tr(),
-              prefixIcon: Icon(Icons.person_outlined),
+              prefixIcon: const Icon(Icons.person_outlined),
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: screenWidth * 0.04,
+                vertical: screenHeight * 0.02,
+              ),
             ),
+            style: TextStyle(fontSize: screenWidth * 0.045),
             keyboardType: TextInputType.text,
             textInputAction: TextInputAction.next,
             validator: (value) {
@@ -188,27 +209,29 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
               return null;
             },
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: screenHeight * 0.025),
           TextFormField(
             controller: _passwordController,
             decoration: InputDecoration(
               labelText: 'login.password'.tr(),
-              prefixIcon: Icon(Icons.lock_outlined),
+              prefixIcon: const Icon(Icons.lock_outlined),
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: screenWidth * 0.04,
+                vertical: screenHeight * 0.02,
+              ),
             ),
+            style: TextStyle(fontSize: screenWidth * 0.045),
             obscureText: true,
             textInputAction: TextInputAction.done,
             validator: (value) {
               if (value == null || value.isEmpty) {
                 return 'login.password_required'.tr();
               }
-              if (value.length < 6) {
-                return 'login.password_min_length'.tr();
-              }
               return null;
             },
             onFieldSubmitted: (_) => _handleLogin(),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: screenHeight * 0.015),
           Align(
             alignment: Alignment.centerRight,
             child: TextButton(
@@ -220,46 +243,62 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                   ),
                 );
               },
-              child: Text('login.forgot_password'.tr()),
+              child: Text(
+                'login.forgot_password'.tr(),
+                style: TextStyle(fontSize: screenWidth * 0.035),
+              ),
             ),
           ),
-          const SizedBox(height: 32),
+          SizedBox(height: screenHeight * 0.04),
           SizedBox(
             width: double.infinity,
+            height: screenHeight * 0.065,
             child: ElevatedButton(
               onPressed: isLoading ? null : _handleLogin,
               child: isLoading
-                  ? const CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ? CircularProgressIndicator(
+                      valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                      strokeWidth: screenWidth * 0.01,
                     )
-                  : Text('login.login_button'.tr()),
+                  : Text(
+                      'login.login_button'.tr(),
+                      style: TextStyle(fontSize: screenWidth * 0.045),
+                    ),
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: screenHeight * 0.02),
           SizedBox(
             width: double.infinity,
+            height: screenHeight * 0.065,
             child: ElevatedButton.icon(
               onPressed: isLoading ? null : _handleGoogleLogin,
               icon: SizedBox(
-                width: 20,
-                height: 20,
+                width: screenWidth * 0.05,
+                height: screenWidth * 0.05,
                 child: SvgPicture.asset('assets/icons/google.svg'),
               ),
-              label: const Text('Google ile Giriş Yap'),
+              label: Text(
+                'Google ile Giriş Yap',
+                style: TextStyle(fontSize: screenWidth * 0.04),
+              ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,
                 foregroundColor: Colors.black,
               ),
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: screenHeight * 0.02),
           // Hızlı giriş butonu
           SizedBox(
             width: double.infinity,
+            height: screenHeight * 0.065,
             child: ElevatedButton.icon(
               onPressed: isLoading ? null : _handleQuickLogin,
-              icon: const Icon(Icons.flash_on, size: 20),
-              label: const Text('Hızlı Giriş (Test)'),
+              icon: Icon(Icons.flash_on, size: screenWidth * 0.05),
+              label: Text(
+                'Hızlı Giriş (Test)',
+                style: TextStyle(fontSize: screenWidth * 0.04),
+              ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF4F9CF9),
                 foregroundColor: Colors.white,
@@ -273,13 +312,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
   }
 
   Widget _buildFooter() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+    final screenWidth = MediaQuery.of(context).size.width;
+    
+    return Wrap(
+      alignment: WrapAlignment.center,
+      crossAxisAlignment: WrapCrossAlignment.center,
       children: [
-        const Text("Hesabın yok mu?"),
+        Text(
+          "Hesabın yok mu?",
+          style: TextStyle(fontSize: screenWidth * 0.04),
+        ),
         TextButton(
           onPressed: () => context.go('/register'),
-          child: const Text('Kayıt Ol'),
+          child: Text(
+            'Kayıt Ol',
+            style: TextStyle(fontSize: screenWidth * 0.04),
+          ),
         ),
       ],
     );
@@ -303,10 +351,26 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
       ref.read(authErrorProvider.notifier).state = e.toString();
 
       if (mounted) {
+        // Debug için detaylı hata mesajı
+        String errorMessage = AuthErrorHandler.getErrorMessage(e);
+        String debugInfo = 'Hata detayı: ${e.toString()}';
+        
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(AuthErrorHandler.getErrorMessage(e)),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(errorMessage),
+                const SizedBox(height: 4),
+                Text(
+                  debugInfo,
+                  style: const TextStyle(fontSize: 12, color: Colors.white70),
+                ),
+              ],
+            ),
             backgroundColor: Colors.red,
+            duration: const Duration(seconds: 8),
           ),
         );
       }
@@ -322,16 +386,30 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
       ref.read(authLoadingProvider.notifier).state = true;
       ref.read(authErrorProvider.notifier).state = null;
 
-      // Direkt ana sayfaya yönlendir
-      if (mounted) {
-        context.go('/home');
-      }
+      // Test kullanıcısı ile giriş yap
+      final authService = ref.read(authServiceProvider);
+      await authService.login('testuser', '123');
     } catch (e) {
       if (mounted) {
+        String errorMessage = 'Hızlı giriş başarısız oldu';
+        String debugInfo = 'Hata detayı: ${e.toString()}';
+        
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Hızlı giriş başarısız oldu'),
+          SnackBar(
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(errorMessage),
+                const SizedBox(height: 4),
+                Text(
+                  debugInfo,
+                  style: const TextStyle(fontSize: 12, color: Colors.white70),
+                ),
+              ],
+            ),
             backgroundColor: Colors.red,
+            duration: const Duration(seconds: 8),
           ),
         );
       }
