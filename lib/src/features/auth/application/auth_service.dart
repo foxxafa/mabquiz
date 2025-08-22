@@ -31,14 +31,16 @@ class AuthService {
   /// - [NetworkException] when network error occurs
   /// - [ServiceUnavailableException] when service is unavailable
   /// - [AuthException] for other authentication errors
-  Future<void> login(String email, String password) async {
+  Future<void> login(String usernameOrEmail, String password) async {
     try {
       // Validate input parameters
-      _validateEmail(email);
+      if (usernameOrEmail.isEmpty) {
+        throw const InvalidCredentialsException();
+      }
       _validatePassword(password);
 
       // Delegate to repository
-      await _repository.signInWithEmailAndPassword(email, password);
+      await _repository.signInWithEmailAndPassword(usernameOrEmail, password);
     } on AuthException {
       // Re-throw auth exceptions as-is
       rethrow;

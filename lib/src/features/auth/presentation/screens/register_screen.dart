@@ -449,7 +449,22 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
         lastName: _surnameController.text.trim(),
         department: 'general',
       );
+      // Registration successful - show success message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('✅ Kayıt başarılı! Otomatik giriş yapılıyor...'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
       // On successful registration, AuthGate will handle navigation.
+      
+      // TODO: Otomatik giriş için - şimdilik yorum satırında
+      // await Future.delayed(Duration(seconds: 1));
+      // context.go('/login'); // Veya AuthGate navigation'ı ile otomatik giriş
+      
     } catch (e) {
       ref.read(authErrorProvider.notifier).state = e.toString();
       if (mounted) {

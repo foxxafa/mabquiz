@@ -16,7 +16,7 @@ class LoginScreen extends ConsumerStatefulWidget {
 class _LoginScreenState extends ConsumerState<LoginScreen>
     with TickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
+  final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
 
   late AnimationController _slideController;
@@ -58,7 +58,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
 
   @override
   void dispose() {
-    _emailController.dispose();
+    _usernameController.dispose();
     _passwordController.dispose();
     _slideController.dispose();
     _fadeController.dispose();
@@ -171,7 +171,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
       child: Column(
         children: [
           TextFormField(
-            controller: _emailController,
+            controller: _usernameController,
             decoration: InputDecoration(
               labelText: 'login.username'.tr(),
               prefixIcon: Icon(Icons.person_outlined),
@@ -294,7 +294,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
 
       final authService = ref.read(authServiceProvider);
       await authService.login(
-        _emailController.text.trim(),
+        _usernameController.text.trim(),
         _passwordController.text,
       );
       // On successful login, AuthGate will handle navigation
