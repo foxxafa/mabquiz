@@ -59,29 +59,26 @@ from .db import get_session
 import uuid
 import json
 
-from pydantic import BaseModel
+# Simple manual endpoint without complex types
+import json as json_lib
 
-class RegisterRequest(BaseModel):
-    email: str
-    password: str
-    first_name: str
-    last_name: str
-    department: str = "general"
+from fastapi import Request
 
 @app.post("/api/v1/auth/register")
-async def manual_register(request: RegisterRequest, db: AsyncSession = Depends(get_session)):
+async def manual_register(request: Request, db: AsyncSession = Depends(get_session)):
     """Manual register endpoint"""
     try:
         from .models.user import UserDB
         from .auth.password_utils import hash_password
         from sqlalchemy import select
         
-        # Extract data from pydantic model
-        email = request.email
-        password = request.password
-        first_name = request.first_name
-        last_name = request.last_name
-        department = request.department
+        # Parse JSON from request
+        body = await request.json()
+        email = body.get("email")
+        password = body.get("password") 
+        first_name = body.get("first_name")
+        last_name = body.get("last_name")
+        department = body.get("department", "general")
         
         # Check if user exists
         result = await db.execute(select(UserDB).filter(UserDB.email == email))
