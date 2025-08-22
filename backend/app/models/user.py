@@ -11,6 +11,7 @@ class UserDB(Base):
     id = Column(Integer, primary_key=True, index=True)
     uid = Column(String, unique=True, index=True)
     email = Column(String, unique=True, index=True)
+    username = Column(String, unique=True, index=True)
     password_hash = Column(String)
     display_name = Column(String)
     first_name = Column(String)
@@ -23,13 +24,14 @@ class UserDB(Base):
 
 class UserCreate(BaseModel):
     email: str
+    username: str
     password: str
     first_name: str
     last_name: str
     department: str
 
 class UserLogin(BaseModel):
-    email: str
+    username: str  # Changed from email to username
     password: str
 
 class UserResponse(BaseModel):

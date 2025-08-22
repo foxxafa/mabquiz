@@ -75,15 +75,19 @@ async def manual_register(request: Request, db: AsyncSession = Depends(get_sessi
         # Parse JSON from request
         body = await request.json()
         email = body.get("email")
+        username = body.get("username")
         password = body.get("password") 
         first_name = body.get("first_name")
         last_name = body.get("last_name")
         department = body.get("department", "general")
         
-        # Check if user exists
-        result = await db.execute(select(UserDB).filter(UserDB.email == email))
-        if result.scalar_one_or_none():
+        # Check if user exists (email or username)
+        email_check = await db.execute(select(UserDB).filter(UserDB.email == email))
+        username_check = await db.execute(select(UserDB).filter(UserDB.username == username))
+        if email_check.scalar_one_or_none():
             raise HTTPException(status_code=400, detail="Email already registered")
+        if username_check.scalar_one_or_none():
+            raise HTTPException(status_code=400, detail="Username already taken")
         
         # Create user
         hashed_password = hash_password(password)
@@ -92,6 +96,7 @@ async def manual_register(request: Request, db: AsyncSession = Depends(get_sessi
         db_user = UserDB(
             uid=user_uid,
             email=email,
+            username=username,
             password_hash=hashed_password,
             first_name=first_name,
             last_name=last_name,
@@ -124,11 +129,11 @@ async def manual_login(request: Request, db: AsyncSession = Depends(get_session)
         
         # Parse JSON from request
         body = await request.json()
-        email = body.get("email")
+        username = body.get("username")
         password = body.get("password")
         
-        # Find user
-        result = await db.execute(select(UserDB).filter(UserDB.email == email))
+        # Find user by username
+        result = await db.execute(select(UserDB).filter(UserDB.username == username))
         user = result.scalar_one_or_none()
         if not user:
             raise HTTPException(status_code=401, detail="Invalid credentials")

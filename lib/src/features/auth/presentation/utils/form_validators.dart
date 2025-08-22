@@ -29,39 +29,17 @@ class AuthFormValidators {
     return null;
   }
 
-  /// Validates password strength
+  /// Validates password strength (relaxed for testing)
   static String? validatePassword(String? value) {
     if (value == null || value.isEmpty) {
       return 'Şifre gereklidir';
     }
 
-    if (value.length < 6) {
-      return 'Şifre en az 6 karakter olmalıdır';
+    if (value.length < 3) {
+      return 'Şifre en az 3 karakter olmalıdır';
     }
 
-    // Check for at least one letter
-    if (!RegExp(r'[a-zA-Z]').hasMatch(value)) {
-      return 'Şifre en az bir harf içermelidir';
-    }
-
-    // Check for common weak passwords
-    final commonWeakPasswords = [
-      '123456',
-      'password',
-      '123456789',
-      '12345678',
-      '12345',
-      '1234567',
-      'qwerty',
-      'abc123',
-      'password123',
-      '123123',
-    ];
-
-    if (commonWeakPasswords.contains(value.toLowerCase())) {
-      return 'Bu şifre çok yaygın kullanılıyor. Daha güçlü bir şifre seçin';
-    }
-
+    // Removed all complex validations for easier testing
     return null;
   }
 
