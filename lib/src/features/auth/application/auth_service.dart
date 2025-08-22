@@ -65,6 +65,7 @@ class AuthService {
   /// - [AuthException] for other authentication errors
   Future<void> register({
     required String email,
+    required String username,
     required String password,
     required String firstName,
     required String lastName,
@@ -78,6 +79,7 @@ class AuthService {
       // Delegate to repository
       await _repository.createUserWithEmailAndPassword(
         email: email,
+        username: username,
         password: password,
         firstName: firstName,
         lastName: lastName,

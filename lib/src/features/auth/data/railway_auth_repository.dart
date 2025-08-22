@@ -74,6 +74,7 @@ class RailwayAuthRepository implements AuthRepository {
   @override
   Future<void> createUserWithEmailAndPassword({
     required String email,
+    required String username,
     required String password,
     required String firstName,
     required String lastName,
@@ -83,6 +84,7 @@ class RailwayAuthRepository implements AuthRepository {
       final url = ApiConfig.register;
       final body = {
         'email': email,
+        'username': username,
         'password': password,
         'first_name': firstName,
         'last_name': lastName,

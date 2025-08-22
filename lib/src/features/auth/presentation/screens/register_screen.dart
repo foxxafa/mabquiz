@@ -443,10 +443,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
       final authService = ref.read(authServiceProvider);
       await authService.register(
         email: _emailController.text.trim(),
+        username: _usernameController.text.trim(), // Username field eklendi
         password: _passwordController.text,
         firstName: _nameController.text.trim(),
         lastName: _surnameController.text.trim(),
-        department: 'general', // Or get from a form field if you add one
+        department: 'general',
       );
       // On successful registration, AuthGate will handle navigation.
     } catch (e) {

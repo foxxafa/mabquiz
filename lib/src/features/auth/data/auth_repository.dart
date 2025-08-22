@@ -30,6 +30,7 @@ abstract class AuthRepository {
   /// - [ServiceUnavailableException] when service is unavailable
   Future<void> createUserWithEmailAndPassword({
     required String email,
+    required String username,
     required String password,
     required String firstName,
     required String lastName,
