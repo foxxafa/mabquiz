@@ -59,20 +59,29 @@ from .db import get_session
 import uuid
 import json
 
+from pydantic import BaseModel
+
+class RegisterRequest(BaseModel):
+    email: str
+    password: str
+    first_name: str
+    last_name: str
+    department: str = "general"
+
 @app.post("/api/v1/auth/register")
-async def manual_register(request: dict, db: AsyncSession = Depends(get_session)):
+async def manual_register(request: RegisterRequest, db: AsyncSession = Depends(get_session)):
     """Manual register endpoint"""
     try:
         from .models.user import UserDB
         from .auth.password_utils import hash_password
         from sqlalchemy import select
         
-        # Extract data
-        email = request.get("email")
-        password = request.get("password")
-        first_name = request.get("first_name")
-        last_name = request.get("last_name")
-        department = request.get("department", "general")
+        # Extract data from pydantic model
+        email = request.email
+        password = request.password
+        first_name = request.first_name
+        last_name = request.last_name
+        department = request.department
         
         # Check if user exists
         result = await db.execute(select(UserDB).filter(UserDB.email == email))
