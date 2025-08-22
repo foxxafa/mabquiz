@@ -52,6 +52,15 @@ app.add_middleware(
 # Register routes
 app.include_router(router)
 
+# Try to directly import auth router as fallback
+print("🔧 Attempting to directly import auth router to main app...")
+try:
+    from .routers.auth import router as direct_auth_router
+    app.include_router(direct_auth_router, prefix="/api/v1")
+    print("✅ Direct auth router registered successfully")
+except Exception as e:
+    print(f"❌ Direct auth router import failed: {e}")
+
 @app.on_event("startup")
 async def on_startup():
     """Application startup tasks"""
