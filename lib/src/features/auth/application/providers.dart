@@ -45,6 +45,18 @@ final authStateProvider = StreamProvider<AppUser?>((ref) {
   return service.authStateChanges;
 });
 
+/// Provider for current authenticated user
+///
+/// Returns the current user if authenticated, null otherwise
+/// This is a convenience provider that extracts the user from authStateProvider
+final currentUserProvider = Provider<AppUser?>((ref) {
+  final authState = ref.watch(authStateProvider);
+  return authState.when(
+    data: (user) => user,
+    loading: () => null,
+    error: (_, __) => null,
+  );
+});
 
 /// Provider for authentication loading state
 ///
