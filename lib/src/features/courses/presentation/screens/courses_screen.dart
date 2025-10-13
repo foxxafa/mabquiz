@@ -20,8 +20,6 @@ class _CoursesScreenState extends ConsumerState<CoursesScreen>
   late Animation<double> _headerAnimation;
   late Animation<double> _cardAnimation;
 
-  String _selectedCategory = 'all';
-
   @override
   void initState() {
     super.initState();
@@ -68,20 +66,34 @@ class _CoursesScreenState extends ConsumerState<CoursesScreen>
     final availableSubjects = ref.watch(availableSubjectsProvider);
 
     return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildHeader(),
-            _buildCategoryFilter(),
-            _buildStatistics(),
-            Expanded(
-              child: availableSubjects.when(
-                data: (subjects) => _buildCoursesList(subjects),
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (error, stack) => Center(child: Text('Hata: $error')),
+      backgroundColor: AppColors.background,
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFF0f0f0f),
+              Color(0xFF1a1a1a),
+              Color(0xFF1a1a1a),
+            ],
+            stops: [0.0, 0.5, 1.0],
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              _buildHeader(),
+              _buildStatistics(),
+              Expanded(
+                child: availableSubjects.when(
+                  data: (subjects) => _buildCoursesList(subjects),
+                  loading: () => const Center(child: CircularProgressIndicator()),
+                  error: (error, stack) => Center(child: Text('Hata: $error')),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -96,51 +108,35 @@ class _CoursesScreenState extends ConsumerState<CoursesScreen>
           child: Opacity(
             opacity: _headerAnimation.value,
             child: Container(
-              padding: const EdgeInsets.all(24.0),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [
+                    Color(0xFF3a3a3a),
+                    Color(0xFF2d2d2d),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.2),
+                    offset: const Offset(0, 2),
+                    blurRadius: 8,
+                    spreadRadius: 0,
+                  ),
+                ],
+              ),
               child: Row(
                 children: [
-                  Container(
-                    width: 50,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      color: AppColors.primary,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.primary.withValues(alpha: 0.3),
-                          offset: const Offset(0, 8),
-                          blurRadius: 24,
-                        ),
-                      ],
-                    ),
-                    child: const Icon(
-                      Icons.school,
+                  Text(
+                    'Kurslar',
+                    style: AppTextStyles.h2.copyWith(
                       color: Colors.white,
-                      size: 24,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Kurslar',
-                          style: AppTextStyles.h1.copyWith(
-                            color: AppColors.textPrimary,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Öğrenme yolculuğunu başlat',
-                          style: AppTextStyles.bodyMedium.copyWith(
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  const Spacer(),
                 ],
               ),
             ),
@@ -150,117 +146,206 @@ class _CoursesScreenState extends ConsumerState<CoursesScreen>
     );
   }
 
-  Widget _buildCategoryFilter() {
-    final categories = [
-      {'id': 'all', 'name': 'Tümü', 'icon': Icons.apps},
-      {'id': 'medical', 'name': 'Tıp', 'icon': Icons.medical_services},
-      {'id': 'science', 'name': 'Bilim', 'icon': Icons.science},
-      {'id': 'language', 'name': 'Dil', 'icon': Icons.language},
-    ];
 
-    return Container(
-      height: 60,
-      margin: const EdgeInsets.symmetric(horizontal: 24),
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        itemCount: categories.length,
-        separatorBuilder: (context, index) => const SizedBox(width: 12),
-        itemBuilder: (context, index) {
-          final category = categories[index];
-          final isSelected = _selectedCategory == category['id'];
-
-          return GestureDetector(
-            onTap: () {
-              setState(() {
-                _selectedCategory = category['id'] as String;
-              });
-            },
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? AppColors.primary
-                    : AppColors.primary.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(30),
-                border: Border.all(
-                  color: AppColors.primary.withValues(alpha: 0.2),
-                  width: 1,
-                ),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    category['icon'] as IconData,
-                    size: 18,
-                    color: isSelected ? Colors.white : AppColors.primary,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    category['name'] as String,
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: isSelected ? Colors.white : AppColors.primary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
 
   Widget _buildStatistics() {
     return Container(
       margin: const EdgeInsets.all(24),
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: AppColors.border.withValues(alpha: 0.1),
+        gradient: const LinearGradient(
+          colors: [
+            Color(0xFF2f2f2f),
+            Color(0xFF1a1a1a),
+            Color(0xFF0f0f0f),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          stops: [0.0, 0.6, 1.0],
         ),
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(
+          color: AppColors.primary.withValues(alpha: 0.3),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.5),
+            offset: const Offset(0, 12),
+            blurRadius: 40,
+            spreadRadius: -8,
+          ),
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.15),
+            offset: const Offset(0, 0),
+            blurRadius: 20,
+            spreadRadius: -4,
+          ),
+          // İç gölge efekti için
+          BoxShadow(
+            color: Colors.white.withValues(alpha: 0.05),
+            offset: const Offset(0, 1),
+            blurRadius: 0,
+            spreadRadius: 0,
+          ),
+        ],
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildStatCard('12', 'Aktif Kurs', Icons.play_circle_filled, AppColors.primary),
-          _buildStatCard('156', 'Tamamlanan', Icons.check_circle, AppColors.success),
-          _buildStatCard('4.8', 'Ortalama Puan', Icons.star, AppColors.warning),
+          Row(
+            children: [
+              Container(
+                width: 6,
+                height: 24,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [AppColors.primary, AppColors.primary.withValues(alpha: 0.6)],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
+                  borderRadius: BorderRadius.circular(3),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Text(
+                'İstatistikler',
+                style: AppTextStyles.h2.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 24,
+                  shadows: [
+                    Shadow(
+                      color: Colors.black.withValues(alpha: 0.3),
+                      offset: const Offset(0, 2),
+                      blurRadius: 4,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 28),
+          Row(
+            children: [
+              Expanded(
+                child: _buildStatCard('12', 'Aktif Kurs', Icons.play_circle_filled, AppColors.primary),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: _buildStatCard('156', 'Tamamlanan', Icons.check_circle, AppColors.success),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: _buildStatCard('4.8', 'Ortalama Puan', Icons.star, AppColors.warning),
+              ),
+            ],
+          ),
         ],
       ),
     );
   }
 
   Widget _buildStatCard(String value, String label, IconData icon, Color color) {
-    return Expanded(
+    return Container(
+      height: 160, // Yüksekliği artırdım
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            color.withValues(alpha: 0.15),
+            color.withValues(alpha: 0.05),
+            Colors.black.withValues(alpha: 0.3),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          stops: const [0.0, 0.3, 1.0],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: color.withValues(alpha: 0.4),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.4),
+            offset: const Offset(0, 8),
+            blurRadius: 20,
+            spreadRadius: -8,
+          ),
+          BoxShadow(
+            color: color.withValues(alpha: 0.2),
+            offset: const Offset(0, 0),
+            blurRadius: 16,
+            spreadRadius: -4,
+          ),
+        ],
+      ),
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Container(
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
+              gradient: LinearGradient(
+                colors: [
+                  color.withValues(alpha: 0.8),
+                  color.withValues(alpha: 0.6),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
               borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: color.withValues(alpha: 0.3),
+                  offset: const Offset(0, 4),
+                  blurRadius: 12,
+                  spreadRadius: -2,
+                ),
+              ],
             ),
-            child: Icon(icon, color: color, size: 20),
+            child: Icon(
+              icon, 
+              color: Colors.white, 
+              size: 20,
+              shadows: [
+                Shadow(
+                  color: Colors.black.withValues(alpha: 0.3),
+                  offset: const Offset(0, 2),
+                  blurRadius: 4,
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: 8),
           Text(
             value,
-            style: AppTextStyles.h3.copyWith(
-              color: AppColors.textPrimary,
-              fontWeight: FontWeight.bold,
+            style: AppTextStyles.h2.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w800,
+              fontSize: 24,
+              shadows: [
+                Shadow(
+                  color: Colors.black.withValues(alpha: 0.3),
+                  offset: const Offset(0, 2),
+                  blurRadius: 4,
+                ),
+              ],
             ),
+            textAlign: TextAlign.center,
           ),
           Text(
             label,
             style: AppTextStyles.bodySmall.copyWith(
               color: AppColors.textSecondary,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.5,
+              fontSize: 12,
             ),
             textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
@@ -308,19 +393,33 @@ class _CoursesScreenState extends ConsumerState<CoursesScreen>
         context.push('/quiz/$subject');
       },
       child: Container(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(16),
+          gradient: const LinearGradient(
+            colors: [
+              Color(0xFF2a2a2a),
+              Color(0xFF1f1f1f),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: color.withValues(alpha: 0.2),
+            color: color.withValues(alpha: 0.3),
             width: 1,
           ),
           boxShadow: [
             BoxShadow(
+              color: Colors.black.withValues(alpha: 0.3),
+              offset: const Offset(0, 8),
+              blurRadius: 24,
+              spreadRadius: -4,
+            ),
+            BoxShadow(
               color: color.withValues(alpha: 0.1),
-              offset: const Offset(0, 4),
-              blurRadius: 12,
+              offset: const Offset(0, 0),
+              blurRadius: 8,
+              spreadRadius: -2,
             ),
           ],
         ),
@@ -330,8 +429,19 @@ class _CoursesScreenState extends ConsumerState<CoursesScreen>
               width: 60,
               height: 60,
               decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
+                gradient: LinearGradient(
+                  colors: [
+                    color.withValues(alpha: 0.2),
+                    color.withValues(alpha: 0.1),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
                 borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: color.withValues(alpha: 0.3),
+                  width: 1,
+                ),
               ),
               child: Icon(
                 _getSubjectIcon(subject),
@@ -339,7 +449,7 @@ class _CoursesScreenState extends ConsumerState<CoursesScreen>
                 size: 28,
               ),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: 20),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -347,39 +457,61 @@ class _CoursesScreenState extends ConsumerState<CoursesScreen>
                   Text(
                     subject,
                     style: AppTextStyles.h3.copyWith(
-                      color: AppColors.textPrimary,
+                      color: Colors.white,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 6),
                   Text(
                     '${(index + 1) * 25} Soru • ${(index + 1) * 5} Ders',
                     style: AppTextStyles.bodyMedium.copyWith(
                       color: AppColors.textSecondary,
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  LinearProgressIndicator(
-                    value: (index + 1) * 0.15,
-                    backgroundColor: AppColors.border.withValues(alpha: 0.2),
-                    valueColor: AlwaysStoppedAnimation<Color>(color),
-                    borderRadius: BorderRadius.circular(4),
+                  const SizedBox(height: 12),
+                  Container(
+                    height: 6,
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                    child: FractionallySizedBox(
+                      alignment: Alignment.centerLeft,
+                      widthFactor: (index + 1) * 0.15,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [color, color.withValues(alpha: 0.7)],
+                          ),
+                          borderRadius: BorderRadius.circular(3),
+                        ),
+                      ),
+                    ),
                   ),
                 ],
               ),
             ),
             const SizedBox(width: 16),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
+                gradient: LinearGradient(
+                  colors: [
+                    color.withValues(alpha: 0.2),
+                    color.withValues(alpha: 0.1),
+                  ],
+                ),
                 borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: color.withValues(alpha: 0.3),
+                  width: 1,
+                ),
               ),
               child: Text(
                 '${((index + 1) * 15)}%',
                 style: AppTextStyles.bodySmall.copyWith(
                   color: color,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ),
@@ -391,39 +523,75 @@ class _CoursesScreenState extends ConsumerState<CoursesScreen>
 
   Widget _buildEmptyState() {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 120,
-            height: 120,
-            decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(60),
-            ),
-            child: Icon(
-              Icons.school_outlined,
-              size: 60,
-              color: AppColors.primary.withValues(alpha: 0.6),
-            ),
+      child: Container(
+        margin: const EdgeInsets.all(40),
+        padding: const EdgeInsets.all(32),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [
+              Color(0xFF2a2a2a),
+              Color(0xFF1f1f1f),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
-          const SizedBox(height: 24),
-          Text(
-            'Henüz Kurs Yok',
-            style: AppTextStyles.h3.copyWith(
-              color: AppColors.textPrimary,
-              fontWeight: FontWeight.bold,
-            ),
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+            color: AppColors.primary.withValues(alpha: 0.2),
+            width: 1,
           ),
-          const SizedBox(height: 8),
-          Text(
-            'Kurslar eklendiğinde burada görünecek',
-            style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.textSecondary,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.3),
+              offset: const Offset(0, 8),
+              blurRadius: 32,
+              spreadRadius: 0,
             ),
-            textAlign: TextAlign.center,
-          ),
-        ],
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    AppColors.primary.withValues(alpha: 0.2),
+                    AppColors.primary.withValues(alpha: 0.1),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(40),
+                border: Border.all(
+                  color: AppColors.primary.withValues(alpha: 0.3),
+                  width: 2,
+                ),
+              ),
+              child: Icon(
+                Icons.school_outlined,
+                size: 40,
+                color: AppColors.primary,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'Henüz Kurs Yok',
+              style: AppTextStyles.h3.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Kurslar eklendiğinde burada görünecek',
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: AppColors.textSecondary,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
       ),
     );
   }
