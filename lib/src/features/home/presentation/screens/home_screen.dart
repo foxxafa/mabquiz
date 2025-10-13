@@ -6,7 +6,6 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../quiz/presentation/screens/quiz_screen.dart';
 import '../../../auth/application/providers.dart';
-import '../../../auth/presentation/widgets/error_dialog.dart';
 
 /// Modern dashboard with Duolingo-style design
 class HomeScreen extends ConsumerStatefulWidget {
@@ -22,8 +21,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   late AnimationController _slideController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
-
-  bool _isLoggingOut = false;
 
   @override
   void initState() {
@@ -152,23 +149,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             ),
           ),
           const Spacer(),
-          IconButton(
-            onPressed: _isLoggingOut ? null : _handleSignOut,
-            icon: _isLoggingOut
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.white,
-                    ),
-                  )
-                : const Icon(
-                    Icons.logout,
-                    color: Colors.white,
-                  ),
-            tooltip: 'settings.logout'.tr(),
-          ),
         ],
       ),
     );
@@ -986,48 +966,4 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     );
   }
 
-  Future<void> _handleSignOut() async {
-    // Show confirmation dialog
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('home.logout_confirm_title'.tr()),
-        content: Text('home.logout_confirm_message'.tr()),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text('home.cancel'.tr()),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text('home.logout'.tr()),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed != true) {
-      return;
-    }
-
-    try {
-      setState(() => _isLoggingOut = true);
-
-      final authService = ref.read(authServiceProvider);
-      await authService.logout();
-
-      if (mounted) {
-        // Navigate to auth route so AuthGate can handle the redirect to login
-        context.go('/auth');
-      }
-    } catch (e) {
-      if (mounted) {
-        await AuthErrorDialog.showAuthError(context, e);
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isLoggingOut = false);
-      }
-    }
-  }
 }
