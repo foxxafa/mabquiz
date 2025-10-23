@@ -23,146 +23,171 @@ class SettingsScreen extends ConsumerWidget {
       backgroundColor: theme.brightness == Brightness.light 
           ? AppColors.background 
           : const Color(0xFF121212),
-      body: Column(
-        children: [
-          // Ana sayfadaki gibi navigation bar
-          SafeArea(
-            bottom: false,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [
-                    Color(0xFF3a3a3a),
-                    Color(0xFF2d2d2d),
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.2),
-                    offset: const Offset(0, 2),
-                    blurRadius: 8,
-                    spreadRadius: 0,
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  Text(
-                    'settings.title'.tr(),
-                    style: AppTextStyles.h2.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const Spacer(),
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Icon(
-                      Icons.settings,
-                      color: Colors.white,
-                      size: 20,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isSmallScreen = constraints.maxWidth < 600;
+          final horizontalPadding = isSmallScreen ? 12.0 : 16.0;
           
-          // İçerik
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(20.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 16),
-                  
-                  // Tema Bölümü
-                  _buildSectionHeader('Görünüm', Icons.palette),
-                  const SizedBox(height: 16),
-                  _buildThemeCards(context, ref, themeMode),
-                  
-                  const SizedBox(height: 32),
-                  
-                  // Dil Bölümü
-                  _buildSectionHeader('Dil ve Bölge', Icons.language),
-                  const SizedBox(height: 16),
-                  _buildLanguageCard(context, currentLanguage, theme),
-                  
-                  const SizedBox(height: 32),
-                  
-                  // Hesap Bölümü
-                  _buildSectionHeader('Hesap', Icons.person),
-                  const SizedBox(height: 24),
-                  _buildLogoutCard(context, ref, theme),
-                  
-                  const SizedBox(height: 20),
-                ],
+          return Column(
+            children: [
+              // Ana sayfadaki gibi navigation bar
+              SafeArea(
+                bottom: false,
+                child: Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: horizontalPadding, 
+                    vertical: isSmallScreen ? 10 : 12
+                  ),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [
+                        Color(0xFF3a3a3a),
+                        Color(0xFF2d2d2d),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.2),
+                        offset: const Offset(0, 2),
+                        blurRadius: 8,
+                        spreadRadius: 0,
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Text(
+                        'settings.title'.tr(),
+                        style: AppTextStyles.h2.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: isSmallScreen ? 20 : 24,
+                        ),
+                      ),
+                      const Spacer(),
+                      Container(
+                        padding: EdgeInsets.all(isSmallScreen ? 10 : 12),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.white.withValues(alpha: 0.15),
+                              Colors.white.withValues(alpha: 0.05),
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(isSmallScreen ? 10 : 12),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.2),
+                            width: 1,
+                          ),
+                        ),
+                        child: Icon(
+                          Icons.settings,
+                          color: Colors.white,
+                          size: isSmallScreen ? 22 : 24,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-            ),
-          ),
-        ],
+              
+              // İçerik
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: horizontalPadding,
+                    vertical: isSmallScreen ? 4 : 6,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      SizedBox(height: isSmallScreen ? 2 : 4),
+                      
+                      // Tema Bölümü
+                      _buildSectionHeader('Görünüm', Icons.palette, const Color(0xFFFF6B35), isSmallScreen),
+                      SizedBox(height: isSmallScreen ? 6 : 8),
+                      _buildThemeCards(context, ref, themeMode, isSmallScreen),
+                      
+                      SizedBox(height: isSmallScreen ? 12 : 16),
+                      
+                      // Dil Bölümü
+                      _buildSectionHeader('Dil ve Bölge', Icons.language, const Color(0xFF00C896), isSmallScreen),
+                      SizedBox(height: isSmallScreen ? 6 : 8),
+                      _buildLanguageCard(context, currentLanguage, theme, isSmallScreen),
+                      
+                      SizedBox(height: isSmallScreen ? 12 : 16),
+                      
+                      // Hesap Bölümü
+                      _buildSectionHeader('Hesap', Icons.person, const Color(0xFF8B5CF6), isSmallScreen),
+                      SizedBox(height: isSmallScreen ? 6 : 8),
+                      _buildLogoutCard(context, ref, theme, isSmallScreen),
+                      
+                      SizedBox(height: isSmallScreen ? 4 : 6),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
 
-  Widget _buildSectionHeader(String title, IconData icon) {
-    // Her bölüm için farklı renkler
-    Color iconColor;
-    Color backgroundColor;
-    
-    switch (title) {
-      case 'Görünüm':
-        iconColor = const Color(0xFF4F9CF9); // Mavi
-        backgroundColor = const Color(0xFF4F9CF9).withValues(alpha: 0.1);
-        break;
-      case 'Dil ve Bölge':
-        iconColor = const Color(0xFF58CC02); // Yeşil
-        backgroundColor = const Color(0xFF58CC02).withValues(alpha: 0.1);
-        break;
-      case 'Gizlilik ve Güvenlik':
-        iconColor = const Color(0xFFFF9600); // Turuncu
-        backgroundColor = const Color(0xFFFF9600).withValues(alpha: 0.1);
-        break;
-      default:
-        iconColor = Colors.white;
-        backgroundColor = const Color(0xFF3a3a3a);
-    }
-    
+  Widget _buildSectionHeader(String title, IconData icon, Color themeColor, bool isSmallScreen) {
     return Row(
       children: [
         Container(
-          padding: const EdgeInsets.all(8),
+          padding: EdgeInsets.all(isSmallScreen ? 8 : 12),
           decoration: BoxDecoration(
-            color: backgroundColor,
-            borderRadius: BorderRadius.circular(8),
+            gradient: LinearGradient(
+              colors: [
+                themeColor.withValues(alpha: 0.2),
+                themeColor.withValues(alpha: 0.1),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(isSmallScreen ? 8 : 12),
+            border: Border.all(
+              color: themeColor.withValues(alpha: 0.4),
+              width: 1.5,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: themeColor.withValues(alpha: 0.15),
+                offset: const Offset(0, 3),
+                blurRadius: 6,
+                spreadRadius: -1,
+              ),
+            ],
           ),
           child: Icon(
             icon,
-            color: iconColor,
-            size: 20,
+            color: themeColor,
+            size: isSmallScreen ? 20 : 24,
           ),
         ),
-        const SizedBox(width: 12),
+        SizedBox(width: isSmallScreen ? 8 : 12),
         Text(
           title,
           style: AppTextStyles.h4.copyWith(
             color: Colors.white,
             fontWeight: FontWeight.bold,
+            fontSize: isSmallScreen ? 16 : 18,
           ),
         ),
       ],
     );
   }
 
-  Widget _buildThemeCards(BuildContext context, WidgetRef ref, AppThemeMode currentTheme) {
+  Widget _buildThemeCards(BuildContext context, WidgetRef ref, AppThemeMode currentTheme, bool isSmallScreen) {
+    const themeColor = Color(0xFFFF6B35); // Sıcak turuncu
+    
     return Column(
       children: [
         _buildSettingsCard(
@@ -171,46 +196,54 @@ class SettingsScreen extends ConsumerWidget {
           subtitle: 'Aydınlık ve temiz görünüm',
           icon: Icons.light_mode_outlined,
           isSelected: currentTheme == AppThemeMode.light,
-          color: const Color(0xFFFFB800), // Sarı/altın
+          color: themeColor,
           onTap: () => ref.read(themeModeNotifierProvider.notifier).setLightTheme(),
+          isSmallScreen: isSmallScreen,
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: isSmallScreen ? 6 : 8),
         _buildSettingsCard(
           context: context,
           title: 'Koyu Tema',
           subtitle: 'Göz dostu karanlık mod',
           icon: Icons.dark_mode_outlined,
           isSelected: currentTheme == AppThemeMode.dark,
-          color: const Color(0xFF64B5F6), // Açık mavi - koyu temaya daha uygun
+          color: themeColor,
           onTap: () => ref.read(themeModeNotifierProvider.notifier).setDarkTheme(),
+          isSmallScreen: isSmallScreen,
         ),
       ],
     );
   }
 
-  Widget _buildLanguageCard(BuildContext context, currentLanguage, ThemeData theme) {
+  Widget _buildLanguageCard(BuildContext context, currentLanguage, ThemeData theme, bool isSmallScreen) {
+    const themeColor = Color(0xFF00C896); // Canlı yeşil
+    
     return _buildSettingsCard(
       context: context,
       title: 'settings.language'.tr(),
       subtitle: currentLanguage.name,
       icon: Icons.translate,
       isSelected: false,
-      color: const Color(0xFF1CB0F6), // Mavi
+      color: themeColor,
       onTap: () => _showLanguageDialog(context),
       showArrow: true,
+      isSmallScreen: isSmallScreen,
     );
   }
 
-  Widget _buildLogoutCard(BuildContext context, WidgetRef ref, ThemeData theme) {
+  Widget _buildLogoutCard(BuildContext context, WidgetRef ref, ThemeData theme, bool isSmallScreen) {
+    const themeColor = Color(0xFF8B5CF6); // Şık mor
+    
     return _buildSettingsCard(
       context: context,
       title: 'settings.logout'.tr(),
       subtitle: 'Hesabınızdan çıkış yapın',
       icon: Icons.logout_outlined,
       isSelected: false,
-      color: const Color(0xFFFF4B4B), // Kırmızı
+      color: themeColor,
       onTap: () => _showLogoutDialog(context, ref),
       isDangerous: true,
+      isSmallScreen: isSmallScreen,
     );
   }
 
@@ -224,6 +257,7 @@ class SettingsScreen extends ConsumerWidget {
     required VoidCallback onTap,
     bool showArrow = false,
     bool isDangerous = false,
+    required bool isSmallScreen,
   }) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
@@ -232,10 +266,10 @@ class SettingsScreen extends ConsumerWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.all(20),
+        padding: EdgeInsets.all(isSmallScreen ? 10 : 14),
         decoration: BoxDecoration(
           color: isDark ? const Color(0xFF2A2A2A) : const Color(0xFFFAFAFA),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(isSmallScreen ? 12 : 16),
           border: Border.all(
             color: isSelected 
                 ? color 
@@ -255,23 +289,39 @@ class SettingsScreen extends ConsumerWidget {
         child: Row(
           children: [
             Container(
-              width: 48,
-              height: 48,
+              width: isSmallScreen ? 44 : 52,
+              height: isSmallScreen ? 44 : 52,
               decoration: BoxDecoration(
-                color: isSelected 
-                    ? color
-                    : color.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
+                gradient: LinearGradient(
+                  colors: isSelected 
+                      ? [color, color.withValues(alpha: 0.8)]
+                      : [color.withValues(alpha: 0.15), color.withValues(alpha: 0.05)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(isSmallScreen ? 12 : 16),
+                border: Border.all(
+                  color: color.withValues(alpha: isSelected ? 1.0 : 0.3),
+                  width: isSelected ? 2 : 1,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: color.withValues(alpha: 0.2),
+                    offset: const Offset(0, 4),
+                    blurRadius: 8,
+                    spreadRadius: -2,
+                  ),
+                ],
               ),
               child: Icon(
                 icon,
                 color: isSelected 
                     ? Colors.white
                     : color,
-                size: 24,
+                size: isSmallScreen ? 22 : 26,
               ),
             ),
-            const SizedBox(width: 16),
+            SizedBox(width: isSmallScreen ? 12 : 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -281,6 +331,7 @@ class SettingsScreen extends ConsumerWidget {
                     style: AppTextStyles.bodyLarge.copyWith(
                       fontWeight: FontWeight.w600,
                       color: isDark ? const Color(0xFFE0E0E0) : const Color(0xFF1A1A1A),
+                      fontSize: isSmallScreen ? 14 : 16,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -290,6 +341,7 @@ class SettingsScreen extends ConsumerWidget {
                       color: isDark 
                           ? const Color(0xFFB0B0B0) 
                           : const Color(0xFF666666),
+                      fontSize: isSmallScreen ? 12 : 14,
                     ),
                   ),
                 ],
@@ -297,23 +349,23 @@ class SettingsScreen extends ConsumerWidget {
             ),
             if (isSelected)
               Container(
-                width: 24,
-                height: 24,
+                width: isSmallScreen ? 20 : 24,
+                height: isSmallScreen ? 20 : 24,
                 decoration: BoxDecoration(
                   color: const Color(0xFF58CC02), // Yeşil başarı rengi
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(isSmallScreen ? 10 : 12),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.check,
                   color: Colors.white,
-                  size: 16,
+                  size: isSmallScreen ? 12 : 16,
                 ),
               )
             else if (showArrow)
               Icon(
                 Icons.arrow_forward_ios,
                 color: isDark ? const Color(0xFF888888) : Colors.grey[600],
-                size: 16,
+                size: isSmallScreen ? 14 : 16,
               ),
           ],
         ),
