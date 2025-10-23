@@ -1,95 +1,89 @@
-import 'dart:convert';
-import 'dart:io';
-import 'package:path_provider/path_provider.dart';
+import '../../../../core/database/repositories/mab_repository.dart';
 import '../../application/bandit_manager.dart';
 import '../../domain/entities/question.dart';
 
-/// Repository for persisting MAB state
+/// Repository for persisting MAB state using SQLite
 class BanditStateRepository {
-  static const String _questionArmsFile = 'question_arms.json';
-  static const String _topicArmsFile = 'topic_arms.json';
+  final MabRepository _mabRepository = MabRepository();
 
-  /// Save question arm state
+  // Get current user ID (should be injected or retrieved from auth state)
+  String _getCurrentUserId() {
+    // TODO: Get from actual auth service
+    // For now, return a default user ID
+    return 'default_user';
+  }
+
+  /// Save question arm state to SQLite
   Future<void> saveQuestionArmState(String questionId, BanditArm arm) async {
     try {
-      final file = await _getQuestionArmsFile();
-      final existingData = await _loadJsonFile(file);
-      
-      existingData[questionId] = {
-        'questionId': arm.questionId,
-        'difficulty': arm.difficulty.name,
-        'attempts': arm.attempts,
-        'successes': arm.successes,
-        'failures': arm.failures,
-        'totalResponseTime': arm.totalResponseTime,
-        'userConfidence': arm.userConfidence,
-        'alpha': arm.alpha,
-        'beta': arm.beta,
-        'lastUpdated': DateTime.now().toIso8601String(),
-      };
-      
-      await _saveJsonFile(file, existingData);
+      final userId = _getCurrentUserId();
+      await _mabRepository.updateQuestionArmStats(
+        userId: userId,
+        questionId: questionId,
+        difficulty: arm.difficulty.name,
+        isCorrect: arm.successes > 0, // Simplified logic
+        responseTimeMs: arm.totalResponseTime,
+        userConfidence: arm.userConfidence,
+        alpha: arm.alpha,
+        beta: arm.beta,
+      );
     } catch (e) {
       // Silent fail for persistence - don't break the app
-      // ignore: avoid_print  
+      // ignore: avoid_print
       print('Warning: Failed to save question arm state: $e');
     }
   }
 
-  /// Save topic arm state
+  /// Save topic arm state to SQLite
   Future<void> saveTopicArmState(String topicKey, TopicArm arm) async {
     try {
-      final file = await _getTopicArmsFile();
-      final existingData = await _loadJsonFile(file);
-      
-      existingData[topicKey] = {
-        'topicKey': arm.topicKey,
-        'topic': arm.topic,
-        'knowledgeType': arm.knowledgeType,
-        'course': arm.course,
-        'attempts': arm.attempts,
-        'successes': arm.successes,
-        'failures': arm.failures,
-        'totalResponseTime': arm.totalResponseTime,
-        'alpha': arm.alpha,
-        'beta': arm.beta,
-        'lastUpdated': DateTime.now().toIso8601String(),
-      };
-      
-      await _saveJsonFile(file, existingData);
+      final userId = _getCurrentUserId();
+      await _mabRepository.updateTopicArmStats(
+        userId: userId,
+        topicKey: topicKey,
+        topic: arm.topic,
+        knowledgeType: arm.knowledgeType,
+        course: arm.course,
+        isCorrect: arm.successes > 0, // Simplified logic
+        responseTimeMs: arm.totalResponseTime,
+        alpha: arm.alpha,
+        beta: arm.beta,
+      );
     } catch (e) {
       // ignore: avoid_print
       print('Warning: Failed to save topic arm state: $e');
     }
   }
 
-  /// Load question arm state
+  /// Load question arm state from SQLite
   Future<BanditArm?> loadQuestionArmState(String questionId) async {
     try {
-      final file = await _getQuestionArmsFile();
-      final data = await _loadJsonFile(file);
-      final armData = data[questionId];
-      
-      if (armData == null) return null;
-      
+      final userId = _getCurrentUserId();
+      final dbArm = await _mabRepository.getQuestionArm(userId, questionId);
+
+      if (dbArm == null) return null;
+
       final arm = BanditArm(
-        questionId: armData['questionId'] ?? questionId,
+        questionId: dbArm.questionId,
         difficulty: DifficultyLevel.values.firstWhere(
-          (e) => e.name == armData['difficulty'],
+          (e) => e.name == dbArm.difficulty,
           orElse: () => DifficultyLevel.intermediate,
         ),
-        initialConfidence: (armData['userConfidence'] ?? 0.5).toDouble(),
+        initialConfidence: dbArm.userConfidence,
       );
-      
-      // Restore state
-      arm.attempts = armData['attempts'] ?? 0;
-      arm.successes = armData['successes'] ?? 0;
-      arm.failures = armData['failures'] ?? 0;
-      arm.totalResponseTime = armData['totalResponseTime'] ?? 0;
-      arm.userConfidence = (armData['userConfidence'] ?? 0.5).toDouble();
-      arm.alpha = (armData['alpha'] ?? 1.0).toDouble();
-      arm.beta = (armData['beta'] ?? 1.0).toDouble();
-      
+
+      // Restore state from database
+      arm.attempts = dbArm.attempts;
+      arm.successes = dbArm.successes;
+      arm.failures = dbArm.failures;
+      arm.totalResponseTime = dbArm.totalResponseTime;
+      arm.userConfidence = dbArm.userConfidence;
+      arm.alpha = dbArm.alpha;
+      arm.beta = dbArm.beta;
+      arm.lastAttempted = dbArm.lastAttempted != null
+          ? DateTime.fromMillisecondsSinceEpoch(dbArm.lastAttempted!)
+          : null;
+
       return arm;
     } catch (e) {
       // ignore: avoid_print
@@ -98,30 +92,29 @@ class BanditStateRepository {
     }
   }
 
-  /// Load topic arm state
+  /// Load topic arm state from SQLite
   Future<TopicArm?> loadTopicArmState(String topicKey) async {
     try {
-      final file = await _getTopicArmsFile();
-      final data = await _loadJsonFile(file);
-      final armData = data[topicKey];
-      
-      if (armData == null) return null;
-      
+      final userId = _getCurrentUserId();
+      final dbArm = await _mabRepository.getTopicArm(userId, topicKey);
+
+      if (dbArm == null) return null;
+
       final arm = TopicArm(
-        topicKey: armData['topicKey'] ?? topicKey,
-        topic: armData['topic'] ?? 'unknown',
-        knowledgeType: armData['knowledgeType'] ?? 'general',
-        course: armData['course'] ?? 'unknown',
+        topicKey: dbArm.topicKey,
+        topic: dbArm.topic,
+        knowledgeType: dbArm.knowledgeType,
+        course: dbArm.course,
       );
-      
-      // Restore state
-      arm.attempts = armData['attempts'] ?? 0;
-      arm.successes = armData['successes'] ?? 0;
-      arm.failures = armData['failures'] ?? 0;
-      arm.totalResponseTime = armData['totalResponseTime'] ?? 0;
-      arm.alpha = (armData['alpha'] ?? 1.0).toDouble();
-      arm.beta = (armData['beta'] ?? 1.0).toDouble();
-      
+
+      // Restore state from database
+      arm.attempts = dbArm.attempts;
+      arm.successes = dbArm.successes;
+      arm.failures = dbArm.failures;
+      arm.totalResponseTime = dbArm.totalResponseTime;
+      arm.alpha = dbArm.alpha;
+      arm.beta = dbArm.beta;
+
       return arm;
     } catch (e) {
       // ignore: avoid_print
@@ -130,50 +123,139 @@ class BanditStateRepository {
     }
   }
 
-  /// Clear all persisted data
+  /// Load all question arms for current user
+  Future<Map<String, BanditArm>> loadAllQuestionArms() async {
+    try {
+      final userId = _getCurrentUserId();
+      final dbArms = await _mabRepository.getAllQuestionArms(userId);
+
+      final arms = <String, BanditArm>{};
+      for (final dbArm in dbArms) {
+        final arm = BanditArm(
+          questionId: dbArm.questionId,
+          difficulty: DifficultyLevel.values.firstWhere(
+            (e) => e.name == dbArm.difficulty,
+            orElse: () => DifficultyLevel.intermediate,
+          ),
+          initialConfidence: dbArm.userConfidence,
+        );
+
+        arm.attempts = dbArm.attempts;
+        arm.successes = dbArm.successes;
+        arm.failures = dbArm.failures;
+        arm.totalResponseTime = dbArm.totalResponseTime;
+        arm.userConfidence = dbArm.userConfidence;
+        arm.alpha = dbArm.alpha;
+        arm.beta = dbArm.beta;
+        arm.lastAttempted = dbArm.lastAttempted != null
+            ? DateTime.fromMillisecondsSinceEpoch(dbArm.lastAttempted!)
+            : null;
+
+        arms[dbArm.questionId] = arm;
+      }
+
+      return arms;
+    } catch (e) {
+      // ignore: avoid_print
+      print('Warning: Failed to load all question arms: $e');
+      return {};
+    }
+  }
+
+  /// Load all topic arms for current user
+  Future<Map<String, TopicArm>> loadAllTopicArms() async {
+    try {
+      final userId = _getCurrentUserId();
+      final dbArms = await _mabRepository.getAllTopicArms(userId);
+
+      final arms = <String, TopicArm>{};
+      for (final dbArm in dbArms) {
+        final arm = TopicArm(
+          topicKey: dbArm.topicKey,
+          topic: dbArm.topic,
+          knowledgeType: dbArm.knowledgeType,
+          course: dbArm.course,
+        );
+
+        arm.attempts = dbArm.attempts;
+        arm.successes = dbArm.successes;
+        arm.failures = dbArm.failures;
+        arm.totalResponseTime = dbArm.totalResponseTime;
+        arm.alpha = dbArm.alpha;
+        arm.beta = dbArm.beta;
+
+        arms[dbArm.topicKey] = arm;
+      }
+
+      return arms;
+    } catch (e) {
+      // ignore: avoid_print
+      print('Warning: Failed to load all topic arms: $e');
+      return {};
+    }
+  }
+
+  /// Clear all persisted MAB data for current user
   Future<void> clearAllState() async {
     try {
-      final questionFile = await _getQuestionArmsFile();
-      final topicFile = await _getTopicArmsFile();
-      
-      if (await questionFile.exists()) {
-        await questionFile.delete();
-      }
-      if (await topicFile.exists()) {
-        await topicFile.delete();
-      }
+      final userId = _getCurrentUserId();
+      await _mabRepository.deleteAllQuestionArms(userId);
+      await _mabRepository.deleteAllTopicArms(userId);
     } catch (e) {
       // ignore: avoid_print
       print('Warning: Failed to clear state: $e');
     }
   }
 
-  // Private helper methods
-
-  Future<File> _getQuestionArmsFile() async {
-    final directory = await getApplicationDocumentsDirectory();
-    return File('${directory.path}/$_questionArmsFile');
-  }
-
-  Future<File> _getTopicArmsFile() async {
-    final directory = await getApplicationDocumentsDirectory();
-    return File('${directory.path}/$_topicArmsFile');
-  }
-
-  Future<Map<String, dynamic>> _loadJsonFile(File file) async {
-    if (!await file.exists()) {
+  /// Get MAB statistics
+  Future<Map<String, dynamic>> getStatistics() async {
+    try {
+      final userId = _getCurrentUserId();
+      return await _mabRepository.getMabStats(userId);
+    } catch (e) {
+      // ignore: avoid_print
+      print('Warning: Failed to get statistics: $e');
       return {};
     }
-    
-    final content = await file.readAsString();
-    if (content.trim().isEmpty) {
-      return {};
-    }
-    
-    return Map<String, dynamic>.from(jsonDecode(content));
   }
 
-  Future<void> _saveJsonFile(File file, Map<String, dynamic> data) async {
-    await file.writeAsString(jsonEncode(data));
+  /// Get questions that need practice
+  Future<List<String>> getWeakQuestionIds({
+    double threshold = 0.6,
+    int minAttempts = 3,
+  }) async {
+    try {
+      final userId = _getCurrentUserId();
+      final weakQuestions = await _mabRepository.getWeakQuestions(
+        userId,
+        threshold: threshold,
+        minAttempts: minAttempts,
+      );
+      return weakQuestions.map((q) => q.questionId).toList();
+    } catch (e) {
+      // ignore: avoid_print
+      print('Warning: Failed to get weak questions: $e');
+      return [];
+    }
+  }
+
+  /// Get topics that need practice
+  Future<List<String>> getWeakTopicKeys({
+    double threshold = 0.6,
+    int minAttempts = 5,
+  }) async {
+    try {
+      final userId = _getCurrentUserId();
+      final weakTopics = await _mabRepository.getWeakTopics(
+        userId,
+        threshold: threshold,
+        minAttempts: minAttempts,
+      );
+      return weakTopics.map((t) => t.topicKey).toList();
+    } catch (e) {
+      // ignore: avoid_print
+      print('Warning: Failed to get weak topics: $e');
+      return [];
+    }
   }
 }
