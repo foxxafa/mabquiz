@@ -4,11 +4,22 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:mabquiz/src/core/navigation/app_router.dart';
 import 'package:mabquiz/src/core/theme/app_theme.dart';
 import 'package:mabquiz/src/features/settings/application/providers.dart';
+import 'package:mabquiz/src/core/database/database_helper.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
-  
+
+  // Initialize database
+  try {
+    final db = await DatabaseHelper.instance.database;
+    final stats = await DatabaseHelper.instance.getDatabaseStats();
+    debugPrint('✅ Database initialized successfully');
+    debugPrint('📊 Database stats: $stats');
+  } catch (e) {
+    debugPrint('❌ Database initialization failed: $e');
+  }
+
   runApp(
     EasyLocalization(
       supportedLocales: const [

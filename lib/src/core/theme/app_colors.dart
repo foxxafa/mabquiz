@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  // Modern koyu tema renk paleti
+  // Modern koyu tema renk paleti - Konu bazlı performans stilinde
   static const Color primary = Color(0xFF4F9CF9);      // Modern mavi
   static const Color primaryLight = Color(0xFF6BB6FF);
   static const Color primaryDark = Color(0xFF2E5EAA);
 
-  static const Color secondary = Color(0xFF7C3AED);    // Mor
-  static const Color accent = Color(0xFFFF6B6B);       // Kırmızı-pembe
+  static const Color secondary = Color(0xFF9013FE);    // Canlı mor (matching rengi)
+  static const Color accent = Color(0xFFFF6B35);       // Sıcak turuncu
 
   // Koyu tema arka planlar
   static const Color background = Color(0xFF121212);   // Ana arka plan

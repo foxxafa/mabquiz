@@ -97,37 +97,6 @@ class AnalysisScreen extends ConsumerWidget {
               fontSize: 24,
             ),
           ),
-          const Spacer(),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: AppColors.primary.withValues(alpha: 0.3),
-                width: 1,
-              ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.analytics_rounded,
-                  color: AppColors.primary,
-                  size: 16,
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  'Güncel',
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 12,
-                  ),
-                ),
-              ],
-            ),
-          ),
         ],
       ),
     );
@@ -185,7 +154,7 @@ class AnalysisScreen extends ConsumerWidget {
                       'Toplam Soru',
                       '${stats['totalQuestions']}',
                       Icons.quiz_outlined,
-                      AppColors.primary,
+                      AppColors.multipleChoice, // Mavi
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -194,7 +163,7 @@ class AnalysisScreen extends ConsumerWidget {
                       'Doğru Cevap',
                       '${stats['correctAnswers']}',
                       Icons.check_circle_outline,
-                      AppColors.success,
+                      AppColors.trueFalse, // Yeşil
                     ),
                   ),
                 ],
@@ -207,7 +176,7 @@ class AnalysisScreen extends ConsumerWidget {
                       'Başarı Oranı',
                       '%${stats['successRate']}',
                       Icons.trending_up,
-                      AppColors.accent,
+                      AppColors.fillBlank, // Turuncu
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -216,7 +185,7 @@ class AnalysisScreen extends ConsumerWidget {
                       'Çalışma Süresi',
                       '${stats['totalStudyTime']}',
                       Icons.schedule,
-                      AppColors.secondary,
+                      AppColors.matching, // Mor
                     ),
                   ),
                 ],
@@ -381,7 +350,7 @@ class AnalysisScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 20),
               SizedBox(
-                height: 200,
+                height: 180,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8.0),
                   child: Row(
@@ -389,45 +358,49 @@ class AnalysisScreen extends ConsumerWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: weeklyData.map((data) {
                       final score = data['score'] as int;
-                      final maxHeight = 140.0;
+                      final maxHeight = 120.0;
                       final barHeight = (score / 100) * maxHeight;
-                      
+
+                      // Performansa göre renk belirleme (canlı renkler)
+                      Color barColor;
+                      if (score >= 80) {
+                        barColor = AppColors.trueFalse; // Cırtlak yeşil - mükemmel
+                      } else if (score >= 60) {
+                        barColor = const Color(0xFFFFB648); // Soft turuncu - iyi
+                      } else {
+                        barColor = const Color(0xFF6B6B6B); // Soft gri - zayıf
+                      }
+
                       return Expanded(
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 6),
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
-                              Text(
-                                '$score%',
-                                style: AppTextStyles.caption.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.white.withValues(alpha: 0.7),
+                              if (score > 0)
+                                Text(
+                                  '$score',
+                                  style: AppTextStyles.caption.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white.withValues(alpha: 0.9),
+                                    fontSize: 12,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 8),
+                              const SizedBox(height: 6),
                               Container(
                                 width: double.infinity,
                                 height: barHeight,
                                 constraints: const BoxConstraints(
-                                  minHeight: 4.0,
+                                  minHeight: 8.0,
                                 ),
                                 decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(8),
-                                  gradient: LinearGradient(
-                                    begin: Alignment.topCenter,
-                                    end: Alignment.bottomCenter,
-                                    colors: [
-                                      AppColors.primary,
-                                      AppColors.primaryLight,
-                                    ],
-                                  ),
+                                  color: barColor,
+                                  borderRadius: BorderRadius.circular(12),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: AppColors.primary.withValues(alpha: 0.3),
-                                      blurRadius: 8,
-                                      offset: const Offset(0, 4),
-                                      spreadRadius: -2,
+                                      color: barColor.withValues(alpha: 0.3),
+                                      blurRadius: 6,
+                                      offset: const Offset(0, 2),
                                     ),
                                   ],
                                 ),
@@ -436,8 +409,9 @@ class AnalysisScreen extends ConsumerWidget {
                               Text(
                                 data['day'],
                                 style: AppTextStyles.caption.copyWith(
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.white.withValues(alpha: 0.6),
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white.withValues(alpha: 0.7),
+                                  fontSize: 11,
                                 ),
                               ),
                             ],
