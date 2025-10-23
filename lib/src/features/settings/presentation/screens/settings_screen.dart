@@ -108,21 +108,21 @@ class SettingsScreen extends ConsumerWidget {
                       SizedBox(height: isSmallScreen ? 2 : 4),
                       
                       // Tema Bölümü
-                      _buildSectionHeader('Görünüm', Icons.palette, const Color(0xFFFF6B35), isSmallScreen),
+                      _buildSectionHeader('Görünüm', Icons.palette, AppColors.accent, isSmallScreen),
                       SizedBox(height: isSmallScreen ? 6 : 8),
                       _buildThemeCards(context, ref, themeMode, isSmallScreen),
-                      
+
                       SizedBox(height: isSmallScreen ? 12 : 16),
-                      
+
                       // Dil Bölümü
-                      _buildSectionHeader('Dil ve Bölge', Icons.language, const Color(0xFF00C896), isSmallScreen),
+                      _buildSectionHeader('Dil ve Bölge', Icons.language, AppColors.success, isSmallScreen),
                       SizedBox(height: isSmallScreen ? 6 : 8),
                       _buildLanguageCard(context, currentLanguage, theme, isSmallScreen),
-                      
+
                       SizedBox(height: isSmallScreen ? 12 : 16),
-                      
+
                       // Hesap Bölümü
-                      _buildSectionHeader('Hesap', Icons.person, const Color(0xFF8B5CF6), isSmallScreen),
+                      _buildSectionHeader('Hesap', Icons.person, AppColors.secondary, isSmallScreen),
                       SizedBox(height: isSmallScreen ? 6 : 8),
                       _buildLogoutCard(context, ref, theme, isSmallScreen),
                       
@@ -186,8 +186,6 @@ class SettingsScreen extends ConsumerWidget {
   }
 
   Widget _buildThemeCards(BuildContext context, WidgetRef ref, AppThemeMode currentTheme, bool isSmallScreen) {
-    const themeColor = Color(0xFFFF6B35); // Sıcak turuncu
-    
     return Column(
       children: [
         _buildSettingsCard(
@@ -196,7 +194,7 @@ class SettingsScreen extends ConsumerWidget {
           subtitle: 'Aydınlık ve temiz görünüm',
           icon: Icons.light_mode_outlined,
           isSelected: currentTheme == AppThemeMode.light,
-          color: themeColor,
+          color: AppColors.accent,
           onTap: () => ref.read(themeModeNotifierProvider.notifier).setLightTheme(),
           isSmallScreen: isSmallScreen,
         ),
@@ -207,7 +205,7 @@ class SettingsScreen extends ConsumerWidget {
           subtitle: 'Göz dostu karanlık mod',
           icon: Icons.dark_mode_outlined,
           isSelected: currentTheme == AppThemeMode.dark,
-          color: themeColor,
+          color: AppColors.accent,
           onTap: () => ref.read(themeModeNotifierProvider.notifier).setDarkTheme(),
           isSmallScreen: isSmallScreen,
         ),
@@ -216,15 +214,13 @@ class SettingsScreen extends ConsumerWidget {
   }
 
   Widget _buildLanguageCard(BuildContext context, currentLanguage, ThemeData theme, bool isSmallScreen) {
-    const themeColor = Color(0xFF00C896); // Canlı yeşil
-    
     return _buildSettingsCard(
       context: context,
       title: 'settings.language'.tr(),
       subtitle: currentLanguage.name,
       icon: Icons.translate,
       isSelected: false,
-      color: themeColor,
+      color: AppColors.success,
       onTap: () => _showLanguageDialog(context),
       showArrow: true,
       isSmallScreen: isSmallScreen,
@@ -232,15 +228,13 @@ class SettingsScreen extends ConsumerWidget {
   }
 
   Widget _buildLogoutCard(BuildContext context, WidgetRef ref, ThemeData theme, bool isSmallScreen) {
-    const themeColor = Color(0xFF8B5CF6); // Şık mor
-    
     return _buildSettingsCard(
       context: context,
       title: 'settings.logout'.tr(),
       subtitle: 'Hesabınızdan çıkış yapın',
       icon: Icons.logout_outlined,
       isSelected: false,
-      color: themeColor,
+      color: AppColors.secondary,
       onTap: () => _showLogoutDialog(context, ref),
       isDangerous: true,
       isSmallScreen: isSmallScreen,
