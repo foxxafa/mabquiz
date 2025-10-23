@@ -92,7 +92,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
 
   void _initializeAnimations() {
     _questionController = AnimationController(
-      duration: const Duration(milliseconds: 800),
+      duration: const Duration(milliseconds: 1200),
       vsync: this,
     );
 
@@ -101,15 +101,15 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
       end: 1.0,
     ).animate(CurvedAnimation(
       parent: _questionController,
-      curve: Curves.easeInOut,
+      curve: const Interval(0.2, 1.0, curve: Curves.easeOutBack),
     ));
 
     _slideAnimation = Tween<Offset>(
-      begin: const Offset(1.0, 0.0),
+      begin: const Offset(0.0, 0.5),
       end: Offset.zero,
     ).animate(CurvedAnimation(
       parent: _questionController,
-      curve: Curves.easeOutCubic,
+      curve: const Interval(0.0, 0.8, curve: Curves.easeOutCubic),
     ));
   }
 
@@ -224,8 +224,8 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
     );
     _answeredQuestionIds.add(_currentQuestion!.id);
 
-    // Kısa bir süre bekleyip bir sonraki soruya geç
-    Future.delayed(const Duration(milliseconds: 1500), () {
+    // Cevap gösteriminden sonra bir sonraki soruya geç
+    Future.delayed(const Duration(milliseconds: 2000), () {
       if (mounted) {
         _loadNextQuestion();
       }
@@ -289,11 +289,12 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Color(0xFF0f0f0f),
-              Color(0xFF1a1a1a),
+              Color(0xFF0a0a0a),
+              Color(0xFF1a1645),
+              Color(0xFF2E5EAA),
               Color(0xFF1a1a1a),
             ],
-            stops: [0.0, 0.5, 1.0],
+            stops: [0.0, 0.3, 0.7, 1.0],
           ),
         ),
         child: SafeArea(
@@ -323,32 +324,56 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
 
   Widget _buildQuizHeader(ThemeData theme) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
+        gradient: LinearGradient(
           colors: [
-            Color(0xFF3a3a3a),
-            Color(0xFF2d2d2d),
+            Colors.white.withValues(alpha: 0.12),
+            Colors.white.withValues(alpha: 0.06),
+            Colors.white.withValues(alpha: 0.03),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
+        border: Border(
+          bottom: BorderSide(
+            color: Colors.white.withValues(alpha: 0.1),
+            width: 1,
+          ),
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.2),
-            offset: const Offset(0, 2),
-            blurRadius: 8,
+            color: Colors.black.withValues(alpha: 0.3),
+            offset: const Offset(0, 4),
+            blurRadius: 16,
+            spreadRadius: 0,
+          ),
+          BoxShadow(
+            color: Colors.white.withValues(alpha: 0.05),
+            offset: const Offset(0, -1),
+            blurRadius: 2,
             spreadRadius: 0,
           ),
         ],
       ),
       child: Row(
         children: [
-          IconButton(
-            onPressed: () => _showExitDialog(),
-            icon: const Icon(
-              Icons.arrow_back,
-              color: Colors.white,
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.2),
+                width: 1,
+              ),
+            ),
+            child: IconButton(
+              onPressed: () => _showExitDialog(),
+              icon: const Icon(
+                Icons.arrow_back_ios_new,
+                color: Colors.white,
+                size: 20,
+              ),
             ),
           ),
           Expanded(
@@ -356,27 +381,45 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
               widget.subject ?? 'Quiz',
               style: theme.textTheme.headlineSmall?.copyWith(
                 color: Colors.white,
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.w700,
+                fontSize: 22,
               ),
               textAlign: TextAlign.center,
             ),
           ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                'Soru $_questionIndex',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: Colors.white70,
-                ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.primary.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: theme.colorScheme.primary.withValues(alpha: 0.4),
+                width: 1,
               ),
-              Text(
-                '$_correctAnswers doğru',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: Colors.white70,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Soru $_questionIndex',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 12,
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 2),
+                Text(
+                  '$_correctAnswers doğru',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.primary,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 11,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -403,33 +446,40 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
                     children: [
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.all(32),
+                        padding: const EdgeInsets.all(40),
                         decoration: BoxDecoration(
-                          gradient: const LinearGradient(
+                          gradient: LinearGradient(
                             colors: [
-                              Color(0xFF2a2a2a),
-                              Color(0xFF1f1f1f),
+                              Colors.white.withValues(alpha: 0.15),
+                              Colors.white.withValues(alpha: 0.08),
+                              Colors.white.withValues(alpha: 0.05),
                             ],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
-                          borderRadius: BorderRadius.circular(24),
+                          borderRadius: BorderRadius.circular(32),
                           border: Border.all(
-                            color: theme.colorScheme.primary.withValues(alpha: 0.3),
+                            color: Colors.white.withValues(alpha: 0.2),
                             width: 1.5,
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.4),
-                              offset: const Offset(0, 8),
-                              blurRadius: 32,
+                              color: Colors.black.withValues(alpha: 0.3),
+                              offset: const Offset(0, 20),
+                              blurRadius: 40,
+                              spreadRadius: -10,
+                            ),
+                            BoxShadow(
+                              color: theme.colorScheme.primary.withValues(alpha: 0.2),
+                              offset: const Offset(0, 0),
+                              blurRadius: 24,
                               spreadRadius: -8,
                             ),
                             BoxShadow(
-                              color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                              offset: const Offset(0, 0),
-                              blurRadius: 16,
-                              spreadRadius: -4,
+                              color: Colors.white.withValues(alpha: 0.1),
+                              offset: const Offset(0, -1),
+                              blurRadius: 4,
+                              spreadRadius: 0,
                             ),
                           ],
                         ),
@@ -504,9 +554,10 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
       textAlign: TextAlign.center,
       style: theme.textTheme.headlineMedium?.copyWith(
         color: Colors.white,
-        fontWeight: FontWeight.w600,
-        fontSize: 20,
-        height: 1.4,
+        fontWeight: FontWeight.w700,
+        fontSize: 24,
+        height: 1.5,
+        letterSpacing: -0.5,
       ),
     );
   }
@@ -521,33 +572,40 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
             }
           },
           child: Container(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
+              gradient: LinearGradient(
                 colors: [
-                  Color(0xFF2a2a2a),
-                  Color(0xFF1f1f1f),
+                  Colors.white.withValues(alpha: 0.12),
+                  Colors.white.withValues(alpha: 0.08),
+                  Colors.white.withValues(alpha: 0.04),
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(24),
               border: Border.all(
-                color: theme.colorScheme.primary.withValues(alpha: 0.5),
+                color: theme.colorScheme.primary.withValues(alpha: 0.6),
                 width: 2,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.3),
-                  offset: const Offset(0, 4),
-                  blurRadius: 12,
-                  spreadRadius: -4,
+                  color: Colors.black.withValues(alpha: 0.4),
+                  offset: const Offset(0, 8),
+                  blurRadius: 20,
+                  spreadRadius: -6,
                 ),
                 BoxShadow(
-                  color: theme.colorScheme.primary.withValues(alpha: 0.2),
+                  color: theme.colorScheme.primary.withValues(alpha: 0.3),
                   offset: const Offset(0, 0),
-                  blurRadius: 8,
+                  blurRadius: 12,
                   spreadRadius: -2,
+                ),
+                BoxShadow(
+                  color: Colors.white.withValues(alpha: 0.1),
+                  offset: const Offset(0, -1),
+                  blurRadius: 4,
+                  spreadRadius: 0,
                 ),
               ],
             ),
@@ -560,8 +618,9 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
               textInputAction: TextInputAction.done,
               style: const TextStyle(
                 color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.w500,
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                letterSpacing: -0.2,
               ),
               decoration: InputDecoration(
                 hintText: 'Cevabınızı buraya yazın...',
@@ -594,17 +653,19 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
             style: ElevatedButton.styleFrom(
               backgroundColor: theme.colorScheme.primary,
               foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 16),
+              padding: const EdgeInsets.symmetric(vertical: 18),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(20),
               ),
-              elevation: 0,
+              elevation: 8,
+              shadowColor: theme.colorScheme.primary.withValues(alpha: 0.4),
             ),
             child: const Text(
               'Cevabı Gönder',
               style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                letterSpacing: -0.2,
               ),
             ),
           ),
@@ -651,31 +712,39 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
       }
 
       return AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        margin: const EdgeInsets.only(bottom: 16),
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeOutCubic,
+        margin: const EdgeInsets.only(bottom: 20),
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              backgroundColor,
-              backgroundColor.withValues(alpha: 0.8),
+              backgroundColor.withValues(alpha: 0.9),
+              backgroundColor.withValues(alpha: 0.7),
+              backgroundColor.withValues(alpha: 0.5),
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: borderColor, width: 2),
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: borderColor, width: 1.5),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.3),
-              offset: const Offset(0, 4),
-              blurRadius: 12,
-              spreadRadius: -4,
+              color: Colors.black.withValues(alpha: 0.4),
+              offset: const Offset(0, 8),
+              blurRadius: 20,
+              spreadRadius: -6,
+            ),
+            BoxShadow(
+              color: Colors.white.withValues(alpha: 0.1),
+              offset: const Offset(0, -1),
+              blurRadius: 2,
+              spreadRadius: 0,
             ),
             if (_isAnswered && (isSelected || isCorrect))
               BoxShadow(
-                color: (iconColor ?? Colors.white).withValues(alpha: 0.2),
+                color: (iconColor ?? Colors.white).withValues(alpha: 0.3),
                 offset: const Offset(0, 0),
-                blurRadius: 8,
+                blurRadius: 16,
                 spreadRadius: -2,
               ),
           ],
@@ -683,57 +752,79 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
         child: Material(
           color: Colors.transparent,
           child: InkWell(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(24),
+            splashColor: theme.colorScheme.primary.withValues(alpha: 0.2),
+            highlightColor: theme.colorScheme.primary.withValues(alpha: 0.1),
             onTap: _isAnswered ? null : () => _answerQuestion(option),
             child: Padding(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
               child: Row(
                 children: [
                   Container(
-                    width: 32,
-                    height: 32,
+                    width: 40,
+                    height: 40,
                     decoration: BoxDecoration(
-                      color: theme.colorScheme.primary.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: theme.colorScheme.primary.withValues(alpha: 0.4),
-                        width: 1,
+                      gradient: LinearGradient(
+                        colors: [
+                          theme.colorScheme.primary.withValues(alpha: 0.3),
+                          theme.colorScheme.primary.withValues(alpha: 0.1),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                       ),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: theme.colorScheme.primary.withValues(alpha: 0.5),
+                        width: 1.5,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: theme.colorScheme.primary.withValues(alpha: 0.2),
+                          offset: const Offset(0, 2),
+                          blurRadius: 8,
+                          spreadRadius: -2,
+                        ),
+                      ],
                     ),
                     child: Center(
                       child: Text(
                         String.fromCharCode(65 + index), // A, B, C, D
                         style: TextStyle(
-                          color: theme.colorScheme.primary,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 18,
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 20),
                   Expanded(
                     child: Text(
                       option,
                       style: theme.textTheme.bodyLarge?.copyWith(
                         color: textColor,
-                        fontWeight: FontWeight.w500,
-                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 17,
+                        height: 1.3,
                       ),
                     ),
                   ),
                   if (trailingIcon != null)
                     Container(
-                      width: 32,
-                      height: 32,
+                      width: 36,
+                      height: 36,
                       decoration: BoxDecoration(
                         color: iconColor?.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(
+                          color: iconColor?.withValues(alpha: 0.4) ?? Colors.transparent,
+                          width: 1.5,
+                        ),
                       ),
                       child: Icon(
                         trailingIcon,
                         color: iconColor,
-                        size: 20,
+                        size: 22,
                       ),
                     ),
                 ],
