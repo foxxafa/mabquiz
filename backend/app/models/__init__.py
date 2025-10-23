@@ -10,5 +10,16 @@ Base = declarative_base()
 from .question_metrics import QuestionMetrics, StudentResponse
 from .user import UserDB
 from .question import Question
+from .quiz_session import UserQuizSession
+from .mab_state import UserMABQuestionArm, UserMABTopicArm
 
-__all__ = ["Base", "QuestionMetrics", "StudentResponse", "UserDB", "Question"]
+__all__ = [
+    "Base",
+    "QuestionMetrics",
+    "StudentResponse",
+    "UserDB",
+    "Question",
+    "UserQuizSession",
+    "UserMABQuestionArm",
+    "UserMABTopicArm",
+]

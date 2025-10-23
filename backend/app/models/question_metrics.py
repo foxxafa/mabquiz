@@ -2,12 +2,10 @@
 Database models for question difficulty metrics
 """
 
-from sqlalchemy import Column, Integer, String, Float, DateTime, Boolean, Text
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Column, Integer, String, Float, DateTime, Boolean, Text, Index
 from sqlalchemy.sql import func
 from datetime import datetime
-
-Base = declarative_base()
+from . import Base
 
 class QuestionMetrics(Base):
     """Store calculated difficulty metrics for questions"""
