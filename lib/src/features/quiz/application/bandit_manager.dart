@@ -88,13 +88,14 @@ class BanditManager {
 
     arm.attempts++;
     arm.totalResponseTime += responseTime.inMilliseconds;
+    arm.lastAttempted = DateTime.now(); // Track last attempt time
 
     if (confidence != null) {
       arm.userConfidence = confidence;
     }
 
     _updateArmParameters(arm, isCorrect, responseTime);
-    
+
     // Update topic-level statistics
     if (question != null) {
       _updateTopicPerformance(question, isCorrect, responseTime);
@@ -259,29 +260,45 @@ class BanditManager {
   }
 
   void _updateArmParameters(BanditArm arm, bool isCorrect, Duration responseTime) {
-    // Update Beta distribution parameters
-    if (isCorrect) {
-      arm.alpha += 1;
-    } else {
-      arm.beta += 1;
-    }
+    // Expected time based on difficulty
+    final expectedTime = _getExpectedTime(arm.difficulty);
 
-    // Adjust parameters based on response time
-    final timeBonus = _calculateTimeBonus(responseTime, arm.difficulty);
-    if (isCorrect && timeBonus > 0) {
-      arm.alpha += timeBonus * learningRate;
+    if (isCorrect) {
+      // Correct answer
+      arm.alpha += 1;
+
+      // Bonus for fast correct answers
+      if (responseTime < expectedTime) {
+        final timeBonus = _calculateTimeBonus(responseTime, arm.difficulty);
+        arm.alpha += timeBonus * learningRate;
+      }
+    } else {
+      // Wrong answer
+      arm.beta += 1;
+
+      // Extra penalty for slow wrong answers (indicates struggling)
+      if (responseTime > expectedTime) {
+        arm.beta += 0.3;
+      }
+    }
+  }
+
+  Duration _getExpectedTime(DifficultyLevel difficulty) {
+    switch (difficulty) {
+      case DifficultyLevel.beginner:
+        return const Duration(seconds: 10);
+      case DifficultyLevel.intermediate:
+        return const Duration(seconds: 20);
+      case DifficultyLevel.advanced:
+        return const Duration(seconds: 30);
     }
   }
 
   double _calculateTimeBonus(Duration responseTime, DifficultyLevel difficulty) {
-    // Expected time based on difficulty
-    final expectedTime = switch (difficulty) {
-      DifficultyLevel.beginner => Duration(seconds: 10),
-      DifficultyLevel.intermediate => Duration(seconds: 20),
-      DifficultyLevel.advanced => Duration(seconds: 30),
-    };
+    final expectedTime = _getExpectedTime(difficulty);
 
     if (responseTime < expectedTime) {
+      // Return bonus as percentage of time saved (0.0 to 1.0)
       return (expectedTime.inMilliseconds - responseTime.inMilliseconds) /
              expectedTime.inMilliseconds;
     }
@@ -359,7 +376,10 @@ class BanditManager {
 
     for (final question in topicQuestions) {
       final arm = _questionArms[question.id]!;
-      final sample = _sampleFromBeta(arm.alpha, arm.beta);
+      // Use decayed parameters for temporal forgetting
+      final decayedAlpha = arm.getDecayedAlpha();
+      final decayedBeta = arm.getDecayedBeta();
+      final sample = _sampleFromBeta(decayedAlpha, decayedBeta);
 
       if (sample > bestQuestionSample) {
         bestQuestionSample = sample;
@@ -475,6 +495,7 @@ class BanditArm {
   int failures = 0;
   int totalResponseTime = 0; // in milliseconds
   double userConfidence = 0.5;
+  DateTime? lastAttempted;
 
   // Beta distribution parameters for Thompson Sampling
   double alpha = 1.0;
@@ -486,6 +507,98 @@ class BanditArm {
     required double initialConfidence,
   }) {
     userConfidence = initialConfidence;
+    // Set prior based on difficulty level
+    _initializePrior();
+  }
+
+  /// Initialize prior distribution based on question difficulty
+  /// This helps with cold start problem
+  void _initializePrior() {
+    switch (difficulty) {
+      case DifficultyLevel.beginner:
+        // Expect 70% success rate for beginners
+        alpha = 7.0;
+        beta = 3.0;
+        break;
+      case DifficultyLevel.intermediate:
+        // Expect 50% success rate for intermediate
+        alpha = 5.0;
+        beta = 5.0;
+        break;
+      case DifficultyLevel.advanced:
+        // Expect 30% success rate for advanced
+        alpha = 3.0;
+        beta = 7.0;
+        break;
+    }
+  }
+
+  /// Get success rate with temporal decay (forgetting curve)
+  double getDecayedSuccessRate() {
+    if (attempts == 0) return alpha / (alpha + beta);
+
+    final rawSuccessRate = successes / attempts;
+
+    // If never attempted or very recent, no decay
+    if (lastAttempted == null) return rawSuccessRate;
+
+    final daysSinceLastAttempt =
+        DateTime.now().difference(lastAttempted!).inDays;
+
+    // Ebbinghaus forgetting curve: decay over 30 days
+    final decayFactor = exp(-daysSinceLastAttempt / 30.0);
+
+    // Blend between current performance and expected (prior)
+    final expectedRate = alpha / (alpha + beta);
+    return rawSuccessRate * decayFactor + expectedRate * (1 - decayFactor);
+  }
+
+  /// Get alpha parameter with temporal decay
+  double getDecayedAlpha() {
+    if (lastAttempted == null) return alpha;
+
+    final daysSinceLastAttempt =
+        DateTime.now().difference(lastAttempted!).inDays;
+    final decayFactor = exp(-daysSinceLastAttempt / 30.0);
+
+    // Regress toward prior
+    final priorAlpha = _getPriorAlpha();
+    return alpha * decayFactor + priorAlpha * (1 - decayFactor);
+  }
+
+  /// Get beta parameter with temporal decay
+  double getDecayedBeta() {
+    if (lastAttempted == null) return beta;
+
+    final daysSinceLastAttempt =
+        DateTime.now().difference(lastAttempted!).inDays;
+    final decayFactor = exp(-daysSinceLastAttempt / 30.0);
+
+    // Regress toward prior
+    final priorBeta = _getPriorBeta();
+    return beta * decayFactor + priorBeta * (1 - decayFactor);
+  }
+
+  double _getPriorAlpha() {
+    switch (difficulty) {
+      case DifficultyLevel.beginner:
+        return 7.0;
+      case DifficultyLevel.intermediate:
+        return 5.0;
+      case DifficultyLevel.advanced:
+        return 3.0;
+    }
+  }
+
+  double _getPriorBeta() {
+    switch (difficulty) {
+      case DifficultyLevel.beginner:
+        return 3.0;
+      case DifficultyLevel.intermediate:
+        return 5.0;
+      case DifficultyLevel.advanced:
+        return 7.0;
+    }
   }
 }
 

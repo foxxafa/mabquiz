@@ -51,9 +51,13 @@ dependencies:
 
   # File system access for MAB persistence
   path_provider: ^2.1.1
-  
+
   # Authentication and storage
   shared_preferences: ^2.2.2
+
+  # SQLite database
+  sqflite: ^2.3.0
+  path: ^1.9.0
 
 dev_dependencies:
   flutter_test:
