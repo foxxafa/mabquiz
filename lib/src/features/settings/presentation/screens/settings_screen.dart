@@ -377,7 +377,7 @@ class SettingsScreen extends ConsumerWidget {
   void _showLogoutDialog(BuildContext context, WidgetRef ref) {
     showDialog(
       context: context,
-      builder: (BuildContext context) => AlertDialog(
+      builder: (BuildContext dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
@@ -393,7 +393,7 @@ class SettingsScreen extends ConsumerWidget {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => Navigator.of(dialogContext).pop(),
             child: Text(
               'İptal',
               style: AppTextStyles.buttonText.copyWith(
@@ -403,11 +403,12 @@ class SettingsScreen extends ConsumerWidget {
           ),
           ElevatedButton(
             onPressed: () async {
-              Navigator.of(context).pop();
+              Navigator.of(dialogContext).pop();
               final authService = ref.read(authServiceProvider);
               await authService.logout();
-              // ignore: use_build_context_synchronously
-              context.go('/auth');
+              if (context.mounted) {
+                context.go('/auth');
+              }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFFF4B4B), // Kırmızı
