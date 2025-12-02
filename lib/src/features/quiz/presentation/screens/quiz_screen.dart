@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../domain/entities/question.dart';
 import '../../application/bandit_manager.dart';
+import '../../application/providers.dart';
 import '../../data/services/asset_question_loader.dart';
 
 /// Modern quiz screen with adaptive learning
@@ -25,7 +26,8 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
   late Animation<double> _questionAnimation;
   late Animation<Offset> _slideAnimation;
 
-  final BanditManager _banditManager = BanditManager();
+  // Use global BanditManager from provider
+  BanditManager? _banditManager;
 
   Question? _currentQuestion;
   int _questionIndex = 0;
@@ -47,8 +49,8 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
   void initState() {
     super.initState();
     _initializeAnimations();
-    _loadQuestions();
-    
+    _initializeBanditManager();
+
     // TextField listener for fill in blank questions
     _fillInBlankController.addListener(() {
       final hasText = _fillInBlankController.text.trim().isNotEmpty;
@@ -60,29 +62,43 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
     });
   }
 
+  Future<void> _initializeBanditManager() async {
+    // Get initialized BanditManager from provider
+    final banditManagerAsync = ref.read(banditManagerInitProvider);
+
+    banditManagerAsync.whenData((manager) {
+      _banditManager = manager;
+      _loadQuestions();
+    });
+
+    // If not yet loaded, just use the base provider
+    if (_banditManager == null) {
+      _banditManager = ref.read(banditManagerProvider);
+      _loadQuestions();
+    }
+  }
+
   void _loadQuestions() async {
-    if (widget.subject != null) {
-      try {
-        // Load questions directly from assets for mock mode
-        // print('[QuizScreen] Loading questions for subject: ${widget.subject}');
-        final questions =
-            await AssetQuestionLoader.loadAllQuestionsForSubject(widget.subject!);
-        // print('Questions loaded successfully: ${questions.length} questions');
-        _banditManager.initializeQuestions(questions); // Initialize BanditManager
-        setState(() {
-          _availableQuestions = questions;
-          _questionsLoaded = true;
-        });
-        _loadNextQuestion();
-      } catch (e) {
-        // Fallback to default questions or show error
-        setState(() {
-          _availableQuestions = [];
-          _questionsLoaded = true;
-        });
-      }
-    } else {
-      // No subject specified, show error or navigate back
+    if (_banditManager == null || widget.subject == null) {
+      setState(() {
+        _availableQuestions = [];
+        _questionsLoaded = true;
+      });
+      return;
+    }
+
+    try {
+      // Load questions directly from assets for mock mode
+      final questions =
+          await AssetQuestionLoader.loadAllQuestionsForSubject(widget.subject!);
+      _banditManager!.initializeQuestions(questions); // Initialize BanditManager
+      setState(() {
+        _availableQuestions = questions;
+        _questionsLoaded = true;
+      });
+      _loadNextQuestion();
+    } catch (e) {
+      // Fallback to default questions or show error
       setState(() {
         _availableQuestions = [];
         _questionsLoaded = true;
@@ -122,7 +138,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
   }
 
   void _loadNextQuestion() {
-    if (!_questionsLoaded) return;
+    if (!_questionsLoaded || _banditManager == null) return;
 
     var availableQuestions = _availableQuestions
         .where((q) => !_answeredQuestionIds.contains(q.id))
@@ -137,7 +153,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
     if (availableQuestions.isNotEmpty) {
       // Use BanditManager to select the next question
       final recommendedQuestion =
-          _banditManager.selectNextQuestion(availableQuestions);
+          _banditManager!.selectNextQuestion(availableQuestions);
 
       if (recommendedQuestion != null) {
         setState(() {
@@ -201,8 +217,8 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
     }
   }
 
-  void _answerQuestion(String answer) {
-    if (_isAnswered || _currentQuestion == null) return;
+  void _answerQuestion(String answer) async {
+    if (_isAnswered || _currentQuestion == null || _banditManager == null) return;
 
     setState(() {
       _isAnswered = true;
@@ -216,11 +232,12 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
       _correctAnswers++;
     }
 
-    // BanditManager'a sonucu bildir
-    _banditManager.updatePerformance(
+    // BanditManager'a sonucu bildir ve veritabanına kaydet
+    await _banditManager!.updatePerformance(
       questionId: _currentQuestion!.id,
       isCorrect: isCorrect,
       responseTime: const Duration(seconds: 5), // Placeholder
+      question: _currentQuestion, // Pass question for database save
     );
     _answeredQuestionIds.add(_currentQuestion!.id);
 
