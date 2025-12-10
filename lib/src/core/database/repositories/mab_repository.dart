@@ -12,11 +12,23 @@ class MabRepository {
   /// Save or update a question arm
   Future<void> saveQuestionArm(MabQuestionArmDbModel arm) async {
     final db = await _dbHelper.database;
-    await db.insert(
-      'mab_question_arms',
-      arm.toMap(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
+
+    if (arm.id != null) {
+      // Update existing record (preserves created_at)
+      await db.update(
+        'mab_question_arms',
+        arm.toMap(),
+        where: 'id = ?',
+        whereArgs: [arm.id],
+      );
+    } else {
+      // Insert new record
+      await db.insert(
+        'mab_question_arms',
+        arm.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.ignore,
+      );
+    }
   }
 
   /// Get a question arm for a specific user and question
@@ -50,15 +62,21 @@ class MabRepository {
   }
 
   /// Update question arm statistics after user response
+  /// Note: attempts/successes/failures are already updated in BanditManager,
+  /// so we pass the final values directly instead of incrementing here
   Future<void> updateQuestionArmStats({
     required String userId,
     required String questionId,
-    required String difficulty,
     required bool isCorrect,
     required int responseTimeMs,
     required double userConfidence,
     required double alpha,
     required double beta,
+    // Parameters to receive already-calculated values from BanditManager
+    int? attempts,
+    int? successes,
+    int? failures,
+    int? totalResponseTime,
   }) async {
     final now = DateTime.now().millisecondsSinceEpoch;
 
@@ -66,18 +84,17 @@ class MabRepository {
     final existing = await getQuestionArm(userId, questionId);
 
     if (existing != null) {
-      // Update existing arm
+      // Update existing arm with values from BanditManager (no double counting)
       final updated = existing.copyWith(
-        attempts: existing.attempts + 1,
-        successes: isCorrect ? existing.successes + 1 : existing.successes,
-        failures: !isCorrect ? existing.failures + 1 : existing.failures,
-        totalResponseTime: existing.totalResponseTime + responseTimeMs,
+        attempts: attempts ?? existing.attempts + 1,
+        successes: successes ?? (isCorrect ? existing.successes + 1 : existing.successes),
+        failures: failures ?? (!isCorrect ? existing.failures + 1 : existing.failures),
+        totalResponseTime: totalResponseTime ?? existing.totalResponseTime + responseTimeMs,
         userConfidence: userConfidence,
         alpha: alpha,
         beta: beta,
-        lastAttempted: now, // Track when last attempted
-        lastUpdated: now,
-        isSynced: false,
+        lastAttempted: now,
+        updatedAt: now,
       );
       await saveQuestionArm(updated);
     } else {
@@ -85,17 +102,16 @@ class MabRepository {
       final newArm = MabQuestionArmDbModel(
         userId: userId,
         questionId: questionId,
-        difficulty: difficulty,
-        attempts: 1,
-        successes: isCorrect ? 1 : 0,
-        failures: isCorrect ? 0 : 1,
-        totalResponseTime: responseTimeMs,
+        attempts: attempts ?? 1,
+        successes: successes ?? (isCorrect ? 1 : 0),
+        failures: failures ?? (isCorrect ? 0 : 1),
+        totalResponseTime: totalResponseTime ?? responseTimeMs,
         userConfidence: userConfidence,
         alpha: alpha,
         beta: beta,
-        lastAttempted: now, // Track when last attempted
-        lastUpdated: now,
+        lastAttempted: now,
         createdAt: now,
+        updatedAt: now,
       );
       await saveQuestionArm(newArm);
     }
@@ -126,11 +142,23 @@ class MabRepository {
   /// Save or update a topic arm
   Future<void> saveTopicArm(MabTopicArmDbModel arm) async {
     final db = await _dbHelper.database;
-    await db.insert(
-      'mab_topic_arms',
-      arm.toMap(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
+
+    if (arm.id != null) {
+      // Update existing record (preserves created_at)
+      await db.update(
+        'mab_topic_arms',
+        arm.toMap(),
+        where: 'id = ?',
+        whereArgs: [arm.id],
+      );
+    } else {
+      // Insert new record
+      await db.insert(
+        'mab_topic_arms',
+        arm.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.ignore,
+      );
+    }
   }
 
   /// Get a topic arm for a specific user and topic
@@ -190,6 +218,11 @@ class MabRepository {
     required int responseTimeMs,
     required double alpha,
     required double beta,
+    // Parameters to receive already-calculated values from BanditManager
+    int? attempts,
+    int? successes,
+    int? failures,
+    int? totalResponseTime,
   }) async {
     final now = DateTime.now().millisecondsSinceEpoch;
 
@@ -197,16 +230,15 @@ class MabRepository {
     final existing = await getTopicArm(userId, topicKey);
 
     if (existing != null) {
-      // Update existing arm
+      // Update existing arm with values from BanditManager (no double counting)
       final updated = existing.copyWith(
-        attempts: existing.attempts + 1,
-        successes: isCorrect ? existing.successes + 1 : existing.successes,
-        failures: !isCorrect ? existing.failures + 1 : existing.failures,
-        totalResponseTime: existing.totalResponseTime + responseTimeMs,
+        attempts: attempts ?? existing.attempts + 1,
+        successes: successes ?? (isCorrect ? existing.successes + 1 : existing.successes),
+        failures: failures ?? (!isCorrect ? existing.failures + 1 : existing.failures),
+        totalResponseTime: totalResponseTime ?? existing.totalResponseTime + responseTimeMs,
         alpha: alpha,
         beta: beta,
-        lastUpdated: now,
-        isSynced: false,
+        updatedAt: now,
       );
       await saveTopicArm(updated);
     } else {
@@ -217,13 +249,13 @@ class MabRepository {
         topic: topic,
         knowledgeType: knowledgeType,
         course: course,
-        attempts: 1,
-        successes: isCorrect ? 1 : 0,
-        failures: isCorrect ? 0 : 1,
-        totalResponseTime: responseTimeMs,
+        attempts: attempts ?? 1,
+        successes: successes ?? (isCorrect ? 1 : 0),
+        failures: failures ?? (isCorrect ? 0 : 1),
+        totalResponseTime: totalResponseTime ?? responseTimeMs,
         alpha: alpha,
         beta: beta,
-        lastUpdated: now,
+        updatedAt: now,
         createdAt: now,
       );
       await saveTopicArm(newArm);
@@ -339,21 +371,49 @@ class MabRepository {
     };
   }
 
-  /// Get unsynced MAB data count
-  Future<Map<String, int>> getUnsyncedCount(String userId) async {
+  /// Get records that need sync (updated after lastSyncTime) - Delta sync
+  Future<Map<String, List<Map<String, dynamic>>>> getRecordsToSync(
+    String userId,
+    int lastSyncTime,
+  ) async {
+    final db = await _dbHelper.database;
+
+    final questionArms = await db.query(
+      'mab_question_arms',
+      where: 'user_id = ? AND updated_at > ?',
+      whereArgs: [userId, lastSyncTime],
+    );
+
+    final topicArms = await db.query(
+      'mab_topic_arms',
+      where: 'user_id = ? AND updated_at > ?',
+      whereArgs: [userId, lastSyncTime],
+    );
+
+    return {
+      'questionArms': questionArms,
+      'topicArms': topicArms,
+    };
+  }
+
+  /// Get count of records that need sync
+  Future<Map<String, int>> getPendingSyncCount(
+    String userId,
+    int lastSyncTime,
+  ) async {
     final db = await _dbHelper.database;
 
     final questionArms = Sqflite.firstIntValue(
       await db.rawQuery(
-        'SELECT COUNT(*) FROM mab_question_arms WHERE user_id = ? AND is_synced = 0',
-        [userId],
+        'SELECT COUNT(*) FROM mab_question_arms WHERE user_id = ? AND updated_at > ?',
+        [userId, lastSyncTime],
       ),
     ) ?? 0;
 
     final topicArms = Sqflite.firstIntValue(
       await db.rawQuery(
-        'SELECT COUNT(*) FROM mab_topic_arms WHERE user_id = ? AND is_synced = 0',
-        [userId],
+        'SELECT COUNT(*) FROM mab_topic_arms WHERE user_id = ? AND updated_at > ?',
+        [userId, lastSyncTime],
       ),
     ) ?? 0;
 
@@ -362,25 +422,5 @@ class MabRepository {
       'topicArms': topicArms,
       'total': questionArms + topicArms,
     };
-  }
-
-  /// Mark MAB data as synced
-  Future<void> markAsSynced(String userId) async {
-    final db = await _dbHelper.database;
-    final now = DateTime.now().millisecondsSinceEpoch;
-
-    await db.update(
-      'mab_question_arms',
-      {'is_synced': 1, 'synced_at': now},
-      where: 'user_id = ? AND is_synced = 0',
-      whereArgs: [userId],
-    );
-
-    await db.update(
-      'mab_topic_arms',
-      {'is_synced': 1, 'synced_at': now},
-      where: 'user_id = ? AND is_synced = 0',
-      whereArgs: [userId],
-    );
   }
 }

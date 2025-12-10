@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/services/sync_provider.dart';
+import '../../../auth/application/providers.dart' show currentUserProvider;
 import '../../domain/entities/question.dart';
 import '../../application/bandit_manager.dart';
 import '../../application/providers.dart';
@@ -41,6 +43,9 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
   final FocusNode _fillInBlankFocusNode = FocusNode();
   bool _hasTypedAnswer = false;
 
+  // Response time tracking
+  DateTime? _questionStartTime;
+
   final List<String> _answeredQuestionIds = [];
   List<Question> _availableQuestions = [];
   bool _questionsLoaded = false;
@@ -63,19 +68,28 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
   }
 
   Future<void> _initializeBanditManager() async {
-    // Get initialized BanditManager from provider
+    // Get initialized BanditManager from provider (with userId loaded)
     final banditManagerAsync = ref.read(banditManagerInitProvider);
 
-    banditManagerAsync.whenData((manager) {
-      _banditManager = manager;
-      _loadQuestions();
-    });
-
-    // If not yet loaded, just use the base provider
-    if (_banditManager == null) {
-      _banditManager = ref.read(banditManagerProvider);
-      _loadQuestions();
-    }
+    banditManagerAsync.when(
+      data: (manager) {
+        _banditManager = manager;
+        _loadQuestions();
+      },
+      loading: () {
+        // Wait for the provider to load, then retry
+        Future.delayed(const Duration(milliseconds: 100), () {
+          if (mounted) {
+            _initializeBanditManager();
+          }
+        });
+      },
+      error: (_, __) {
+        // On error, use base provider without userId (offline mode)
+        _banditManager = ref.read(banditManagerProvider);
+        _loadQuestions();
+      },
+    );
   }
 
   void _loadQuestions() async {
@@ -163,6 +177,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
           _questionIndex++;
           _fillInBlankController.clear();
           _hasTypedAnswer = false;
+          _questionStartTime = DateTime.now(); // Start timer for response time
         });
         
         // Fill in blank için focus'u yeniden ayarla
@@ -232,11 +247,16 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
       _correctAnswers++;
     }
 
+    // Calculate actual response time
+    final responseTime = _questionStartTime != null
+        ? DateTime.now().difference(_questionStartTime!)
+        : const Duration(seconds: 5); // Fallback if timer not set
+
     // BanditManager'a sonucu bildir ve veritabanına kaydet
     await _banditManager!.updatePerformance(
       questionId: _currentQuestion!.id,
       isCorrect: isCorrect,
-      responseTime: const Duration(seconds: 5), // Placeholder
+      responseTime: responseTime,
       question: _currentQuestion, // Pass question for database save
     );
     _answeredQuestionIds.add(_currentQuestion!.id);
@@ -283,6 +303,13 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
           ),
           ElevatedButton(
             onPressed: () {
+              // Trigger sync when exiting quiz
+              final user = ref.read(currentUserProvider);
+              if (user != null) {
+                // ignore: avoid_print
+                print('🔄 QuizScreen: Triggering sync on exit...');
+                ref.read(syncNotifierProvider.notifier).sync(user.uid);
+              }
               context.go('/home');
             },
             style: ElevatedButton.styleFrom(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/services/sync_provider.dart';
 import '../../application/providers.dart';
 import 'login_screen.dart';
 
@@ -30,6 +31,11 @@ class AuthGate extends ConsumerWidget {
           // Use a post-frame callback to ensure the widget is built before navigating.
           WidgetsBinding.instance.addPostFrameCallback((_) {
             print('🏠 AuthGate: Executing navigation to /home');
+
+            // Trigger sync after login
+            print('🔄 AuthGate: Triggering post-login sync...');
+            ref.read(syncNotifierProvider.notifier).sync(user.uid);
+
             context.go('/home');
           });
           // Return a loading screen while the navigation is happening.

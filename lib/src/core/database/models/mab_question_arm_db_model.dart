@@ -3,7 +3,6 @@ class MabQuestionArmDbModel {
   final int? id;
   final String userId;
   final String questionId;
-  final String difficulty;
   final int attempts;
   final int successes;
   final int failures;
@@ -11,17 +10,14 @@ class MabQuestionArmDbModel {
   final double userConfidence;
   final double alpha;
   final double beta;
-  final int? lastAttempted; // When was this question last attempted
-  final int lastUpdated;
+  final int? lastAttempted;
   final int createdAt;
-  final int? syncedAt;
-  final bool isSynced;
+  final int updatedAt;
 
   MabQuestionArmDbModel({
     this.id,
     required this.userId,
     required this.questionId,
-    required this.difficulty,
     this.attempts = 0,
     this.successes = 0,
     this.failures = 0,
@@ -30,10 +26,8 @@ class MabQuestionArmDbModel {
     this.alpha = 1.0,
     this.beta = 1.0,
     this.lastAttempted,
-    required this.lastUpdated,
     required this.createdAt,
-    this.syncedAt,
-    this.isSynced = false,
+    required this.updatedAt,
   });
 
   /// Convert from database map
@@ -42,7 +36,6 @@ class MabQuestionArmDbModel {
       id: map['id'] as int?,
       userId: map['user_id'] as String,
       questionId: map['question_id'] as String,
-      difficulty: map['difficulty'] as String,
       attempts: map['attempts'] as int? ?? 0,
       successes: map['successes'] as int? ?? 0,
       failures: map['failures'] as int? ?? 0,
@@ -51,10 +44,8 @@ class MabQuestionArmDbModel {
       alpha: (map['alpha'] as num?)?.toDouble() ?? 1.0,
       beta: (map['beta'] as num?)?.toDouble() ?? 1.0,
       lastAttempted: map['last_attempted'] as int?,
-      lastUpdated: map['last_updated'] as int,
       createdAt: map['created_at'] as int,
-      syncedAt: map['synced_at'] as int?,
-      isSynced: (map['is_synced'] as int) == 1,
+      updatedAt: map['updated_at'] as int,
     );
   }
 
@@ -64,7 +55,6 @@ class MabQuestionArmDbModel {
       if (id != null) 'id': id,
       'user_id': userId,
       'question_id': questionId,
-      'difficulty': difficulty,
       'attempts': attempts,
       'successes': successes,
       'failures': failures,
@@ -73,10 +63,8 @@ class MabQuestionArmDbModel {
       'alpha': alpha,
       'beta': beta,
       'last_attempted': lastAttempted,
-      'last_updated': lastUpdated,
       'created_at': createdAt,
-      'synced_at': syncedAt,
-      'is_synced': isSynced ? 1 : 0,
+      'updated_at': updatedAt,
     };
   }
 
@@ -85,7 +73,6 @@ class MabQuestionArmDbModel {
     int? id,
     String? userId,
     String? questionId,
-    String? difficulty,
     int? attempts,
     int? successes,
     int? failures,
@@ -94,16 +81,13 @@ class MabQuestionArmDbModel {
     double? alpha,
     double? beta,
     int? lastAttempted,
-    int? lastUpdated,
     int? createdAt,
-    int? syncedAt,
-    bool? isSynced,
+    int? updatedAt,
   }) {
     return MabQuestionArmDbModel(
       id: id ?? this.id,
       userId: userId ?? this.userId,
       questionId: questionId ?? this.questionId,
-      difficulty: difficulty ?? this.difficulty,
       attempts: attempts ?? this.attempts,
       successes: successes ?? this.successes,
       failures: failures ?? this.failures,
@@ -112,10 +96,8 @@ class MabQuestionArmDbModel {
       alpha: alpha ?? this.alpha,
       beta: beta ?? this.beta,
       lastAttempted: lastAttempted ?? this.lastAttempted,
-      lastUpdated: lastUpdated ?? this.lastUpdated,
       createdAt: createdAt ?? this.createdAt,
-      syncedAt: syncedAt ?? this.syncedAt,
-      isSynced: isSynced ?? this.isSynced,
+      updatedAt: updatedAt ?? this.updatedAt,
     );
   }
 

@@ -31,6 +31,10 @@ class ApiConfig {
   static String get submitResponse => '$baseUrl/api/difficulty/responses/submit';
   static String get globalStats => '$baseUrl/api/difficulty/stats/global';
   static String get calculateDifficulty => '$baseUrl/api/difficulty/calculate/batch';
+
+  // Sync endpoints
+  static String get syncMab => '$baseUrl/api/v1/sync/mab';
+  static String get syncStatus => '$baseUrl/api/v1/sync/mab/status';
   
   // Headers
   static const Map<String, String> headers = {

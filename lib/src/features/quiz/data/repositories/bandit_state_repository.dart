@@ -1,6 +1,5 @@
 import '../../../../core/database/repositories/mab_repository.dart';
 import '../../application/bandit_manager.dart';
-import '../../domain/entities/question.dart';
 
 /// Repository for persisting MAB state using SQLite
 class BanditStateRepository {
@@ -20,7 +19,6 @@ class BanditStateRepository {
       await _mabRepository.updateQuestionArmStats(
         userId: userId,
         questionId: questionId,
-        difficulty: arm.difficulty.name,
         isCorrect: arm.successes > 0, // Simplified logic
         responseTimeMs: arm.totalResponseTime,
         userConfidence: arm.userConfidence,
@@ -65,10 +63,6 @@ class BanditStateRepository {
 
       final arm = BanditArm(
         questionId: dbArm.questionId,
-        difficulty: DifficultyLevel.values.firstWhere(
-          (e) => e.name == dbArm.difficulty,
-          orElse: () => DifficultyLevel.intermediate,
-        ),
         initialConfidence: dbArm.userConfidence,
       );
 
@@ -133,10 +127,6 @@ class BanditStateRepository {
       for (final dbArm in dbArms) {
         final arm = BanditArm(
           questionId: dbArm.questionId,
-          difficulty: DifficultyLevel.values.firstWhere(
-            (e) => e.name == dbArm.difficulty,
-            orElse: () => DifficultyLevel.intermediate,
-          ),
           initialConfidence: dbArm.userConfidence,
         );
 

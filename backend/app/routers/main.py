@@ -19,14 +19,27 @@ try:
     print("✅ Auth router imported successfully")
     router.include_router(auth_router)  # auth router will be included under /api/v1
     print("✅ Auth router registered successfully")
-    print(f"🔍 Auth router routes: {[route.path for route in auth_router.routes]}")
-    print(f"🔍 Main router routes: {[route.path for route in router.routes]}")
 except ImportError as e:
     print(f"❌ Auth router import failed: {e}")
     import traceback
     print(f"❌ Full traceback: {traceback.format_exc()}")
 except Exception as e:
     print(f"❌ Error registering auth router: {e}")
+    import traceback
+    print(f"❌ Full traceback: {traceback.format_exc()}")
+
+print("🔧 Attempting to import sync router...")
+try:
+    from .sync import router as sync_router
+    print("✅ Sync router imported successfully")
+    router.include_router(sync_router)  # sync router will be included under /api/v1
+    print("✅ Sync router registered successfully")
+except ImportError as e:
+    print(f"❌ Sync router import failed: {e}")
+    import traceback
+    print(f"❌ Full traceback: {traceback.format_exc()}")
+except Exception as e:
+    print(f"❌ Error registering sync router: {e}")
     import traceback
     print(f"❌ Full traceback: {traceback.format_exc()}")
 

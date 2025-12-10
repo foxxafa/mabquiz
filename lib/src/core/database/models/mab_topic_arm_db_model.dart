@@ -12,10 +12,8 @@ class MabTopicArmDbModel {
   final int totalResponseTime;
   final double alpha;
   final double beta;
-  final int lastUpdated;
   final int createdAt;
-  final int? syncedAt;
-  final bool isSynced;
+  final int updatedAt;
 
   MabTopicArmDbModel({
     this.id,
@@ -30,10 +28,8 @@ class MabTopicArmDbModel {
     this.totalResponseTime = 0,
     this.alpha = 1.0,
     this.beta = 1.0,
-    required this.lastUpdated,
     required this.createdAt,
-    this.syncedAt,
-    this.isSynced = false,
+    required this.updatedAt,
   });
 
   /// Convert from database map
@@ -51,10 +47,8 @@ class MabTopicArmDbModel {
       totalResponseTime: map['total_response_time'] as int? ?? 0,
       alpha: (map['alpha'] as num?)?.toDouble() ?? 1.0,
       beta: (map['beta'] as num?)?.toDouble() ?? 1.0,
-      lastUpdated: map['last_updated'] as int,
       createdAt: map['created_at'] as int,
-      syncedAt: map['synced_at'] as int?,
-      isSynced: (map['is_synced'] as int) == 1,
+      updatedAt: map['updated_at'] as int,
     );
   }
 
@@ -73,10 +67,8 @@ class MabTopicArmDbModel {
       'total_response_time': totalResponseTime,
       'alpha': alpha,
       'beta': beta,
-      'last_updated': lastUpdated,
       'created_at': createdAt,
-      'synced_at': syncedAt,
-      'is_synced': isSynced ? 1 : 0,
+      'updated_at': updatedAt,
     };
   }
 
@@ -94,10 +86,8 @@ class MabTopicArmDbModel {
     int? totalResponseTime,
     double? alpha,
     double? beta,
-    int? lastUpdated,
     int? createdAt,
-    int? syncedAt,
-    bool? isSynced,
+    int? updatedAt,
   }) {
     return MabTopicArmDbModel(
       id: id ?? this.id,
@@ -112,10 +102,8 @@ class MabTopicArmDbModel {
       totalResponseTime: totalResponseTime ?? this.totalResponseTime,
       alpha: alpha ?? this.alpha,
       beta: beta ?? this.beta,
-      lastUpdated: lastUpdated ?? this.lastUpdated,
       createdAt: createdAt ?? this.createdAt,
-      syncedAt: syncedAt ?? this.syncedAt,
-      isSynced: isSynced ?? this.isSynced,
+      updatedAt: updatedAt ?? this.updatedAt,
     );
   }
 

@@ -66,15 +66,16 @@ class BanditManager {
   }
 
   /// Initialize bandit arms for a set of questions
+  /// Only creates new arms if they don't already exist (preserves database data)
   void initializeQuestions(List<Question> questions) {
     for (final question in questions) {
-      _questionArms[question.id] = BanditArm(
+      // Only create if not already loaded from database
+      _questionArms.putIfAbsent(question.id, () => BanditArm(
         questionId: question.id,
-        difficulty: question.difficulty,
         initialConfidence: question.initialConfidence,
-      );
-      
-      // Initialize topic-level arms
+      ));
+
+      // Initialize topic-level arms (only if not exists)
       final topicKey = question.mabKey;
       _topicArms.putIfAbsent(topicKey, () => TopicArm(
         topicKey: topicKey,
@@ -94,10 +95,9 @@ class BanditManager {
       if (!_questionArms.containsKey(question.id)) {
         _questionArms[question.id] = BanditArm(
           questionId: question.id,
-          difficulty: question.difficulty,
           initialConfidence: question.initialConfidence,
         );
-        
+
         final topicKey = question.mabKey;
         _topicArms.putIfAbsent(topicKey, () => TopicArm(
           topicKey: topicKey,
@@ -158,21 +158,30 @@ class BanditManager {
     bool isCorrect,
     Duration responseTime,
   ) async {
-    if (_userId == null) return;
+    if (_userId == null) {
+      print('⚠️ BanditManager: userId null, veritabanına kaydedilemiyor!');
+      return;
+    }
 
     try {
+      print('💾 BanditManager: Veritabanına kaydediliyor - userId: $_userId, questionId: ${arm.questionId}, isCorrect: $isCorrect, responseTime: ${responseTime.inMilliseconds}ms');
       await _repository.updateQuestionArmStats(
         userId: _userId!,
         questionId: arm.questionId,
-        difficulty: arm.difficulty.name,
         isCorrect: isCorrect,
         responseTimeMs: responseTime.inMilliseconds,
         userConfidence: arm.userConfidence,
         alpha: arm.alpha,
         beta: arm.beta,
+        // Pass already-calculated values to avoid double counting
+        attempts: arm.attempts,
+        successes: arm.successes,
+        failures: arm.failures,
+        totalResponseTime: arm.totalResponseTime,
       );
+      print('✅ BanditManager: Soru performansı veritabanına kaydedildi! (attempts: ${arm.attempts}, successes: ${arm.successes})');
     } catch (e) {
-      // Log error but continue
+      print('❌ BanditManager: Veritabanı kayıt hatası: $e');
     }
   }
 
@@ -191,7 +200,6 @@ class BanditManager {
           : Duration.zero,
       successRate: arm.attempts > 0 ? arm.successes / arm.attempts : 0.0,
       confidence: _calculateConfidence(arm),
-      difficulty: arm.difficulty,
     );
   }
   
@@ -334,8 +342,8 @@ class BanditManager {
   }
 
   void _updateArmParameters(BanditArm arm, bool isCorrect, Duration responseTime) {
-    // Expected time based on difficulty
-    final expectedTime = _getExpectedTime(arm.difficulty);
+    // Expected time (default: 15 seconds)
+    const expectedTime = Duration(seconds: 15);
 
     if (isCorrect) {
       // Correct answer
@@ -343,7 +351,8 @@ class BanditManager {
 
       // Bonus for fast correct answers
       if (responseTime < expectedTime) {
-        final timeBonus = _calculateTimeBonus(responseTime, arm.difficulty);
+        final timeBonus = (expectedTime.inMilliseconds - responseTime.inMilliseconds) /
+                         expectedTime.inMilliseconds;
         arm.alpha += timeBonus * learningRate;
       }
     } else {
@@ -355,29 +364,6 @@ class BanditManager {
         arm.beta += 0.3;
       }
     }
-  }
-
-  Duration _getExpectedTime(DifficultyLevel difficulty) {
-    switch (difficulty) {
-      case DifficultyLevel.beginner:
-        return const Duration(seconds: 10);
-      case DifficultyLevel.intermediate:
-        return const Duration(seconds: 20);
-      case DifficultyLevel.advanced:
-        return const Duration(seconds: 30);
-    }
-  }
-
-  double _calculateTimeBonus(Duration responseTime, DifficultyLevel difficulty) {
-    final expectedTime = _getExpectedTime(difficulty);
-
-    if (responseTime < expectedTime) {
-      // Return bonus as percentage of time saved (0.0 to 1.0)
-      return (expectedTime.inMilliseconds - responseTime.inMilliseconds) /
-             expectedTime.inMilliseconds;
-    }
-
-    return 0.0;
   }
 
   double _calculateConfidence(BanditArm arm) {
@@ -590,7 +576,6 @@ class BanditManager {
 /// Represents a single arm in the multi-armed bandit
 class BanditArm {
   final String questionId;
-  final DifficultyLevel difficulty;
 
   int attempts = 0;
   int successes = 0;
@@ -600,29 +585,24 @@ class BanditArm {
   DateTime? lastAttempted;
 
   // Beta distribution parameters for Thompson Sampling
+  // Neutral prior: α=1, β=1 (uniform distribution)
   double alpha = 1.0;
   double beta = 1.0;
 
   BanditArm({
     required this.questionId,
-    required this.difficulty,
-    required double initialConfidence,
+    double initialConfidence = 0.5,
   }) {
     userConfidence = initialConfidence;
-    // Set prior based on difficulty level
-    _initializePrior();
+    // Neutral prior - no assumptions about difficulty
+    alpha = 1.0;
+    beta = 1.0;
   }
 
   /// Create from database model
   factory BanditArm.fromDbModel(MabQuestionArmDbModel dbModel) {
-    final difficulty = DifficultyLevel.values.firstWhere(
-      (d) => d.name == dbModel.difficulty,
-      orElse: () => DifficultyLevel.intermediate,
-    );
-
     final arm = BanditArm(
       questionId: dbModel.questionId,
-      difficulty: difficulty,
       initialConfidence: dbModel.userConfidence,
     );
 
@@ -641,28 +621,6 @@ class BanditArm {
     return arm;
   }
 
-  /// Initialize prior distribution based on question difficulty
-  /// This helps with cold start problem
-  void _initializePrior() {
-    switch (difficulty) {
-      case DifficultyLevel.beginner:
-        // Expect 70% success rate for beginners
-        alpha = 7.0;
-        beta = 3.0;
-        break;
-      case DifficultyLevel.intermediate:
-        // Expect 50% success rate for intermediate
-        alpha = 5.0;
-        beta = 5.0;
-        break;
-      case DifficultyLevel.advanced:
-        // Expect 30% success rate for advanced
-        alpha = 3.0;
-        beta = 7.0;
-        break;
-    }
-  }
-
   /// Get success rate with temporal decay (forgetting curve)
   double getDecayedSuccessRate() {
     if (attempts == 0) return alpha / (alpha + beta);
@@ -678,9 +636,8 @@ class BanditArm {
     // Ebbinghaus forgetting curve: decay over 30 days
     final decayFactor = exp(-daysSinceLastAttempt / 30.0);
 
-    // Blend between current performance and expected (prior)
-    final expectedRate = alpha / (alpha + beta);
-    return rawSuccessRate * decayFactor + expectedRate * (1 - decayFactor);
+    // Blend between current performance and neutral (0.5)
+    return rawSuccessRate * decayFactor + 0.5 * (1 - decayFactor);
   }
 
   /// Get alpha parameter with temporal decay
@@ -691,9 +648,8 @@ class BanditArm {
         DateTime.now().difference(lastAttempted!).inDays;
     final decayFactor = exp(-daysSinceLastAttempt / 30.0);
 
-    // Regress toward prior
-    final priorAlpha = _getPriorAlpha();
-    return alpha * decayFactor + priorAlpha * (1 - decayFactor);
+    // Regress toward neutral prior (1.0)
+    return alpha * decayFactor + 1.0 * (1 - decayFactor);
   }
 
   /// Get beta parameter with temporal decay
@@ -704,31 +660,8 @@ class BanditArm {
         DateTime.now().difference(lastAttempted!).inDays;
     final decayFactor = exp(-daysSinceLastAttempt / 30.0);
 
-    // Regress toward prior
-    final priorBeta = _getPriorBeta();
-    return beta * decayFactor + priorBeta * (1 - decayFactor);
-  }
-
-  double _getPriorAlpha() {
-    switch (difficulty) {
-      case DifficultyLevel.beginner:
-        return 7.0;
-      case DifficultyLevel.intermediate:
-        return 5.0;
-      case DifficultyLevel.advanced:
-        return 3.0;
-    }
-  }
-
-  double _getPriorBeta() {
-    switch (difficulty) {
-      case DifficultyLevel.beginner:
-        return 3.0;
-      case DifficultyLevel.intermediate:
-        return 5.0;
-      case DifficultyLevel.advanced:
-        return 7.0;
-    }
+    // Regress toward neutral prior (1.0)
+    return beta * decayFactor + 1.0 * (1 - decayFactor);
   }
 }
 
@@ -785,7 +718,6 @@ class QuestionStats {
   final Duration averageResponseTime;
   final double successRate;
   final double confidence;
-  final DifficultyLevel difficulty;
 
   const QuestionStats({
     required this.questionId,
@@ -795,7 +727,6 @@ class QuestionStats {
     required this.averageResponseTime,
     required this.successRate,
     required this.confidence,
-    required this.difficulty,
   });
 }
 
