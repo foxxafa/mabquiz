@@ -256,9 +256,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
             child: ElevatedButton(
               onPressed: isLoading ? null : _handleLogin,
               child: isLoading
-                  ? CircularProgressIndicator(
-                      valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
-                      strokeWidth: screenWidth * 0.01,
+                  ? SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(
+                        valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                        strokeWidth: 2.5,
+                      ),
                     )
                   : Text(
                       'login.login_button'.tr(),

@@ -20,347 +20,388 @@ class SettingsScreen extends ConsumerWidget {
     final themeMode = ref.watch(themeModeNotifierProvider);
     
     return Scaffold(
-      backgroundColor: theme.brightness == Brightness.light 
-          ? AppColors.background 
-          : const Color(0xFF121212),
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          final isSmallScreen = constraints.maxWidth < 600;
-          final horizontalPadding = isSmallScreen ? 12.0 : 16.0;
-          
-          return Column(
+      backgroundColor: AppColors.background,
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFF1a1a1a),
+              Color(0xFF2d2d2d),
+              Color(0xFF1a1a1a),
+            ],
+            stops: [0.0, 0.5, 1.0],
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
             children: [
-              // Ana sayfadaki gibi navigation bar
-              SafeArea(
-                bottom: false,
-                child: Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: horizontalPadding, 
-                    vertical: isSmallScreen ? 10 : 12
-                  ),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [
-                        Color(0xFF3a3a3a),
-                        Color(0xFF2d2d2d),
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.2),
-                        offset: const Offset(0, 2),
-                        blurRadius: 8,
-                        spreadRadius: 0,
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      Text(
-                        'settings.title'.tr(),
-                        style: AppTextStyles.h2.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: isSmallScreen ? 20 : 24,
-                        ),
-                      ),
-                      const Spacer(),
-                      Container(
-                        padding: EdgeInsets.all(isSmallScreen ? 10 : 12),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              Colors.white.withValues(alpha: 0.15),
-                              Colors.white.withValues(alpha: 0.05),
-                            ],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                          borderRadius: BorderRadius.circular(isSmallScreen ? 10 : 12),
-                          border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.2),
-                            width: 1,
-                          ),
-                        ),
-                        child: Icon(
-                          Icons.settings,
-                          color: Colors.white,
-                          size: isSmallScreen ? 22 : 24,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              
-              // İçerik
+              _buildAppBar(),
               Expanded(
                 child: SingleChildScrollView(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: horizontalPadding,
-                    vertical: isSmallScreen ? 4 : 6,
-                  ),
+                  padding: const EdgeInsets.all(20),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      SizedBox(height: isSmallScreen ? 2 : 4),
-                      
                       // Tema Bölümü
-                      _buildSectionHeader('Görünüm', Icons.palette, AppColors.accent, isSmallScreen),
-                      SizedBox(height: isSmallScreen ? 6 : 8),
-                      _buildThemeCards(context, ref, themeMode, isSmallScreen),
-
-                      SizedBox(height: isSmallScreen ? 12 : 16),
+                      _buildSectionTitle('Görünüm'),
+                      const SizedBox(height: 16),
+                      _buildThemeCards(context, ref, themeMode),
+                      const SizedBox(height: 24),
 
                       // Dil Bölümü
-                      _buildSectionHeader('Dil ve Bölge', Icons.language, AppColors.success, isSmallScreen),
-                      SizedBox(height: isSmallScreen ? 6 : 8),
-                      _buildLanguageCard(context, currentLanguage, theme, isSmallScreen),
-
-                      SizedBox(height: isSmallScreen ? 12 : 16),
+                      _buildSectionTitle('Dil ve Bölge'),
+                      const SizedBox(height: 16),
+                      _buildLanguageCard(context, currentLanguage),
+                      const Spacer(),
 
                       // Hesap Bölümü
-                      _buildSectionHeader('Hesap', Icons.person, AppColors.secondary, isSmallScreen),
-                      SizedBox(height: isSmallScreen ? 6 : 8),
-                      _buildLogoutCard(context, ref, theme, isSmallScreen),
-                      
-                      SizedBox(height: isSmallScreen ? 4 : 6),
+                      _buildSectionTitle('Hesap'),
+                      const SizedBox(height: 16),
+                      _buildLogoutCard(context, ref),
+                      const SizedBox(height: 20),
                     ],
                   ),
                 ),
               ),
             ],
-          );
-        },
+          ),
+        ),
       ),
     );
   }
 
-  Widget _buildSectionHeader(String title, IconData icon, Color themeColor, bool isSmallScreen) {
-    return Row(
-      children: [
-        Container(
-          padding: EdgeInsets.all(isSmallScreen ? 8 : 12),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                themeColor.withValues(alpha: 0.2),
-                themeColor.withValues(alpha: 0.1),
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+  Widget _buildAppBar() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [
+            Color(0xFF3a3a3a),
+            Color(0xFF2d2d2d),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.2),
+            offset: const Offset(0, 2),
+            blurRadius: 8,
+            spreadRadius: 0,
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Text(
+            'settings.title'.tr(),
+            style: AppTextStyles.h2.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
             ),
-            borderRadius: BorderRadius.circular(isSmallScreen ? 8 : 12),
-            border: Border.all(
-              color: themeColor.withValues(alpha: 0.4),
-              width: 1.5,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return Text(
+      title,
+      style: AppTextStyles.h3.copyWith(
+        fontWeight: FontWeight.bold,
+        color: Colors.white,
+      ),
+    );
+  }
+
+  Widget _buildThemeCards(BuildContext context, WidgetRef ref, AppThemeMode currentTheme) {
+    return SizedBox(
+      height: 180,
+      child: Row(
+        children: [
+          Expanded(
+            child: _buildThemeCard(
+              context: context,
+              title: 'Açık Tema',
+              subtitle: 'Aydınlık',
+              icon: Icons.light_mode,
+              isSelected: currentTheme == AppThemeMode.light,
+              onTap: () => ref.read(themeModeNotifierProvider.notifier).setLightTheme(),
             ),
-            boxShadow: [
-              BoxShadow(
-                color: themeColor.withValues(alpha: 0.15),
-                offset: const Offset(0, 3),
-                blurRadius: 6,
-                spreadRadius: -1,
-              ),
-            ],
           ),
-          child: Icon(
-            icon,
-            color: themeColor,
-            size: isSmallScreen ? 20 : 24,
+          const SizedBox(width: 12),
+          Expanded(
+            child: _buildThemeCard(
+              context: context,
+              title: 'Koyu Tema',
+              subtitle: 'Karanlık',
+              icon: Icons.dark_mode,
+              isSelected: currentTheme == AppThemeMode.dark,
+              onTap: () => ref.read(themeModeNotifierProvider.notifier).setDarkTheme(),
+            ),
           ),
-        ),
-        SizedBox(width: isSmallScreen ? 8 : 12),
-        Text(
-          title,
-          style: AppTextStyles.h4.copyWith(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: isSmallScreen ? 16 : 18,
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
-  Widget _buildThemeCards(BuildContext context, WidgetRef ref, AppThemeMode currentTheme, bool isSmallScreen) {
-    return Column(
-      children: [
-        _buildSettingsCard(
-          context: context,
-          title: 'Açık Tema',
-          subtitle: 'Aydınlık ve temiz görünüm',
-          icon: Icons.light_mode_outlined,
-          isSelected: currentTheme == AppThemeMode.light,
-          color: AppColors.accent,
-          onTap: () => ref.read(themeModeNotifierProvider.notifier).setLightTheme(),
-          isSmallScreen: isSmallScreen,
-        ),
-        SizedBox(height: isSmallScreen ? 6 : 8),
-        _buildSettingsCard(
-          context: context,
-          title: 'Koyu Tema',
-          subtitle: 'Göz dostu karanlık mod',
-          icon: Icons.dark_mode_outlined,
-          isSelected: currentTheme == AppThemeMode.dark,
-          color: AppColors.accent,
-          onTap: () => ref.read(themeModeNotifierProvider.notifier).setDarkTheme(),
-          isSmallScreen: isSmallScreen,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildLanguageCard(BuildContext context, currentLanguage, ThemeData theme, bool isSmallScreen) {
-    return _buildSettingsCard(
-      context: context,
-      title: 'settings.language'.tr(),
-      subtitle: currentLanguage.name,
-      icon: Icons.translate,
-      isSelected: false,
-      color: AppColors.success,
-      onTap: () => _showLanguageDialog(context),
-      showArrow: true,
-      isSmallScreen: isSmallScreen,
-    );
-  }
-
-  Widget _buildLogoutCard(BuildContext context, WidgetRef ref, ThemeData theme, bool isSmallScreen) {
-    return _buildSettingsCard(
-      context: context,
-      title: 'settings.logout'.tr(),
-      subtitle: 'Hesabınızdan çıkış yapın',
-      icon: Icons.logout_outlined,
-      isSelected: false,
-      color: AppColors.secondary,
-      onTap: () => _showLogoutDialog(context, ref),
-      isDangerous: true,
-      isSmallScreen: isSmallScreen,
-    );
-  }
-
-  Widget _buildSettingsCard({
+  Widget _buildThemeCard({
     required BuildContext context,
     required String title,
     required String subtitle,
     required IconData icon,
     required bool isSelected,
-    required Color color,
     required VoidCallback onTap,
-    bool showArrow = false,
-    bool isDangerous = false,
-    required bool isSmallScreen,
   }) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: EdgeInsets.all(isSmallScreen ? 10 : 14),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF2A2A2A) : const Color(0xFFFAFAFA),
-          borderRadius: BorderRadius.circular(isSmallScreen ? 12 : 16),
+          gradient: LinearGradient(
+            colors: isSelected
+                ? [
+                    AppColors.primary.withValues(alpha: 0.3),
+                    AppColors.primary.withValues(alpha: 0.15),
+                  ]
+                : [
+                    const Color(0xFF2a2a2a),
+                    const Color(0xFF1f1f1f),
+                  ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isSelected 
-                ? color 
-                : (isDark ? const Color(0xFF404040) : const Color(0xFFE0E0E0)),
+                ? AppColors.primary.withValues(alpha: 0.5)
+                : Colors.white.withValues(alpha: 0.1),
             width: isSelected ? 2 : 1,
           ),
           boxShadow: [
-            if (!isDark)
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.05),
-                offset: const Offset(0, 2),
-                blurRadius: 8,
-                spreadRadius: 0,
+            BoxShadow(
+              color: isSelected 
+                  ? AppColors.primary.withValues(alpha: 0.2)
+                  : Colors.black.withValues(alpha: 0.3),
+              offset: const Offset(0, 4),
+              blurRadius: 12,
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: isSelected
+                      ? [AppColors.primary, AppColors.primaryDark]
+                      : [
+                          Colors.white.withValues(alpha: 0.2),
+                          Colors.white.withValues(alpha: 0.1),
+                        ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(24),
               ),
+              child: Icon(
+                icon,
+                color: Colors.white,
+                size: 24,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              title,
+              style: AppTextStyles.bodyLarge.copyWith(
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              subtitle,
+              style: AppTextStyles.bodySmall.copyWith(
+                color: Colors.white.withValues(alpha: 0.6),
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLanguageCard(BuildContext context, currentLanguage) {
+    return GestureDetector(
+      onTap: () => _showLanguageDialog(context),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [
+              Color(0xFF2a2a2a),
+              Color(0xFF1f1f1f),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: AppColors.warning.withValues(alpha: 0.2),
+            width: 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.3),
+              offset: const Offset(0, 4),
+              blurRadius: 12,
+            ),
           ],
         ),
         child: Row(
           children: [
             Container(
-              width: isSmallScreen ? 44 : 52,
-              height: isSmallScreen ? 44 : 52,
+              width: 56,
+              height: 56,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: isSelected 
-                      ? [color, color.withValues(alpha: 0.8)]
-                      : [color.withValues(alpha: 0.15), color.withValues(alpha: 0.05)],
+                  colors: [
+                    AppColors.warning.withValues(alpha: 0.25),
+                    AppColors.warning.withValues(alpha: 0.15),
+                  ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
-                borderRadius: BorderRadius.circular(isSmallScreen ? 12 : 16),
+                borderRadius: BorderRadius.circular(28),
                 border: Border.all(
-                  color: color.withValues(alpha: isSelected ? 1.0 : 0.3),
-                  width: isSelected ? 2 : 1,
+                  color: AppColors.warning.withValues(alpha: 0.3),
+                  width: 1,
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: color.withValues(alpha: 0.2),
-                    offset: const Offset(0, 4),
-                    blurRadius: 8,
-                    spreadRadius: -2,
-                  ),
-                ],
               ),
               child: Icon(
-                icon,
-                color: isSelected 
-                    ? Colors.white
-                    : color,
-                size: isSmallScreen ? 22 : 26,
+                Icons.translate,
+                color: AppColors.warning,
+                size: 28,
               ),
             ),
-            SizedBox(width: isSmallScreen ? 12 : 16),
+            const SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    title,
+                    'settings.language'.tr(),
                     style: AppTextStyles.bodyLarge.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: isDark ? const Color(0xFFE0E0E0) : const Color(0xFF1A1A1A),
-                      fontSize: isSmallScreen ? 14 : 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    subtitle,
+                    currentLanguage.name,
                     style: AppTextStyles.bodyMedium.copyWith(
-                      color: isDark 
-                          ? const Color(0xFFB0B0B0) 
-                          : const Color(0xFF666666),
-                      fontSize: isSmallScreen ? 12 : 14,
+                      color: Colors.white.withValues(alpha: 0.6),
                     ),
                   ),
                 ],
               ),
             ),
-            if (isSelected)
-              Container(
-                width: isSmallScreen ? 20 : 24,
-                height: isSmallScreen ? 20 : 24,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF58CC02), // Yeşil başarı rengi
-                  borderRadius: BorderRadius.circular(isSmallScreen ? 10 : 12),
+            Icon(
+              Icons.arrow_forward_ios,
+              color: Colors.white.withValues(alpha: 0.4),
+              size: 20,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLogoutCard(BuildContext context, WidgetRef ref) {
+    return GestureDetector(
+      onTap: () => _showLogoutDialog(context, ref),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              AppColors.error.withValues(alpha: 0.2),
+              AppColors.error.withValues(alpha: 0.1),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: AppColors.error.withValues(alpha: 0.3),
+            width: 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.3),
+              offset: const Offset(0, 4),
+              blurRadius: 12,
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    AppColors.error.withValues(alpha: 0.3),
+                    AppColors.error.withValues(alpha: 0.2),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
-                child: Icon(
-                  Icons.check,
-                  color: Colors.white,
-                  size: isSmallScreen ? 12 : 16,
-                ),
-              )
-            else if (showArrow)
-              Icon(
-                Icons.arrow_forward_ios,
-                color: isDark ? const Color(0xFF888888) : Colors.grey[600],
-                size: isSmallScreen ? 14 : 16,
+                borderRadius: BorderRadius.circular(28),
               ),
+              child: Icon(
+                Icons.logout,
+                color: AppColors.error,
+                size: 28,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'settings.logout'.tr(),
+                    style: AppTextStyles.bodyLarge.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Hesabınızdan çıkış yapın',
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: Colors.white.withValues(alpha: 0.6),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.arrow_forward_ios,
+              color: Colors.white.withValues(alpha: 0.4),
+              size: 20,
+            ),
           ],
         ),
       ),
@@ -378,26 +419,54 @@ class SettingsScreen extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (BuildContext dialogContext) => AlertDialog(
+        backgroundColor: const Color(0xFF2a2a2a),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        title: Text(
-          'Çıkış Yap',
-          style: AppTextStyles.h4.copyWith(
-            color: const Color(0xFFFF4B4B), // Kırmızı
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(
+            color: AppColors.error.withValues(alpha: 0.3),
+            width: 1,
           ),
+        ),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppColors.error.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                Icons.logout,
+                color: AppColors.error,
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              'Çıkış Yap',
+              style: AppTextStyles.h4.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
         ),
         content: Text(
           'Hesabınızdan çıkış yapmak istediğinizden emin misiniz?',
-          style: AppTextStyles.bodyMedium,
+          style: AppTextStyles.bodyMedium.copyWith(
+            color: Colors.white.withValues(alpha: 0.8),
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            ),
             child: Text(
               'İptal',
               style: AppTextStyles.buttonText.copyWith(
-                color: AppColors.textSecondary,
+                color: Colors.white.withValues(alpha: 0.6),
               ),
             ),
           ),
@@ -411,8 +480,12 @@ class SettingsScreen extends ConsumerWidget {
               }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFFF4B4B), // Kırmızı
+              backgroundColor: AppColors.error,
               foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
             child: Text(
               'Çıkış Yap',
