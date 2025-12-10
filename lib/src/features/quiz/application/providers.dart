@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/config/config_providers.dart';
 import '../../../core/services/http_service.dart';
+import '../../auth/application/providers.dart';
 import '../data/data_sources/mock_quiz_datasource.dart';
 import '../data/data_sources/http_quiz_datasource.dart';
 import '../data/services/asset_question_loader.dart';
@@ -47,13 +48,36 @@ final quizRepositoryProvider = Provider<QuizRepository>((ref) {
   return MockQuizRepository(dataSource as MockQuizDataSource);
 });
 
+/// Global BanditManager provider
+///
+/// Single instance of BanditManager that persists across the app
+/// and automatically loads user's learning data from database
+final banditManagerProvider = Provider<BanditManager>((ref) {
+  return BanditManager();
+});
+
+/// Provider that initializes BanditManager with user ID
+///
+/// This should be watched in screens that use MAB functionality
+/// to ensure the manager is loaded with user data
+final banditManagerInitProvider = FutureProvider<BanditManager>((ref) async {
+  final banditManager = ref.watch(banditManagerProvider);
+  final user = ref.watch(currentUserProvider);
+
+  if (user != null) {
+    await banditManager.setUserId(user.uid);
+  }
+
+  return banditManager;
+});
+
 /// Provider for the quiz service facade
 ///
 /// Creates a QuizService instance with the appropriate repository
 /// based on the current environment
 final quizServiceProvider = Provider<QuizService>((ref) {
   final repository = ref.watch(quizRepositoryProvider);
-  final banditManager = BanditManager();
+  final banditManager = ref.watch(banditManagerProvider);
   return QuizService(repository, banditManager);
 });
 

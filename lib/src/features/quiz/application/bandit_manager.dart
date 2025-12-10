@@ -1,5 +1,8 @@
 import 'dart:math';
 import '../domain/entities/question.dart';
+import '../../../core/database/repositories/mab_repository.dart';
+import '../../../core/database/models/mab_question_arm_db_model.dart';
+import '../../../core/database/models/mab_topic_arm_db_model.dart';
 
 /// Multi-Armed Bandit algorithm for adaptive question selection
 ///
@@ -9,6 +12,15 @@ class BanditManager {
   final Map<String, BanditArm> _questionArms = {};
   final Map<String, TopicArm> _topicArms = {};
   final Random _random = Random();
+
+  /// Repository for persistent storage
+  final MabRepository _repository = MabRepository();
+
+  /// Current user ID for database operations
+  String? _userId;
+
+  /// Whether data has been loaded from database
+  bool _isLoaded = false;
 
   /// Minimum number of attempts before algorithm becomes confident
   final int minAttempts;
@@ -20,6 +32,38 @@ class BanditManager {
     this.minAttempts = 3,
     this.learningRate = 0.1,
   });
+
+  /// Set user ID and load existing data from database
+  Future<void> setUserId(String userId) async {
+    if (_userId == userId && _isLoaded) return;
+
+    _userId = userId;
+    await _loadFromDatabase();
+  }
+
+  /// Load MAB state from database
+  Future<void> _loadFromDatabase() async {
+    if (_userId == null) return;
+
+    try {
+      // Load question arms
+      final questionArms = await _repository.getAllQuestionArms(_userId!);
+      for (final dbArm in questionArms) {
+        _questionArms[dbArm.questionId] = BanditArm.fromDbModel(dbArm);
+      }
+
+      // Load topic arms
+      final topicArms = await _repository.getAllTopicArms(_userId!);
+      for (final dbArm in topicArms) {
+        _topicArms[dbArm.topicKey] = TopicArm.fromDbModel(dbArm);
+      }
+
+      _isLoaded = true;
+    } catch (e) {
+      // Log error but continue - will use in-memory state
+      _isLoaded = true;
+    }
+  }
 
   /// Initialize bandit arms for a set of questions
   void initializeQuestions(List<Question> questions) {
@@ -69,13 +113,13 @@ class BanditManager {
   }
 
   /// Update bandit statistics based on user performance
-  void updatePerformance({
+  Future<void> updatePerformance({
     required String questionId,
     required bool isCorrect,
     required Duration responseTime,
     double? confidence,
     Question? question,
-  }) {
+  }) async {
     final arm = _questionArms[questionId];
     if (arm == null) return;
 
@@ -96,9 +140,39 @@ class BanditManager {
 
     _updateArmParameters(arm, isCorrect, responseTime);
 
+    // Save to database
+    if (question != null) {
+      await _saveQuestionArmDirectly(arm, question, isCorrect, responseTime);
+    }
+
     // Update topic-level statistics
     if (question != null) {
-      _updateTopicPerformance(question, isCorrect, responseTime);
+      await _updateTopicPerformance(question, isCorrect, responseTime);
+    }
+  }
+
+  /// Save question arm directly to database with actual values
+  Future<void> _saveQuestionArmDirectly(
+    BanditArm arm,
+    Question question,
+    bool isCorrect,
+    Duration responseTime,
+  ) async {
+    if (_userId == null) return;
+
+    try {
+      await _repository.updateQuestionArmStats(
+        userId: _userId!,
+        questionId: arm.questionId,
+        difficulty: arm.difficulty.name,
+        isCorrect: isCorrect,
+        responseTimeMs: responseTime.inMilliseconds,
+        userConfidence: arm.userConfidence,
+        alpha: arm.alpha,
+        beta: arm.beta,
+      );
+    } catch (e) {
+      // Log error but continue
     }
   }
 
@@ -390,7 +464,7 @@ class BanditManager {
     return topicQuestions.firstWhere((q) => q.id == bestQuestionId);
   }
 
-  void _updateTopicPerformance(Question question, bool isCorrect, Duration responseTime) {
+  Future<void> _updateTopicPerformance(Question question, bool isCorrect, Duration responseTime) async {
     final topicArm = _topicArms[question.mabKey];
     if (topicArm == null) return;
 
@@ -404,6 +478,34 @@ class BanditManager {
 
     topicArm.attempts++;
     topicArm.totalResponseTime += responseTime.inMilliseconds;
+
+    // Save to database
+    await _saveTopicArmDirectly(topicArm, isCorrect, responseTime);
+  }
+
+  /// Save topic arm directly to database with actual values
+  Future<void> _saveTopicArmDirectly(
+    TopicArm arm,
+    bool isCorrect,
+    Duration responseTime,
+  ) async {
+    if (_userId == null) return;
+
+    try {
+      await _repository.updateTopicArmStats(
+        userId: _userId!,
+        topicKey: arm.topicKey,
+        topic: arm.topic,
+        knowledgeType: arm.knowledgeType,
+        course: arm.course,
+        isCorrect: isCorrect,
+        responseTimeMs: responseTime.inMilliseconds,
+        alpha: arm.alpha,
+        beta: arm.beta,
+      );
+    } catch (e) {
+      // Log error but continue
+    }
   }
 
   double _calculateTopicConfidence(TopicArm arm) {
@@ -509,6 +611,34 @@ class BanditArm {
     userConfidence = initialConfidence;
     // Set prior based on difficulty level
     _initializePrior();
+  }
+
+  /// Create from database model
+  factory BanditArm.fromDbModel(MabQuestionArmDbModel dbModel) {
+    final difficulty = DifficultyLevel.values.firstWhere(
+      (d) => d.name == dbModel.difficulty,
+      orElse: () => DifficultyLevel.intermediate,
+    );
+
+    final arm = BanditArm(
+      questionId: dbModel.questionId,
+      difficulty: difficulty,
+      initialConfidence: dbModel.userConfidence,
+    );
+
+    // Restore state from database
+    arm.attempts = dbModel.attempts;
+    arm.successes = dbModel.successes;
+    arm.failures = dbModel.failures;
+    arm.totalResponseTime = dbModel.totalResponseTime;
+    arm.userConfidence = dbModel.userConfidence;
+    arm.alpha = dbModel.alpha;
+    arm.beta = dbModel.beta;
+    arm.lastAttempted = dbModel.lastAttempted != null
+        ? DateTime.fromMillisecondsSinceEpoch(dbModel.lastAttempted!)
+        : null;
+
+    return arm;
   }
 
   /// Initialize prior distribution based on question difficulty
@@ -624,6 +754,26 @@ class TopicArm {
     required this.knowledgeType,
     required this.course,
   });
+
+  /// Create from database model
+  factory TopicArm.fromDbModel(MabTopicArmDbModel dbModel) {
+    final arm = TopicArm(
+      topicKey: dbModel.topicKey,
+      topic: dbModel.topic,
+      knowledgeType: dbModel.knowledgeType,
+      course: dbModel.course,
+    );
+
+    // Restore state from database
+    arm.attempts = dbModel.attempts;
+    arm.successes = dbModel.successes;
+    arm.failures = dbModel.failures;
+    arm.totalResponseTime = dbModel.totalResponseTime;
+    arm.alpha = dbModel.alpha;
+    arm.beta = dbModel.beta;
+
+    return arm;
+  }
 }
 
 /// Statistics for a specific question
