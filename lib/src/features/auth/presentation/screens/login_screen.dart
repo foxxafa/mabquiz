@@ -255,12 +255,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
             height: screenHeight * 0.065,
             child: ElevatedButton(
               onPressed: isLoading ? null : _handleLogin,
+              style: isLoading
+                  ? ElevatedButton.styleFrom(
+                      padding: EdgeInsets.zero,
+                    )
+                  : null,
               child: isLoading
-                  ? SizedBox(
+                  ? const SizedBox(
                       width: 24,
                       height: 24,
                       child: CircularProgressIndicator(
-                        valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                         strokeWidth: 2.5,
                       ),
                     )
