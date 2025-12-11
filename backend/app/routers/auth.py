@@ -8,8 +8,16 @@ from ..db import get_session
 import uuid
 import os
 from datetime import datetime
-from google.oauth2 import id_token
-from google.auth.transport import requests
+
+# Google auth imports - lazy load to avoid import errors
+try:
+    from google.oauth2 import id_token
+    from google.auth.transport import requests as google_requests
+    GOOGLE_AUTH_AVAILABLE = True
+    print("✅ Google auth libraries loaded successfully")
+except ImportError as e:
+    GOOGLE_AUTH_AVAILABLE = False
+    print(f"⚠️ Google auth libraries not available: {e}")
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
 security = HTTPBearer()
@@ -103,12 +111,18 @@ async def login(login_data: UserLogin, db: AsyncSession = Depends(get_session)):
 @router.post("/google")
 async def google_auth(auth_data: GoogleAuthData, db: AsyncSession = Depends(get_session)):
     """Authenticate with Google OAuth"""
-    
+
+    if not GOOGLE_AUTH_AVAILABLE:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Google authentication is not available"
+        )
+
     try:
         # Verify Google ID token
         idinfo = id_token.verify_oauth2_token(
-            auth_data.id_token, 
-            requests.Request(), 
+            auth_data.id_token,
+            google_requests.Request(),
             os.getenv("GOOGLE_CLIENT_ID")
         )
         
