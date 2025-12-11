@@ -200,27 +200,56 @@ async def get_current_user(request: Request, db: AsyncSession = Depends(get_sess
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+async def run_migrations(conn):
+    """Run database migrations"""
+    print("🔄 Running database migrations...")
+
+    # Check if user_mab_question_arms has 'difficulty' column (should be removed)
+    result = await conn.execute(text("""
+        SELECT column_name FROM information_schema.columns
+        WHERE table_name = 'user_mab_question_arms' AND column_name = 'difficulty'
+    """))
+    if result.fetchone():
+        print("  📋 Removing 'difficulty' column from user_mab_question_arms...")
+        await conn.execute(text("ALTER TABLE user_mab_question_arms DROP COLUMN difficulty"))
+        print("  ✅ Dropped 'difficulty' column")
+
+    # Check if user_mab_topic_arms has 'last_updated' column (should be renamed to 'updated_at')
+    result = await conn.execute(text("""
+        SELECT column_name FROM information_schema.columns
+        WHERE table_name = 'user_mab_topic_arms' AND column_name = 'last_updated'
+    """))
+    if result.fetchone():
+        print("  📋 Renaming 'last_updated' to 'updated_at' in user_mab_topic_arms...")
+        await conn.execute(text("ALTER TABLE user_mab_topic_arms RENAME COLUMN last_updated TO updated_at"))
+        print("  ✅ Renamed column")
+
+    print("✅ Migrations completed")
+
+
 @app.on_event("startup")
 async def on_startup():
     """Application startup tasks"""
     environment = os.getenv("RAILWAY_ENVIRONMENT_NAME", "development")
-    
-    if environment == "development":
-        # Auto-create tables in development
-        print("🔧 Development mode: Auto-creating tables...")
+
+    print("🚀 Starting application...")
+    try:
         async with async_engine.begin() as conn:
-            await conn.run_sync(Base.metadata.create_all)
-        print("✅ Tables created/verified")
-    else:
-        # In production, just verify connection
-        print("🚀 Production mode: Verifying database connection...")
-        try:
-            async with async_engine.begin() as conn:
-                await conn.execute(text("SELECT 1"))
+            # Verify connection
+            await conn.execute(text("SELECT 1"))
             print("✅ Database connection verified")
-        except Exception as e:
-            print(f"❌ Database connection failed: {e}")
-            raise
+
+            # Run migrations
+            await run_migrations(conn)
+
+            # Create tables if they don't exist
+            await conn.run_sync(Base.metadata.create_all)
+            print("✅ Tables created/verified")
+    except Exception as e:
+        print(f"❌ Startup failed: {e}")
+        import traceback
+        print(traceback.format_exc())
+        raise
 
 @app.get("/health")
 async def health():
