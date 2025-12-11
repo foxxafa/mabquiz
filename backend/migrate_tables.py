@@ -111,6 +111,71 @@ async def migrate_questions_table(conn):
         print(f"  ⚠️  Index creation warning: {e}")
 
 
+async def migrate_mab_question_arms_table(conn):
+    """Migrate user_mab_question_arms table - remove difficulty column"""
+    print("\n📋 Migrating 'user_mab_question_arms' table...")
+
+    exists = await check_table_exists(conn, 'user_mab_question_arms')
+    if not exists:
+        print("  ℹ️  Table doesn't exist, will be created from scratch")
+        return
+
+    # Check existing columns
+    result = await conn.execute(text("""
+        SELECT column_name
+        FROM information_schema.columns
+        WHERE table_name = 'user_mab_question_arms'
+    """))
+    existing_columns = [row[0] for row in result.fetchall()]
+    print(f"  📊 Existing columns: {existing_columns}")
+
+    # Remove difficulty column if exists (no longer needed)
+    if 'difficulty' in existing_columns:
+        try:
+            await conn.execute(text("ALTER TABLE user_mab_question_arms DROP COLUMN difficulty"))
+            print("  ✅ Dropped 'difficulty' column (no longer needed)")
+        except Exception as e:
+            print(f"  ⚠️  Could not drop 'difficulty': {e}")
+    else:
+        print("  ✅ Column 'difficulty' already removed or doesn't exist")
+
+
+async def migrate_mab_topic_arms_table(conn):
+    """Migrate user_mab_topic_arms table - rename last_updated to updated_at"""
+    print("\n📋 Migrating 'user_mab_topic_arms' table...")
+
+    exists = await check_table_exists(conn, 'user_mab_topic_arms')
+    if not exists:
+        print("  ℹ️  Table doesn't exist, will be created from scratch")
+        return
+
+    # Check existing columns
+    result = await conn.execute(text("""
+        SELECT column_name
+        FROM information_schema.columns
+        WHERE table_name = 'user_mab_topic_arms'
+    """))
+    existing_columns = [row[0] for row in result.fetchall()]
+    print(f"  📊 Existing columns: {existing_columns}")
+
+    # Rename last_updated to updated_at if needed
+    if 'last_updated' in existing_columns and 'updated_at' not in existing_columns:
+        try:
+            await conn.execute(text("ALTER TABLE user_mab_topic_arms RENAME COLUMN last_updated TO updated_at"))
+            print("  ✅ Renamed 'last_updated' to 'updated_at'")
+        except Exception as e:
+            print(f"  ⚠️  Could not rename column: {e}")
+    elif 'updated_at' in existing_columns:
+        print("  ✅ Column 'updated_at' already exists")
+    else:
+        # Add updated_at if neither exists
+        try:
+            await conn.execute(text("ALTER TABLE user_mab_topic_arms ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP"))
+            print("  ✅ Added 'updated_at' column")
+        except Exception as e:
+            print(f"  ⚠️  Could not add column: {e}")
+
+
 async def migrate_database():
     """Run comprehensive database migration"""
 
@@ -149,6 +214,12 @@ async def migrate_database():
             # Step 2: Migrate existing tables
             if 'questions' in existing_tables:
                 await migrate_questions_table(conn)
+
+            if 'user_mab_question_arms' in existing_tables:
+                await migrate_mab_question_arms_table(conn)
+
+            if 'user_mab_topic_arms' in existing_tables:
+                await migrate_mab_topic_arms_table(conn)
 
             # Step 3: Create new tables (this will skip existing ones)
             print("\n🏗️  Creating new tables...")
