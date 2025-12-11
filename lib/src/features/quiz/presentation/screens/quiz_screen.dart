@@ -260,13 +260,6 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
       question: _currentQuestion, // Pass question for database save
     );
     _answeredQuestionIds.add(_currentQuestion!.id);
-
-    // Cevap gösteriminden sonra bir sonraki soruya geç
-    Future.delayed(const Duration(milliseconds: 2000), () {
-      if (mounted) {
-        _loadNextQuestion();
-      }
-    });
   }
 
   void _showExitDialog() {
@@ -474,74 +467,92 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
     if (_currentQuestion == null) {
       return const Center(child: Text('Soru yükleniyor...'));
     }
-    return Center(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 40.0),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 600),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              FadeTransition(
-                opacity: _questionAnimation,
-                child: SlideTransition(
-                  position: _slideAnimation,
-                  child: Column(
-                    children: [
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(40),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              Colors.white.withValues(alpha: 0.15),
-                              Colors.white.withValues(alpha: 0.08),
-                              Colors.white.withValues(alpha: 0.05),
-                            ],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 600),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // Soru kutusu - Flexible ile ekranın üst kısmını kullan
+                  Flexible(
+                    flex: 2,
+                    child: Center(
+                      child: FadeTransition(
+                        opacity: _questionAnimation,
+                        child: SlideTransition(
+                          position: _slideAnimation,
+                          child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(24),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  Colors.white.withValues(alpha: 0.15),
+                                  Colors.white.withValues(alpha: 0.08),
+                                  Colors.white.withValues(alpha: 0.05),
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(24),
+                              border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.2),
+                                width: 1.5,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.3),
+                                  offset: const Offset(0, 12),
+                                  blurRadius: 30,
+                                  spreadRadius: -8,
+                                ),
+                                BoxShadow(
+                                  color: theme.colorScheme.primary.withValues(alpha: 0.15),
+                                  offset: const Offset(0, 0),
+                                  blurRadius: 20,
+                                  spreadRadius: -6,
+                                ),
+                              ],
+                            ),
+                            child: Center(child: _buildQuestionText(theme)),
                           ),
-                          borderRadius: BorderRadius.circular(32),
-                          border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.2),
-                            width: 1.5,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.3),
-                              offset: const Offset(0, 20),
-                              blurRadius: 40,
-                              spreadRadius: -10,
-                            ),
-                            BoxShadow(
-                              color: theme.colorScheme.primary.withValues(alpha: 0.2),
-                              offset: const Offset(0, 0),
-                              blurRadius: 24,
-                              spreadRadius: -8,
-                            ),
-                            BoxShadow(
-                              color: Colors.white.withValues(alpha: 0.1),
-                              offset: const Offset(0, -1),
-                              blurRadius: 4,
-                              spreadRadius: 0,
-                            ),
-                          ],
                         ),
-                        child: _buildQuestionText(theme),
                       ),
-                      const SizedBox(height: 40),
-                      if (_currentQuestion!.type == QuestionType.fillInBlank)
-                        _buildFillInBlankInput(theme)
-                      else
-                        ..._buildAnswerOptions(theme),
-                    ],
+                    ),
                   ),
-                ),
+                  const SizedBox(height: 20),
+                  // Cevap seçenekleri - Flexible ile ekranın kalan kısmını kullan
+                  Flexible(
+                    flex: 3,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        if (_currentQuestion!.type == QuestionType.fillInBlank)
+                          _buildFillInBlankInput(theme)
+                        else
+                          Expanded(
+                            child: ListView(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              children: _buildAnswerOptions(theme),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  // İleri butonu - sabit boyutta
+                  _buildNextButton(theme),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -596,17 +607,60 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
     return Text(
       _currentQuestion!.text,
       textAlign: TextAlign.center,
+      maxLines: 4,
+      overflow: TextOverflow.ellipsis,
       style: theme.textTheme.headlineMedium?.copyWith(
         color: Colors.white,
         fontWeight: FontWeight.w700,
-        fontSize: 24,
-        height: 1.5,
-        letterSpacing: -0.5,
+        fontSize: 19,
+        height: 1.4,
+        letterSpacing: -0.3,
       ),
     );
   }
 
   Widget _buildFillInBlankInput(ThemeData theme) {
+    // Cevap kontrolü
+    final isCorrect = _isAnswered && 
+        _currentQuestion != null && 
+        _currentQuestion!.isCorrectAnswer(_fillInBlankController.text.trim());
+    
+    // Renk belirleme
+    Color borderColor;
+    Color shadowColor;
+    List<Color> gradientColors;
+    
+    if (_isAnswered) {
+      if (isCorrect) {
+        // Doğru cevap - yeşil
+        borderColor = Colors.green;
+        shadowColor = Colors.green;
+        gradientColors = [
+          Colors.green.withValues(alpha: 0.2),
+          Colors.green.withValues(alpha: 0.15),
+          Colors.green.withValues(alpha: 0.1),
+        ];
+      } else {
+        // Yanlış cevap - kırmızı
+        borderColor = Colors.red;
+        shadowColor = Colors.red;
+        gradientColors = [
+          Colors.red.withValues(alpha: 0.2),
+          Colors.red.withValues(alpha: 0.15),
+          Colors.red.withValues(alpha: 0.1),
+        ];
+      }
+    } else {
+      // Henüz cevap verilmedi - mavi (varsayılan)
+      borderColor = theme.colorScheme.primary.withValues(alpha: 0.6);
+      shadowColor = theme.colorScheme.primary;
+      gradientColors = [
+        Colors.white.withValues(alpha: 0.12),
+        Colors.white.withValues(alpha: 0.08),
+        Colors.white.withValues(alpha: 0.04),
+      ];
+    }
+    
     return Column(
       children: [
         GestureDetector(
@@ -616,20 +670,16 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
             }
           },
           child: Container(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [
-                  Colors.white.withValues(alpha: 0.12),
-                  Colors.white.withValues(alpha: 0.08),
-                  Colors.white.withValues(alpha: 0.04),
-                ],
+                colors: gradientColors,
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(24),
               border: Border.all(
-                color: theme.colorScheme.primary.withValues(alpha: 0.6),
+                color: borderColor,
                 width: 2,
               ),
               boxShadow: [
@@ -640,7 +690,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
                   spreadRadius: -6,
                 ),
                 BoxShadow(
-                  color: theme.colorScheme.primary.withValues(alpha: 0.3),
+                  color: shadowColor.withValues(alpha: 0.3),
                   offset: const Offset(0, 0),
                   blurRadius: 12,
                   spreadRadius: -2,
@@ -653,64 +703,70 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
                 ),
               ],
             ),
-            child: TextField(
-              controller: _fillInBlankController,
-              focusNode: _fillInBlankFocusNode,
-              enabled: !_isAnswered,
-              autofocus: true,
-              keyboardType: TextInputType.text,
-              textInputAction: TextInputAction.done,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-                letterSpacing: -0.2,
-              ),
-              decoration: InputDecoration(
-                hintText: 'Cevabınızı buraya yazın...',
-                hintStyle: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.5),
+            child: Column(
+              children: [
+                TextField(
+                  controller: _fillInBlankController,
+                  focusNode: _fillInBlankFocusNode,
+                  enabled: !_isAnswered,
+                  autofocus: true,
+                  keyboardType: TextInputType.text,
+                  textInputAction: TextInputAction.done,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: -0.2,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: 'Cevabınızı buraya yazın...',
+                    hintStyle: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.5),
+                    ),
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.all(0),
+                  ),
+                  textAlign: TextAlign.center,
+                  onTap: () {
+                    // TextField'a tıklandığında da focus iste
+                    _fillInBlankFocusNode.requestFocus();
+                  },
                 ),
-                border: InputBorder.none,
-                contentPadding: const EdgeInsets.all(0),
-              ),
-              textAlign: TextAlign.center,
-              onSubmitted: (value) {
-                if (value.trim().isNotEmpty) {
-                  _answerQuestion(value.trim());
-                }
-              },
-              onTap: () {
-                // TextField'a tıklandığında da focus iste
-                _fillInBlankFocusNode.requestFocus();
-              },
-            ),
-          ),
-        ),
-        const SizedBox(height: 24),
-        SizedBox(
-          width: double.infinity,
-          child: ElevatedButton(
-            onPressed: _isAnswered || !_hasTypedAnswer
-                ? null
-                : () => _answerQuestion(_fillInBlankController.text.trim()),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: theme.colorScheme.primary,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 18),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
-              elevation: 8,
-              shadowColor: theme.colorScheme.primary.withValues(alpha: 0.4),
-            ),
-            child: const Text(
-              'Cevabı Gönder',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                letterSpacing: -0.2,
-              ),
+                // Yanlış cevap durumunda doğru cevabı göster
+                if (_isAnswered && !isCorrect && _currentQuestion != null) ...[
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.green.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: Colors.green.withValues(alpha: 0.5),
+                        width: 1,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.check_circle,
+                          color: Colors.green,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Doğru cevap: ${_currentQuestion!.correctAnswer}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ],
             ),
           ),
         ),
@@ -758,7 +814,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
       return AnimatedContainer(
         duration: const Duration(milliseconds: 400),
         curve: Curves.easeOutCubic,
-        margin: const EdgeInsets.only(bottom: 20),
+        margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
@@ -801,12 +857,12 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
             highlightColor: theme.colorScheme.primary.withValues(alpha: 0.1),
             onTap: _isAnswered ? null : () => _answerQuestion(option),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
               child: Row(
                 children: [
                   Container(
-                    width: 40,
-                    height: 40,
+                    width: 32,
+                    height: 32,
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
@@ -816,7 +872,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(10),
                       border: Border.all(
                         color: theme.colorScheme.primary.withValues(alpha: 0.5),
                         width: 1.5,
@@ -825,8 +881,8 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
                         BoxShadow(
                           color: theme.colorScheme.primary.withValues(alpha: 0.2),
                           offset: const Offset(0, 2),
-                          blurRadius: 8,
-                          spreadRadius: -2,
+                          blurRadius: 6,
+                          spreadRadius: -1,
                         ),
                       ],
                     ),
@@ -836,19 +892,21 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w700,
-                          fontSize: 18,
+                          fontSize: 15,
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 20),
+                  const SizedBox(width: 14),
                   Expanded(
                     child: Text(
                       option,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.bodyLarge?.copyWith(
                         color: textColor,
                         fontWeight: FontWeight.w600,
-                        fontSize: 17,
+                        fontSize: 15,
                         height: 1.3,
                       ),
                     ),
@@ -878,5 +936,74 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
         ),
       );
     }).toList();
+  }
+
+  Widget _buildNextButton(ThemeData theme) {
+    // Butonun aktif olup olmayacağını kontrol et
+    bool isEnabled = false;
+    String buttonText = 'İleri';
+    
+    if (_currentQuestion != null) {
+      if (_currentQuestion!.type == QuestionType.fillInBlank) {
+        // Boşluk doldurma: metin yazıldıysa aktif
+        isEnabled = _hasTypedAnswer;
+        if (!_isAnswered && _hasTypedAnswer) {
+          buttonText = 'Cevabı Gönder';
+        }
+      } else {
+        // Çoktan seçmeli: bir şık seçildiyse aktif
+        isEnabled = _isAnswered;
+      }
+    }
+
+    return Container(
+      width: double.infinity,
+      constraints: const BoxConstraints(maxWidth: 600),
+      child: AnimatedOpacity(
+        opacity: isEnabled ? 1.0 : 0.5,
+        duration: const Duration(milliseconds: 300),
+        child: ElevatedButton(
+          onPressed: isEnabled ? () {
+            // Boşluk doldurma sorularında eğer henüz cevap verilmemişse, cevabı gönder
+            if (_currentQuestion!.type == QuestionType.fillInBlank && !_isAnswered) {
+              _answerQuestion(_fillInBlankController.text.trim());
+            } else {
+              // Diğer durumlarda sonraki soruya geç
+              _loadNextQuestion();
+            }
+          } : null,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: theme.colorScheme.primary,
+            foregroundColor: Colors.white,
+            disabledBackgroundColor: theme.colorScheme.primary.withValues(alpha: 0.3),
+            disabledForegroundColor: Colors.white.withValues(alpha: 0.5),
+            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 32),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(24),
+            ),
+            elevation: isEnabled ? 12 : 2,
+            shadowColor: theme.colorScheme.primary.withValues(alpha: 0.5),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                buttonText,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.3,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Icon(
+                buttonText == 'İleri' ? Icons.arrow_forward_rounded : Icons.send_rounded,
+                size: 22,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

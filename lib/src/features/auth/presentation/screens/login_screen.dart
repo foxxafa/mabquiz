@@ -83,30 +83,23 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
           ),
         ),
         child: SafeArea(
-          child: SingleChildScrollView(
-            padding: EdgeInsets.all(MediaQuery.of(context).size.width * 0.06),
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                minHeight: MediaQuery.of(context).size.height -
-                    MediaQuery.of(context).padding.top -
-                    MediaQuery.of(context).padding.bottom,
-              ),
-              child: FadeTransition(
-                opacity: _fadeAnimation,
-                child: SlideTransition(
-                  position: _slideAnimation,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      SizedBox(height: MediaQuery.of(context).size.height * 0.05),
-                      _buildHeader(context),
-                      SizedBox(height: MediaQuery.of(context).size.height * 0.06),
-                      _buildForm(isLoading),
-                      SizedBox(height: MediaQuery.of(context).size.height * 0.03),
-                      _buildFooter(),
-                      SizedBox(height: MediaQuery.of(context).size.height * 0.03),
-                    ],
-                  ),
+          child: Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: MediaQuery.of(context).size.width * 0.06,
+              vertical: 16,
+            ),
+            child: FadeTransition(
+              opacity: _fadeAnimation,
+              child: SlideTransition(
+                position: _slideAnimation,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const SizedBox(height: 8),
+                    _buildHeader(context),
+                    _buildForm(isLoading),
+                    _buildFooter(),
+                  ],
                 ),
               ),
             ),
@@ -119,9 +112,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
   Widget _buildHeader(BuildContext context) {
     final theme = Theme.of(context);
     final screenWidth = MediaQuery.of(context).size.width;
-    final iconSize = screenWidth * 0.2;
+    final iconSize = screenWidth * 0.16;
     
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Container(
           width: iconSize,
@@ -151,23 +145,23 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
             size: iconSize * 0.5,
           ),
         ),
-        SizedBox(height: MediaQuery.of(context).size.height * 0.03),
+        const SizedBox(height: 16),
         Text(
           'login.welcome_back'.tr(),
           style: theme.textTheme.headlineLarge?.copyWith(
                 fontWeight: FontWeight.bold,
-                fontSize: screenWidth * 0.07,
+                fontSize: screenWidth * 0.065,
               ),
           textAlign: TextAlign.center,
         ),
-        SizedBox(height: MediaQuery.of(context).size.height * 0.01),
+        const SizedBox(height: 8),
         Padding(
           padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.1),
           child: Text(
             'login.login_subtitle'.tr(),
             style: theme.textTheme.bodyMedium?.copyWith(
                   color: Colors.grey[400],
-                  fontSize: screenWidth * 0.04,
+                  fontSize: screenWidth * 0.038,
                 ),
             textAlign: TextAlign.center,
             maxLines: 2,
@@ -179,24 +173,24 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
   }
 
   Widget _buildForm(bool isLoading) {
-    final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
     
     return Form(
       key: _formKey,
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           TextFormField(
             controller: _usernameController,
             decoration: InputDecoration(
               labelText: 'login.username'.tr(),
               prefixIcon: const Icon(Icons.person_outlined),
-              contentPadding: EdgeInsets.symmetric(
-                horizontal: screenWidth * 0.04,
-                vertical: screenHeight * 0.02,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 14,
               ),
             ),
-            style: TextStyle(fontSize: screenWidth * 0.045),
+            style: TextStyle(fontSize: screenWidth * 0.042),
             keyboardType: TextInputType.text,
             textInputAction: TextInputAction.next,
             validator: (value) {
@@ -209,18 +203,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
               return null;
             },
           ),
-          SizedBox(height: screenHeight * 0.025),
+          const SizedBox(height: 16),
           TextFormField(
             controller: _passwordController,
             decoration: InputDecoration(
               labelText: 'login.password'.tr(),
               prefixIcon: const Icon(Icons.lock_outlined),
-              contentPadding: EdgeInsets.symmetric(
-                horizontal: screenWidth * 0.04,
-                vertical: screenHeight * 0.02,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 14,
               ),
             ),
-            style: TextStyle(fontSize: screenWidth * 0.045),
+            style: TextStyle(fontSize: screenWidth * 0.042),
             obscureText: true,
             textInputAction: TextInputAction.done,
             validator: (value) {
@@ -231,7 +225,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
             },
             onFieldSubmitted: (_) => _handleLogin(),
           ),
-          SizedBox(height: screenHeight * 0.015),
+          const SizedBox(height: 8),
           Align(
             alignment: Alignment.centerRight,
             child: TextButton(
@@ -249,10 +243,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
               ),
             ),
           ),
-          SizedBox(height: screenHeight * 0.04),
+          const SizedBox(height: 16),
           SizedBox(
             width: double.infinity,
-            height: screenHeight * 0.065,
+            height: 50,
             child: ElevatedButton(
               onPressed: isLoading ? null : _handleLogin,
               style: isLoading
@@ -271,14 +265,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                     )
                   : Text(
                       'login.login_button'.tr(),
-                      style: TextStyle(fontSize: screenWidth * 0.045),
+                      style: TextStyle(fontSize: screenWidth * 0.042),
                     ),
             ),
           ),
-          SizedBox(height: screenHeight * 0.02),
+          const SizedBox(height: 12),
           SizedBox(
             width: double.infinity,
-            height: screenHeight * 0.065,
+            height: 50,
             child: ElevatedButton.icon(
               onPressed: isLoading ? null : _handleGoogleLogin,
               icon: SizedBox(
@@ -288,7 +282,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
               ),
               label: Text(
                 'Google ile Giriş Yap',
-                style: TextStyle(fontSize: screenWidth * 0.04),
+                style: TextStyle(fontSize: screenWidth * 0.038),
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,
@@ -304,20 +298,25 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
   Widget _buildFooter() {
     final screenWidth = MediaQuery.of(context).size.width;
     
-    return Wrap(
-      alignment: WrapAlignment.center,
-      crossAxisAlignment: WrapCrossAlignment.center,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Text(
-          "Hesabın yok mu?",
-          style: TextStyle(fontSize: screenWidth * 0.04),
-        ),
-        TextButton(
-          onPressed: () => context.go('/register'),
-          child: Text(
-            'Kayıt Ol',
-            style: TextStyle(fontSize: screenWidth * 0.04),
-          ),
+        Wrap(
+          alignment: WrapAlignment.center,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            Text(
+              "Hesabın yok mu?",
+              style: TextStyle(fontSize: screenWidth * 0.038),
+            ),
+            TextButton(
+              onPressed: () => context.go('/register'),
+              child: Text(
+                'Kayıt Ol',
+                style: TextStyle(fontSize: screenWidth * 0.038),
+              ),
+            ),
+          ],
         ),
       ],
     );
