@@ -12,9 +12,13 @@ RUN apt-get update && apt-get install -y \
 # Copy requirements first for better caching
 COPY backend/requirements.txt .
 
-# Install Python dependencies (including google-auth for OAuth)
+# Install Python dependencies (force fresh install with timestamp to break cache)
+# Cache bust: 2025-12-12-v2
 RUN pip install --no-cache-dir -r requirements.txt && \
-    pip list | grep -i google
+    pip install --no-cache-dir --force-reinstall google-auth==2.27.0 && \
+    echo "=== Installed Google packages ===" && \
+    pip list | grep -i google && \
+    python -c "from google.oauth2 import id_token; from google.auth.transport import requests; print('✅ Google auth imports work!')"
 
 # Copy application code
 COPY backend/ .
