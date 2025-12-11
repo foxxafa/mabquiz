@@ -199,6 +199,9 @@ class RailwayAuthRepository implements AuthRepository {
       // ignore: avoid_print
       print('🔐 Starting Google Sign-In...');
 
+      // Önce mevcut oturumu kapat ki hesap seçici her seferinde gösterilsin
+      await googleSignIn.signOut();
+
       final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
 
       if (googleUser == null) {
