@@ -138,9 +138,18 @@ async def google_auth(auth_data: GoogleAuthData, db: AsyncSession = Depends(get_
         if not user:
             # Create new user
             user_uid = str(uuid.uuid4())
+
+            # Parse name into first_name and last_name
+            name_parts = name.split(' ', 1) if name else ['', '']
+            first_name = name_parts[0] if name_parts else ''
+            last_name = name_parts[1] if len(name_parts) > 1 else ''
+
             user = UserDB(
                 uid=user_uid,
                 email=email,
+                username=email.split('@')[0],  # Generate username from email
+                first_name=first_name,
+                last_name=last_name,
                 display_name=name,
                 google_id=google_id,
                 email_verified=True
