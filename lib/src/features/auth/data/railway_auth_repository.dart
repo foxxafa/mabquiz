@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 import '../../../core/config/api_config.dart';
 import 'auth_repository.dart';
@@ -185,6 +186,74 @@ class RailwayAuthRepository implements AuthRepository {
     _currentToken = null;
     _currentUser = null;
     _authStateController.add(null);
+  }
+
+  @override
+  Future<void> signInWithGoogle() async {
+    final GoogleSignIn googleSignIn = GoogleSignIn(
+      scopes: ['email', 'profile'],
+      serverClientId: '724215071142-s8r5t9kes47jed4ap1lepc1v9beqmuj8.apps.googleusercontent.com',
+    );
+
+    try {
+      // ignore: avoid_print
+      print('🔐 Starting Google Sign-In...');
+
+      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+
+      if (googleUser == null) {
+        throw const GoogleSignInCancelledException();
+      }
+
+      // Get authentication details
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final String? idToken = googleAuth.idToken;
+
+      if (idToken == null) {
+        throw const UnknownAuthException('Failed to get Google ID token', 'google-token-error');
+      }
+
+      // ignore: avoid_print
+      print('🎫 Got Google ID Token, sending to backend...');
+
+      // Send token to backend for verification
+      final response = await http.post(
+        Uri.parse(ApiConfig.googleAuth),
+        headers: ApiConfig.headers,
+        body: jsonEncode({'id_token': idToken}),
+      ).timeout(const Duration(seconds: 30));
+
+      // ignore: avoid_print
+      print('📡 Backend response: ${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        _currentToken = data['access_token'];
+        _currentUser = AppUser.fromJson(data['user']);
+
+        await _saveAuth(_currentToken!);
+        _authStateController.add(_currentUser);
+
+        // ignore: avoid_print
+        print('✅ Google Sign-In completed: ${_currentUser?.displayName}');
+      } else {
+        final error = jsonDecode(response.body);
+        throw UnknownAuthException(
+          error['detail'] ?? 'Google authentication failed',
+          'google-auth-failed',
+        );
+      }
+    } catch (e) {
+      // ignore: avoid_print
+      print('❌ Google Sign-In error: $e');
+      if (e is AuthException) {
+        rethrow;
+      }
+      if (e.toString().contains('TimeoutException')) {
+        throw const NetworkException();
+      }
+      throw const NetworkException();
+    }
   }
 
   void dispose() {

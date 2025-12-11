@@ -43,4 +43,12 @@ abstract class AuthRepository {
   /// - [NetworkException] when network error occurs
   /// - [ServiceUnavailableException] when service is unavailable
   Future<void> signOut();
+
+  /// Signs in a user with Google
+  ///
+  /// Throws:
+  /// - [GoogleSignInCancelledException] when user cancels
+  /// - [NetworkException] when network error occurs
+  /// - [ServiceUnavailableException] when service is unavailable
+  Future<void> signInWithGoogle();
 }

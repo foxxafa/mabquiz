@@ -54,6 +54,7 @@ dependencies:
 
   # Authentication and storage
   shared_preferences: ^2.2.2
+  google_sign_in: ^6.2.1
 
   # SQLite database
   sqflite: ^2.3.0

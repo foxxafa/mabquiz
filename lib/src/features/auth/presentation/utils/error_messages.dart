@@ -16,6 +16,9 @@ class AuthErrorMessages {
     'operation-not-allowed': 'Bu işlem şu anda kullanılamıyor. Lütfen daha sonra tekrar deneyin.',
     'network-error': 'İnternet bağlantısı sorunu. Bağlantınızı kontrol edip tekrar deneyin.',
     'service-unavailable': 'Servis şu anda kullanılamıyor. Lütfen daha sonra tekrar deneyin.',
+    'google-signin-cancelled': 'Google ile giriş iptal edildi.',
+    'google-token-error': 'Google kimlik doğrulama hatası. Lütfen tekrar deneyin.',
+    'google-auth-failed': 'Google ile giriş başarısız oldu. Lütfen tekrar deneyin.',
     'timeout': 'İşlem zaman aşımına uğradı. Lütfen tekrar deneyin.',
     'unknown-error': 'Bilinmeyen bir hata oluştu. Lütfen tekrar deneyin.',
 

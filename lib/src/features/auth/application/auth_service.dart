@@ -120,6 +120,28 @@ class AuthService {
     }
   }
 
+  /// Logs in a user with Google
+  ///
+  /// Throws:
+  /// - [GoogleSignInCancelledException] when user cancels
+  /// - [NetworkException] when network error occurs
+  /// - [ServiceUnavailableException] when service is unavailable
+  /// - [AuthException] for other authentication errors
+  Future<void> loginWithGoogle() async {
+    try {
+      await _repository.signInWithGoogle();
+    } on AuthException {
+      // Re-throw auth exceptions as-is
+      rethrow;
+    } catch (e) {
+      // Wrap unknown exceptions
+      throw UnknownAuthException(
+        'Google login failed: ${e.toString()}',
+        'google-login-failed',
+      );
+    }
+  }
+
   /// Validates email format
   void _validateEmail(String email) {
     final emailError = AuthFormValidators.validateEmail(email);

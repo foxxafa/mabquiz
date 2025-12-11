@@ -115,6 +115,14 @@ class MockAuthRepository implements AuthRepository {
     _authStateController.add(null);
   }
 
+  @override
+  Future<void> signInWithGoogle() async {
+    // Simulate Google Sign-In with a mock user
+    await Future.delayed(simulatedDelay);
+    _currentUser = MockUser(email: 'google@example.com', displayName: 'Google User');
+    _authStateController.add(_currentUser);
+  }
+
   /// Validates email format using a simple regex
   bool _isValidEmail(String email) {
     return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);

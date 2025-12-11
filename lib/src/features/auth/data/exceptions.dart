@@ -49,3 +49,9 @@ class ServiceUnavailableException extends AuthException {
 class UnknownAuthException extends AuthException {
   const UnknownAuthException(super.message, super.code);
 }
+
+/// Exception thrown when Google Sign-In is cancelled by user
+class GoogleSignInCancelledException extends AuthException {
+  const GoogleSignInCancelledException()
+      : super('Google sign-in cancelled by user', 'google-signin-cancelled');
+}
