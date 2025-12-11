@@ -291,25 +291,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
               ),
             ),
           ),
-          SizedBox(height: screenHeight * 0.02),
-          // Hızlı giriş butonu
-          SizedBox(
-            width: double.infinity,
-            height: screenHeight * 0.065,
-            child: ElevatedButton.icon(
-              onPressed: isLoading ? null : _handleQuickLogin,
-              icon: Icon(Icons.flash_on, size: screenWidth * 0.05),
-              label: Text(
-                'Hızlı Giriş (Test)',
-                style: TextStyle(fontSize: screenWidth * 0.04),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF4F9CF9),
-                foregroundColor: Colors.white,
-                side: BorderSide(color: const Color(0xFF4F9CF9).withValues(alpha: 0.3)),
-              ),
-            ),
-          ),
         ],
       ),
     );
@@ -362,52 +343,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
       if (mounted) {
         // Debug için detaylı hata mesajı
         String errorMessage = AuthErrorHandler.getErrorMessage(e);
-        String debugInfo = 'Hata detayı: ${e.toString()}';
-        
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(errorMessage),
-                const SizedBox(height: 4),
-                Text(
-                  debugInfo,
-                  style: const TextStyle(fontSize: 12, color: Colors.white70),
-                ),
-              ],
-            ),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 8),
-          ),
-        );
-      }
-    } finally {
-      if (mounted) {
-        ref.read(authLoadingProvider.notifier).state = false;
-      }
-    }
-  }
-
-  Future<void> _handleQuickLogin() async {
-    try {
-      ref.read(authLoadingProvider.notifier).state = true;
-      ref.read(authErrorProvider.notifier).state = null;
-
-      // Test kullanıcısı ile giriş yap
-      final authService = ref.read(authServiceProvider);
-      await authService.login('testuser', '123');
-      
-      print('🎉 Quick login successful! Navigating to home...');
-      
-      // Navigate directly to home after successful login
-      if (mounted) {
-        context.go('/home');
-      }
-    } catch (e) {
-      if (mounted) {
-        String errorMessage = 'Hızlı giriş başarısız oldu';
         String debugInfo = 'Hata detayı: ${e.toString()}';
         
         ScaffoldMessenger.of(context).showSnackBar(
