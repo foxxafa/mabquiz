@@ -1,4 +1,4 @@
-[
+﻿[
   {
     "id": "term_fill_001",
     "prompt": "Kalp atışının dakikada 60'tan az olması _____ olarak adlandırılır.",
@@ -30,28 +30,6 @@
     "explanation": "Hepatomegali, karaciğerin palpasyonla sağ kostokondral sınırın altında hissedilmesidir.",
     "knowledgeType": "pathophysiology",
     "topic": "gastroenteroloji",
-    "subtopic": "organ_patolojileri"
-  },
-  {
-    "id": "term_fill_004",
-    "prompt": "Yutma eyleminde güçlük çekme durumu _____ olarak adlandırılır.",
-    "type": "fill_in_blank",
-    "correctAnswer": "disfaji",
-    "alternatives": ["Disfaji", "DISFAJI"],
-    "explanation": "Disfaji, oral, faringeal veya özofageal aşamalardan birinde ya da hepsinde yutma güçlüğü yaşanmasıdır.",
-    "knowledgeType": "pathophysiology",
-    "topic": "gastroenteroloji",
-    "subtopic": "yutma_bozuklukları"
-  },
-  {
-    "id": "term_fill_005",
-    "prompt": "Anatomide \"ön\" anlamına gelen terim _____ dir.",
-    "type": "fill_in_blank",
-    "correctAnswer": "anterior",
-    "alternatives": ["Anterior", "ANTERIOR"],
-    "explanation": "Anterior terimi anatomide vücudun ön kısmını ifade eder.",
-    "knowledgeType": "terminology",
-    "topic": "anatomi",
-    "subtopic": "yön_terimleri"
+    "subtopic": "karaciğer"
   }
 ]
