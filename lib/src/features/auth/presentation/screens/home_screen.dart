@@ -216,7 +216,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             ],
           ),
           const SizedBox(height: 16),
-          Container(
+          // Email doğrulama bildirimi geçici olarak devre dışı
+          /* Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: AppColors.primaryLight.withValues(alpha: 0.1),
@@ -245,7 +246,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 ),
               ],
             ),
-          ),
+          ), */
         ],
       ),
     );

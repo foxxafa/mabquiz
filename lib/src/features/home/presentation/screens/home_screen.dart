@@ -289,8 +289,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           
           const SizedBox(height: 20),
           
-          // Modern hesap durumu kartı
-          Container(
+          // Email doğrulama bildirimi geçici olarak devre dışı
+          /* Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               gradient: currentUser?.emailVerified == true
@@ -386,7 +386,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                   ),
               ],
             ),
-          ),
+          ), */
         ],
       ),
     );
