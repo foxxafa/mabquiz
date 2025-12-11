@@ -178,24 +178,36 @@ async def sync_mab_state(
 
     # ==================== Fetch Server Updates ====================
     # Get all records updated since client's lastSyncTime
-    question_arms_result = await session.execute(
-        select(UserMABQuestionArm).where(
-            and_(
-                UserMABQuestionArm.user_id == user_id,
-                UserMABQuestionArm.updated_at > last_sync_datetime if last_sync_datetime else True,
+    if last_sync_datetime:
+        question_arms_result = await session.execute(
+            select(UserMABQuestionArm).where(
+                and_(
+                    UserMABQuestionArm.user_id == user_id,
+                    UserMABQuestionArm.updated_at > last_sync_datetime,
+                )
             )
         )
-    )
+    else:
+        # First sync - get all records for this user
+        question_arms_result = await session.execute(
+            select(UserMABQuestionArm).where(UserMABQuestionArm.user_id == user_id)
+        )
     server_question_arms = [arm.to_dict() for arm in question_arms_result.scalars().all()]
 
-    topic_arms_result = await session.execute(
-        select(UserMABTopicArm).where(
-            and_(
-                UserMABTopicArm.user_id == user_id,
-                UserMABTopicArm.updated_at > last_sync_datetime if last_sync_datetime else True,
+    if last_sync_datetime:
+        topic_arms_result = await session.execute(
+            select(UserMABTopicArm).where(
+                and_(
+                    UserMABTopicArm.user_id == user_id,
+                    UserMABTopicArm.updated_at > last_sync_datetime,
+                )
             )
         )
-    )
+    else:
+        # First sync - get all records for this user
+        topic_arms_result = await session.execute(
+            select(UserMABTopicArm).where(UserMABTopicArm.user_id == user_id)
+        )
     server_topic_arms = [arm.to_dict() for arm in topic_arms_result.scalars().all()]
 
     return SyncResponse(
