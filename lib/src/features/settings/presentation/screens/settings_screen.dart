@@ -54,7 +54,7 @@ class SettingsScreen extends ConsumerWidget {
                       _buildSectionTitle('Dil ve Bölge'),
                       const SizedBox(height: 16),
                       _buildLanguageCard(context, currentLanguage),
-                      const Spacer(),
+                      const SizedBox(height: 24),
 
                       // Hesap Bölümü
                       _buildSectionTitle('Hesap'),
