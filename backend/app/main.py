@@ -32,14 +32,10 @@ origins = [
     "http://localhost:8080", 
     "http://127.0.0.1:8080",
     "http://10.0.2.2:8080",  # Android emulator
-    "https://*.up.railway.app",  # Railway domain
-    "https://*.railway.app",     # Railway domain
+    "https://attractive-quietude-production-25a0.up.railway.app",  # Web admin
+    "https://mabquiz-production.up.railway.app",  # Backend
 ]
 
-# Railway production domain ekle
-if os.getenv("RAILWAY_ENVIRONMENT_NAME"):
-    railway_domain = f"https://{os.getenv('RAILWAY_SERVICE_NAME')}-production.up.railway.app"
-    origins.append(railway_domain)
 
 app.add_middleware(
     CORSMiddleware,
