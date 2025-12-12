@@ -517,11 +517,34 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
   }
 
   Future<void> _handleGoogleSignUp() async {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Google ile kayıt olma yakında eklenecek!'),
-        backgroundColor: Colors.blue,
-      ),
-    );
+    try {
+      ref.read(authLoadingProvider.notifier).state = true;
+      ref.read(authErrorProvider.notifier).state = null;
+
+      final authService = ref.read(authServiceProvider);
+      await authService.loginWithGoogle();
+
+      if (mounted) {
+        context.go('/home');
+      }
+    } catch (e) {
+      ref.read(authErrorProvider.notifier).state = e.toString();
+
+      if (mounted) {
+        String errorMessage = AuthErrorHandler.getErrorMessage(e);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMessage),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        ref.read(authLoadingProvider.notifier).state = false;
+      }
+    }
   }
 }
