@@ -7,7 +7,7 @@ import { authApi } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { AuthProvider } from "@/components/AuthProvider";
 
-const GOOGLE_CLIENT_ID = "630014820698-9esdcdqtd3qpsgpnuud7t0r1qi28rdt8.apps.googleusercontent.com";
+const GOOGLE_CLIENT_ID = "724215071142-s8r5t9kes47jed4ap1lepc1v9beqmuj8.apps.googleusercontent.com";
 
 function LoginForm() {
   const [username, setUsername] = useState("");
