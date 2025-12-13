@@ -29,7 +29,9 @@ app = FastAPI(
 # CORS - Production ve development ortamları için
 origins = [
     "http://localhost",
-    "http://localhost:8080", 
+    "http://localhost:3000",  # Next.js dev server
+    "http://localhost:8080",
+    "http://127.0.0.1:3000",  # Next.js dev server
     "http://127.0.0.1:8080",
     "http://10.0.2.2:8080",  # Android emulator
     "https://attractive-quietude-production-25a0.up.railway.app",  # Web admin

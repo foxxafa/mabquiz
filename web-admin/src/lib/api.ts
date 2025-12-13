@@ -34,7 +34,8 @@ async function fetchApi<T>(
     const data = await response.json();
     return { data };
   } catch (error) {
-    return { error: 'Sunucuya baglanilamadi' };
+    console.error('API Error:', error);
+    return { error: `Sunucuya baglanilamadi: ${error instanceof Error ? error.message : 'Bilinmeyen hata'}` };
   }
 }
 
