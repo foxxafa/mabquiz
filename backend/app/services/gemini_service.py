@@ -9,8 +9,8 @@ from typing import Optional, List, Dict, Any
 
 # Gemini API configuration
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
-# Use gemini-2.0-flash - higher rate limits, generally available
-GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
+# Use gemma-3-27b-it - free tier has 14,400 RPD limit (much higher than gemini-2.5-flash's 20 RPD)
+GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemma-3-27b-it:generateContent"
 
 
 def extract_json_from_text(text: str) -> Optional[Dict]:
