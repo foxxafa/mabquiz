@@ -342,41 +342,43 @@ async def get_current_user(request: Request, db: AsyncSession = Depends(get_sess
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-async def run_migrations(conn):
+async def run_migrations():
     """Run database migrations - Knowledge types Bloom taxonomy"""
     from .models.knowledge_type import DEFAULT_KNOWLEDGE_TYPES
 
     print("🔄 Running database migrations...")
 
-    # Check if knowledge_types table exists and has Bloom taxonomy
+    # Step 1: Check if we need to migrate (separate transaction)
     has_bloom = False
     try:
-        result = await conn.execute(text(
-            "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'knowledge_types')"
-        ))
-        table_exists = result.scalar()
-
-        if table_exists:
-            result = await conn.execute(text("SELECT COUNT(*) FROM knowledge_types WHERE name = 'recall'"))
+        async with async_engine.begin() as conn:
+            result = await conn.execute(text(
+                "SELECT COUNT(*) FROM knowledge_types WHERE name = 'recall'"
+            ))
             has_bloom = result.scalar() > 0
-    except Exception as e:
-        print(f"  ⚠️ Check failed: {e}")
+    except Exception:
         has_bloom = False
 
-    if not has_bloom:
-        print("  📋 Migrating knowledge_types to Bloom taxonomy...")
+    if has_bloom:
+        print("  ✅ Knowledge types already have Bloom taxonomy")
+        print("✅ Migrations completed")
+        return
 
-        # Clear knowledge_type_id from questions first
-        try:
+    print("  📋 Migrating knowledge_types to Bloom taxonomy...")
+
+    # Step 2: Clear knowledge_type_id from questions (separate transaction)
+    try:
+        async with async_engine.begin() as conn:
             await conn.execute(text("UPDATE questions SET knowledge_type_id = NULL"))
             print("  ✅ Cleared knowledge_type_id from questions")
-        except Exception:
-            pass  # Table might not exist
+    except Exception:
+        pass
 
-        # Drop and recreate knowledge_types
+    # Step 3: Drop and recreate table (separate transaction)
+    async with async_engine.begin() as conn:
         await conn.execute(text("DROP TABLE IF EXISTS knowledge_types CASCADE"))
         await conn.execute(text("""
-            CREATE TABLE IF NOT EXISTS knowledge_types (
+            CREATE TABLE knowledge_types (
                 id SERIAL PRIMARY KEY,
                 name VARCHAR(50) UNIQUE NOT NULL,
                 display_name VARCHAR(100) NOT NULL,
@@ -392,33 +394,29 @@ async def run_migrations(conn):
             await conn.execute(text("""
                 INSERT INTO knowledge_types (name, display_name, description)
                 VALUES (:name, :display_name, :description)
-                ON CONFLICT (name) DO NOTHING
             """), kt)
 
         await conn.execute(text("CREATE INDEX IF NOT EXISTS idx_knowledge_types_name ON knowledge_types(name)"))
-        print(f"  ✅ Created knowledge_types with {len(DEFAULT_KNOWLEDGE_TYPES)} Bloom taxonomy types")
-    else:
-        print("  ✅ Knowledge types already have Bloom taxonomy")
 
+    print(f"  ✅ Created knowledge_types with {len(DEFAULT_KNOWLEDGE_TYPES)} Bloom taxonomy types")
     print("✅ Migrations completed")
 
 
 @app.on_event("startup")
 async def on_startup():
     """Application startup tasks"""
-    environment = os.getenv("RAILWAY_ENVIRONMENT_NAME", "development")
-
     print("🚀 Starting application...")
     try:
+        # Verify connection
         async with async_engine.begin() as conn:
-            # Verify connection
             await conn.execute(text("SELECT 1"))
             print("✅ Database connection verified")
 
-            # Run migrations
-            await run_migrations(conn)
+        # Run migrations (uses separate transactions internally)
+        await run_migrations()
 
-            # Create tables if they don't exist
+        # Create tables if they don't exist
+        async with async_engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
             print("✅ Tables created/verified")
     except Exception as e:
