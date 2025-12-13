@@ -2,9 +2,12 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
 import { authApi } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { AuthProvider } from "@/components/AuthProvider";
+
+const GOOGLE_CLIENT_ID = "630014820698-9esdcdqtd3qpsgpnuud7t0r1qi28rdt8.apps.googleusercontent.com";
 
 function LoginForm() {
   const [username, setUsername] = useState("");
@@ -35,6 +38,30 @@ function LoginForm() {
     setIsLoading(false);
   };
 
+  const handleGoogleSuccess = async (credentialResponse: any) => {
+    setError("");
+    setIsLoading(true);
+
+    const result = await authApi.googleLogin(credentialResponse.credential);
+
+    if (result.error) {
+      setError(result.error);
+      setIsLoading(false);
+      return;
+    }
+
+    if (result.data) {
+      login(result.data.access_token, result.data.user);
+      router.push("/dashboard");
+    }
+
+    setIsLoading(false);
+  };
+
+  const handleGoogleError = () => {
+    setError("Google ile giris basarisiz oldu");
+  };
+
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md">
@@ -60,60 +87,80 @@ function LoginForm() {
         </div>
 
         {/* Login Form */}
-        <form
-          onSubmit={handleSubmit}
-          className="bg-surface rounded-2xl p-8 border border-gray-800"
-        >
+        <div className="bg-surface rounded-2xl p-8 border border-gray-800">
           {error && (
             <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm">
               {error}
             </div>
           )}
 
-          <div className="mb-4">
-            <label
-              htmlFor="username"
-              className="block text-sm font-medium text-gray-400 mb-2"
-            >
-              Kullanici Adi
-            </label>
-            <input
-              type="text"
-              id="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="w-full px-4 py-3 bg-surface-light border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-primary transition-colors"
-              placeholder="Kullanici adinizi girin"
-              required
-            />
-          </div>
-
+          {/* Google Login Button */}
           <div className="mb-6">
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-gray-400 mb-2"
-            >
-              Sifre
-            </label>
-            <input
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 bg-surface-light border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-primary transition-colors"
-              placeholder="Sifrenizi girin"
-              required
-            />
+            <div className="flex justify-center">
+              <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={handleGoogleError}
+                theme="filled_black"
+                size="large"
+                text="signin_with"
+                shape="rectangular"
+              />
+            </div>
           </div>
 
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full py-3 bg-primary hover:bg-primary/90 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isLoading ? "Giris yapiliyor..." : "Giris Yap"}
-          </button>
-        </form>
+          <div className="relative mb-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-700"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-surface text-gray-500">veya</span>
+            </div>
+          </div>
+
+          <form onSubmit={handleSubmit}>
+            <div className="mb-4">
+              <label
+                htmlFor="username"
+                className="block text-sm font-medium text-gray-400 mb-2"
+              >
+                Kullanici Adi
+              </label>
+              <input
+                type="text"
+                id="username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="w-full px-4 py-3 bg-surface-light border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-primary transition-colors"
+                placeholder="Kullanici adinizi girin"
+              />
+            </div>
+
+            <div className="mb-6">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-400 mb-2"
+              >
+                Sifre
+              </label>
+              <input
+                type="password"
+                id="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-4 py-3 bg-surface-light border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-primary transition-colors"
+                placeholder="Sifrenizi girin"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={isLoading || (!username || !password)}
+              className="w-full py-3 bg-primary hover:bg-primary/90 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? "Giris yapiliyor..." : "Giris Yap"}
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );
@@ -121,8 +168,10 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <AuthProvider>
-      <LoginForm />
-    </AuthProvider>
+    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+      <AuthProvider>
+        <LoginForm />
+      </AuthProvider>
+    </GoogleOAuthProvider>
   );
 }

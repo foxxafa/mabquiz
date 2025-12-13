@@ -218,6 +218,79 @@ async def admin_login(request: Request, db: AsyncSession = Depends(get_session))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.post("/api/v1/auth/admin/google")
+async def admin_google_login(request: Request, db: AsyncSession = Depends(get_session)):
+    """Admin Google login endpoint - requires admin role"""
+    try:
+        from .models.user import UserDB
+        from .models.user_role import UserRole
+        from .auth.jwt_handler import create_access_token
+        from sqlalchemy import select
+        import requests
+
+        body = await request.json()
+        id_token = body.get("id_token")
+
+        if not id_token:
+            raise HTTPException(status_code=400, detail="ID token required")
+
+        # Verify Google token
+        google_response = requests.get(
+            f"https://oauth2.googleapis.com/tokeninfo?id_token={id_token}"
+        )
+
+        if google_response.status_code != 200:
+            raise HTTPException(status_code=401, detail="Invalid Google token")
+
+        google_data = google_response.json()
+        google_id = google_data.get("sub")
+        email = google_data.get("email")
+
+        # Find user by google_id
+        result = await db.execute(select(UserDB).filter(UserDB.google_id == google_id))
+        user = result.scalar_one_or_none()
+
+        if not user:
+            # Try to find by email
+            result = await db.execute(select(UserDB).filter(UserDB.email == email))
+            user = result.scalar_one_or_none()
+
+        if not user:
+            raise HTTPException(status_code=401, detail="User not found. Please register first.")
+
+        # Check if user has admin role
+        role_result = await db.execute(
+            select(UserRole).filter(UserRole.user_uid == user.uid, UserRole.role == "admin")
+        )
+        admin_role = role_result.scalar_one_or_none()
+        if not admin_role:
+            raise HTTPException(status_code=403, detail="Access denied. Admin privileges required.")
+
+        # Create token with admin flag
+        token_data = {
+            "uid": user.uid,
+            "email": user.email,
+            "display_name": user.display_name,
+            "is_admin": True
+        }
+        access_token = create_access_token(token_data)
+
+        return {
+            "access_token": access_token,
+            "token_type": "bearer",
+            "user": {
+                "uid": user.uid,
+                "email": user.email,
+                "display_name": user.display_name,
+                "email_verified": user.email_verified,
+                "is_admin": True
+            }
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.get("/api/v1/auth/me")
 async def get_current_user(request: Request, db: AsyncSession = Depends(get_session)):
     """Get current user info"""

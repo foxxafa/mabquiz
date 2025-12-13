@@ -46,6 +46,12 @@ export const authApi = {
       body: JSON.stringify({ username, password }),
     }),
 
+  googleLogin: (idToken: string) =>
+    fetchApi<{ access_token: string; user: any }>('/auth/admin/google', {
+      method: 'POST',
+      body: JSON.stringify({ id_token: idToken }),
+    }),
+
   me: () => fetchApi<any>('/auth/me'),
 };
 
