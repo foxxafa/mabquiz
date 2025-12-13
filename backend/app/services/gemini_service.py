@@ -195,9 +195,24 @@ JSON formatinda yanit ver. Sadece JSON, baska bir sey yazma."""
             if not analysis:
                 return {"success": False, "error": f"Could not parse JSON from response. Raw: {generated_text[:500]}"}
 
+            # Debug log
+            print(f"🔍 Gemini raw response: {generated_text[:500]}")
+            print(f"🔍 Parsed analysis keys: {list(analysis.keys())}")
+
+            # Safely extract topic info
+            topic_data = analysis.get("topic", {})
+            if not isinstance(topic_data, dict):
+                topic_data = {}
+
+            subtopic_data = analysis.get("subtopic", {})
+            if not isinstance(subtopic_data, dict):
+                subtopic_data = {}
+
             # Determine if topic/subtopic are new
-            topic_is_new = analysis["topic"]["id"] is None
-            subtopic_is_new = analysis["subtopic"]["id"] is None
+            topic_id = topic_data.get("id")
+            subtopic_id = subtopic_data.get("id")
+            topic_is_new = topic_id is None
+            subtopic_is_new = subtopic_id is None
 
             # Find knowledge type info
             kt_id = analysis.get("knowledgeTypeId", 9)  # Default to "general"
@@ -206,15 +221,15 @@ JSON formatinda yanit ver. Sadece JSON, baska bir sey yazma."""
             return {
                 "success": True,
                 "topic": {
-                    "id": analysis["topic"]["id"],
-                    "name": analysis["topic"]["name"],
-                    "displayName": analysis["topic"]["displayName"],
+                    "id": topic_id,
+                    "name": topic_data.get("name", "unknown"),
+                    "displayName": topic_data.get("displayName", "Bilinmeyen Konu"),
                     "isNew": topic_is_new
                 },
                 "subtopic": {
-                    "id": analysis["subtopic"]["id"],
-                    "name": analysis["subtopic"]["name"],
-                    "displayName": analysis["subtopic"]["displayName"],
+                    "id": subtopic_id,
+                    "name": subtopic_data.get("name", "unknown"),
+                    "displayName": subtopic_data.get("displayName", "Bilinmeyen Alt Konu"),
                     "isNew": subtopic_is_new
                 },
                 "knowledgeType": {
