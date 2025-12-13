@@ -363,6 +363,16 @@ async def run_migrations(conn):
         await conn.execute(text("DROP TABLE IF EXISTS questions CASCADE"))
         print("  ✅ Dropped old questions table")
 
+    # Migration: Remove difficulty column from questions table
+    result = await conn.execute(text("""
+        SELECT column_name FROM information_schema.columns
+        WHERE table_name = 'questions' AND column_name = 'difficulty'
+    """))
+    if result.fetchone():
+        print("  📋 Removing 'difficulty' column from questions table...")
+        await conn.execute(text("ALTER TABLE questions DROP COLUMN difficulty"))
+        print("  ✅ Dropped 'difficulty' column from questions")
+
     print("✅ Migrations completed")
 
 
