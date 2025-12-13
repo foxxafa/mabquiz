@@ -3,12 +3,77 @@ Gemini AI Service for intelligent question analysis
 """
 import os
 import json
+import re
 import httpx
 from typing import Optional, List, Dict, Any
 
 # Gemini API configuration
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
+
+
+def extract_json_from_text(text: str) -> Optional[Dict]:
+    """
+    Try to extract JSON from text, handling various formats and incomplete JSON.
+    """
+    text = text.strip()
+
+    # Remove markdown code blocks
+    if text.startswith("```json"):
+        text = text[7:]
+    if text.startswith("```"):
+        text = text[3:]
+    if text.endswith("```"):
+        text = text[:-3]
+    text = text.strip()
+
+    # Try direct parse first
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        pass
+
+    # Try to find JSON object in text
+    json_match = re.search(r'\{.*', text, re.DOTALL)
+    if json_match:
+        json_str = json_match.group()
+
+        # Try parsing as-is
+        try:
+            return json.loads(json_str)
+        except json.JSONDecodeError:
+            pass
+
+        # Try to fix incomplete JSON by counting braces
+        open_braces = json_str.count('{')
+        close_braces = json_str.count('}')
+
+        if open_braces > close_braces:
+            # Add missing closing braces
+            json_str = json_str.rstrip()
+            # Remove trailing incomplete parts (after last complete value)
+            # Find last complete key-value
+            last_quote = json_str.rfind('"')
+            if last_quote > 0:
+                # Check if we're in middle of a string
+                before_quote = json_str[:last_quote]
+                if before_quote.rstrip().endswith(':'):
+                    # We have "key": "incomplete... - remove this incomplete part
+                    # Find the start of this key
+                    key_match = re.search(r',?\s*"[^"]+"\s*:\s*"[^"]*$', json_str)
+                    if key_match:
+                        json_str = json_str[:key_match.start()]
+
+            # Add missing braces
+            json_str = json_str.rstrip().rstrip(',')
+            json_str += '}' * (open_braces - close_braces)
+
+            try:
+                return json.loads(json_str)
+            except json.JSONDecodeError:
+                pass
+
+    return None
 
 
 async def analyze_question(
@@ -96,7 +161,7 @@ YANIT FORMAT (JSON):
     "explanation": "<kısa açıklama>"
 }}
 
-SADECE JSON DÖNDÜR, başka bir şey yazma."""
+JSON formatinda yanit ver. Sadece JSON, baska bir sey yazma."""
 
     try:
         async with httpx.AsyncClient(timeout=60.0) as client:
@@ -106,8 +171,8 @@ SADECE JSON DÖNDÜR, başka bir şey yazma."""
                     "contents": [{"parts": [{"text": prompt}]}],
                     "generationConfig": {
                         "temperature": 0.1,
-                        "maxOutputTokens": 2048,
-                        "responseMimeType": "application/json"
+                        "maxOutputTokens": 2048
+                        # NOT using responseMimeType - it can cause truncation
                     }
                 },
                 headers={"Content-Type": "application/json"}
@@ -124,20 +189,11 @@ SADECE JSON DÖNDÜR, başka bir şey yazma."""
             if not generated_text:
                 return {"success": False, "error": f"Empty response from Gemini. Full response: {json.dumps(result)[:500]}"}
 
-            # Clean and parse JSON
-            generated_text = generated_text.strip()
-            if generated_text.startswith("```json"):
-                generated_text = generated_text[7:]
-            if generated_text.startswith("```"):
-                generated_text = generated_text[3:]
-            if generated_text.endswith("```"):
-                generated_text = generated_text[:-3]
-            generated_text = generated_text.strip()
+            # Use smart JSON extraction that handles incomplete responses
+            analysis = extract_json_from_text(generated_text)
 
-            try:
-                analysis = json.loads(generated_text)
-            except json.JSONDecodeError as e:
-                return {"success": False, "error": f"JSON parse error: {str(e)}. Raw response: {generated_text[:300]}"}
+            if not analysis:
+                return {"success": False, "error": f"Could not parse JSON from response. Raw: {generated_text[:500]}"}
 
             # Determine if topic/subtopic are new
             topic_is_new = analysis["topic"]["id"] is None
