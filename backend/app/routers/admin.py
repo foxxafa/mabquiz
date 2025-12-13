@@ -572,12 +572,21 @@ async def get_questions(
         selectinload(Question.knowledge_type_rel)
     )
 
+    # Handle joins only once - check if we need to join subtopics/topics
+    needs_subtopic_join = topic_id is not None or course_id is not None
+    needs_topic_join = course_id is not None
+
+    if needs_subtopic_join:
+        stmt = stmt.join(Subtopic, Question.subtopic_id == Subtopic.id)
+    if needs_topic_join:
+        stmt = stmt.join(Topic, Subtopic.topic_id == Topic.id)
+
     if subtopic_id:
         stmt = stmt.where(Question.subtopic_id == subtopic_id)
     if topic_id:
-        stmt = stmt.join(Subtopic).where(Subtopic.topic_id == topic_id)
+        stmt = stmt.where(Subtopic.topic_id == topic_id)
     if course_id:
-        stmt = stmt.join(Subtopic).join(Topic).where(Topic.course_id == course_id)
+        stmt = stmt.where(Topic.course_id == course_id)
     if knowledge_type_id:
         stmt = stmt.where(Question.knowledge_type_id == knowledge_type_id)
     if question_type:
