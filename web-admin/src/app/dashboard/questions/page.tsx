@@ -7,11 +7,13 @@ import {
   adminTopicsApi,
   adminCoursesApi,
   adminKnowledgeTypesApi,
+  adminAIApi,
   Question,
   Subtopic,
   Topic,
   Course,
   KnowledgeType,
+  AIAnalysisResult,
 } from "@/lib/api";
 
 const QUESTION_TYPES = [
@@ -41,7 +43,14 @@ export default function QuestionsPage() {
   const [filterSubtopicId, setFilterSubtopicId] = useState<number | undefined>(undefined);
   const [filterType, setFilterType] = useState<string | undefined>(undefined);
 
-  // Form data
+  // AI Mode
+  const [aiMode, setAiMode] = useState(false);
+  const [aiCourseId, setAiCourseId] = useState<number>(0);
+  const [aiQuestionText, setAiQuestionText] = useState("");
+  const [aiAnalyzing, setAiAnalyzing] = useState(false);
+  const [aiResult, setAiResult] = useState<AIAnalysisResult | null>(null);
+
+  // Manual Form data
   const [formData, setFormData] = useState({
     subtopicId: 0,
     knowledgeTypeId: 0,
@@ -104,6 +113,11 @@ export default function QuestionsPage() {
   };
 
   const openModal = (question?: Question) => {
+    setAiMode(false);
+    setAiResult(null);
+    setAiQuestionText("");
+    setAiCourseId(courses[0]?.id || 0);
+
     if (question) {
       setEditingQuestion(question);
       setFormData({
@@ -135,6 +149,78 @@ export default function QuestionsPage() {
   const closeModal = () => {
     setShowModal(false);
     setEditingQuestion(null);
+    setAiMode(false);
+    setAiResult(null);
+  };
+
+  // AI Analysis
+  const handleAIAnalyze = async () => {
+    if (!aiCourseId || !aiQuestionText.trim()) {
+      setError("Ders secin ve soru metnini girin");
+      return;
+    }
+
+    setAiAnalyzing(true);
+    setError("");
+    setAiResult(null);
+
+    const result = await adminAIApi.analyzeQuestion(aiCourseId, aiQuestionText);
+
+    if (result.error) {
+      setError(result.error);
+    } else if (result.data) {
+      if (result.data.success) {
+        setAiResult(result.data);
+      } else {
+        setError(result.data.error || "AI analiz hatasi");
+      }
+    }
+    setAiAnalyzing(false);
+  };
+
+  // AI Create
+  const handleAICreate = async () => {
+    if (!aiResult) return;
+
+    setSaving(true);
+    setError("");
+
+    const result = await adminAIApi.createWithAI({
+      courseId: aiCourseId,
+      topic: {
+        id: aiResult.topic?.id || null,
+        name: aiResult.topic?.name || "",
+        displayName: aiResult.topic?.displayName || "",
+      },
+      subtopic: {
+        id: aiResult.subtopic?.id || null,
+        name: aiResult.subtopic?.name || "",
+        displayName: aiResult.subtopic?.displayName || "",
+      },
+      knowledgeTypeId: aiResult.knowledgeType?.id || 9,
+      questionText: aiQuestionText,
+      questionType: aiResult.questionType || "multiple_choice",
+      correctAnswer: aiResult.correctAnswer || "",
+      options: aiResult.options,
+      explanation: aiResult.explanation,
+    });
+
+    if (result.error) {
+      setError(result.error);
+    } else if (result.data?.success) {
+      closeModal();
+      loadQuestions();
+      // Reload topics/subtopics if new ones were created
+      if (result.data.topicCreated || result.data.subtopicCreated) {
+        const [topicsR, subtopicsR] = await Promise.all([
+          adminTopicsApi.getAll(),
+          adminSubtopicsApi.getAll(),
+        ]);
+        if (topicsR.data) setTopics(topicsR.data.topics);
+        if (subtopicsR.data) setSubtopics(subtopicsR.data.subtopics);
+      }
+    }
+    setSaving(false);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -218,7 +304,7 @@ export default function QuestionsPage() {
         </div>
         <button
           onClick={() => openModal()}
-          disabled={subtopics.length === 0 || knowledgeTypes.length === 0}
+          disabled={courses.length === 0}
           className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors flex items-center gap-2 disabled:opacity-50"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -301,9 +387,9 @@ export default function QuestionsPage() {
         </div>
       )}
 
-      {subtopics.length === 0 ? (
+      {courses.length === 0 ? (
         <div className="bg-surface rounded-xl border border-gray-800 p-8 text-center">
-          <p className="text-gray-500">Oncelikle ders, konu ve alt konu eklemeniz gerekiyor.</p>
+          <p className="text-gray-500">Oncelikle bir ders eklemeniz gerekiyor.</p>
           <a href="/dashboard/courses" className="text-primary hover:underline mt-2 inline-block">
             Baslayalim
           </a>
@@ -417,158 +503,343 @@ export default function QuestionsPage() {
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 overflow-y-auto">
           <div className="bg-surface rounded-xl p-6 w-full max-w-2xl border border-gray-800 my-8">
-            <h2 className="text-xl font-bold text-white mb-4">
-              {editingQuestion ? "Soru Duzenle" : "Yeni Soru Ekle"}
-            </h2>
-            <form onSubmit={handleSubmit}>
-              <div className="grid grid-cols-2 gap-4 mb-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-2">Alt Konu</label>
-                  <select
-                    value={formData.subtopicId}
-                    onChange={(e) => setFormData({ ...formData, subtopicId: Number(e.target.value) })}
-                    className="w-full px-4 py-3 bg-surface-light border border-gray-700 rounded-lg text-white focus:outline-none focus:border-primary"
-                    required
-                  >
-                    <option value={0}>Secin</option>
-                    {subtopics.map((s) => (
-                      <option key={s.id} value={s.id}>
-                        {s.course?.displayName} - {s.topic?.displayName} - {s.displayName}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-2">Bilgi Turu</label>
-                  <select
-                    value={formData.knowledgeTypeId}
-                    onChange={(e) => setFormData({ ...formData, knowledgeTypeId: Number(e.target.value) })}
-                    className="w-full px-4 py-3 bg-surface-light border border-gray-700 rounded-lg text-white focus:outline-none focus:border-primary"
-                    required
-                  >
-                    <option value={0}>Secin</option>
-                    {knowledgeTypes.map((kt) => (
-                      <option key={kt.id} value={kt.id}>{kt.displayName}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4 mb-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-2">Soru Tipi</label>
-                  <select
-                    value={formData.type}
-                    onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                    className="w-full px-4 py-3 bg-surface-light border border-gray-700 rounded-lg text-white focus:outline-none focus:border-primary"
-                  >
-                    {QUESTION_TYPES.map((t) => (
-                      <option key={t.value} value={t.value}>{t.label}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-2">Puan</label>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-white">
+                {editingQuestion ? "Soru Duzenle" : "Yeni Soru Ekle"}
+              </h2>
+              {!editingQuestion && (
+                <label className="flex items-center gap-2 cursor-pointer">
                   <input
-                    type="number"
-                    value={formData.points}
-                    onChange={(e) => setFormData({ ...formData, points: Number(e.target.value) })}
-                    className="w-full px-4 py-3 bg-surface-light border border-gray-700 rounded-lg text-white focus:outline-none focus:border-primary"
-                    min={1}
+                    type="checkbox"
+                    checked={aiMode}
+                    onChange={(e) => {
+                      setAiMode(e.target.checked);
+                      setAiResult(null);
+                      setError("");
+                    }}
+                    className="w-4 h-4 rounded border-gray-600 text-primary focus:ring-primary"
                   />
-                </div>
-              </div>
-
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-400 mb-2">Soru Metni</label>
-                <textarea
-                  value={formData.text}
-                  onChange={(e) => setFormData({ ...formData, text: e.target.value })}
-                  className="w-full px-4 py-3 bg-surface-light border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-primary resize-none"
-                  rows={3}
-                  placeholder={formData.type === "fill_in_blank" ? "Soru metni (bosluk icin ___ kullanin)" : "Soru metni"}
-                  required
-                />
-              </div>
-
-              {formData.type === "multiple_choice" && (
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-400 mb-2">Secenekler</label>
-                  <div className="space-y-2">
-                    {formData.options.map((opt, idx) => (
-                      <input
-                        key={idx}
-                        type="text"
-                        value={opt}
-                        onChange={(e) => {
-                          const newOpts = [...formData.options];
-                          newOpts[idx] = e.target.value;
-                          setFormData({ ...formData, options: newOpts });
-                        }}
-                        className="w-full px-4 py-2 bg-surface-light border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-primary"
-                        placeholder={`Secenek ${String.fromCharCode(65 + idx)}`}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-400 mb-2">
-                  Dogru Cevap
-                  {formData.type === "multiple_choice" && " (A, B, C veya D)"}
-                  {formData.type === "true_false" && " (true veya false)"}
+                  <span className="text-sm text-gray-400 flex items-center gap-1">
+                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                    </svg>
+                    AI ile Analiz
+                  </span>
                 </label>
-                {formData.type === "true_false" ? (
-                  <select
-                    value={formData.correctAnswer}
-                    onChange={(e) => setFormData({ ...formData, correctAnswer: e.target.value })}
-                    className="w-full px-4 py-3 bg-surface-light border border-gray-700 rounded-lg text-white focus:outline-none focus:border-primary"
-                    required
-                  >
-                    <option value="">Secin</option>
-                    <option value="true">Dogru</option>
-                    <option value="false">Yanlis</option>
-                  </select>
-                ) : (
-                  <input
-                    type="text"
-                    value={formData.correctAnswer}
-                    onChange={(e) => setFormData({ ...formData, correctAnswer: e.target.value })}
-                    className="w-full px-4 py-3 bg-surface-light border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-primary"
-                    required
-                  />
+              )}
+            </div>
+
+            {/* AI Mode */}
+            {aiMode && !editingQuestion ? (
+              <div>
+                {/* Step 1: Course + Question Text */}
+                {!aiResult && (
+                  <>
+                    <div className="mb-4">
+                      <label className="block text-sm font-medium text-gray-400 mb-2">Ders Secin</label>
+                      <select
+                        value={aiCourseId}
+                        onChange={(e) => setAiCourseId(Number(e.target.value))}
+                        className="w-full px-4 py-3 bg-surface-light border border-gray-700 rounded-lg text-white focus:outline-none focus:border-primary"
+                      >
+                        <option value={0}>Secin</option>
+                        {courses.map((c) => (
+                          <option key={c.id} value={c.id}>{c.displayName}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="mb-4">
+                      <label className="block text-sm font-medium text-gray-400 mb-2">
+                        Soru Metnini Yapistirin
+                      </label>
+                      <textarea
+                        value={aiQuestionText}
+                        onChange={(e) => setAiQuestionText(e.target.value)}
+                        className="w-full px-4 py-3 bg-surface-light border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-primary resize-none"
+                        rows={6}
+                        placeholder="Soruyu buraya yapistirin... (Secenekler dahil)"
+                      />
+                    </div>
+
+                    <div className="flex gap-3">
+                      <button
+                        type="button"
+                        onClick={closeModal}
+                        className="flex-1 px-4 py-3 border border-gray-700 text-gray-400 rounded-lg hover:bg-surface-light transition-colors"
+                      >
+                        Iptal
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleAIAnalyze}
+                        disabled={aiAnalyzing || !aiCourseId || !aiQuestionText.trim()}
+                        className="flex-1 px-4 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:opacity-90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                      >
+                        {aiAnalyzing ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                            Analiz Ediliyor...
+                          </>
+                        ) : (
+                          <>
+                            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                            </svg>
+                            AI ile Analiz Et
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </>
+                )}
+
+                {/* Step 2: Show AI Results */}
+                {aiResult && (
+                  <>
+                    <div className="bg-gradient-to-r from-purple-900/30 to-blue-900/30 rounded-lg p-4 mb-4 border border-purple-500/30">
+                      <h3 className="text-sm font-medium text-purple-400 mb-3 flex items-center gap-2">
+                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                        </svg>
+                        AI Analiz Sonucu
+                      </h3>
+
+                      <div className="grid grid-cols-2 gap-3 text-sm">
+                        <div>
+                          <span className="text-gray-500">Konu:</span>
+                          <span className={`ml-2 ${aiResult.topic?.isNew ? 'text-green-400' : 'text-white'}`}>
+                            {aiResult.topic?.displayName}
+                            {aiResult.topic?.isNew && <span className="ml-1 text-xs bg-green-500/20 px-1 rounded">YENi</span>}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-gray-500">Alt Konu:</span>
+                          <span className={`ml-2 ${aiResult.subtopic?.isNew ? 'text-green-400' : 'text-white'}`}>
+                            {aiResult.subtopic?.displayName}
+                            {aiResult.subtopic?.isNew && <span className="ml-1 text-xs bg-green-500/20 px-1 rounded">YENi</span>}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-gray-500">Bilgi Turu:</span>
+                          <span className="ml-2 text-white">{aiResult.knowledgeType?.displayName}</span>
+                        </div>
+                        <div>
+                          <span className="text-gray-500">Soru Tipi:</span>
+                          <span className="ml-2 text-white">{getTypeLabel(aiResult.questionType || 'multiple_choice')}</span>
+                        </div>
+                        <div className="col-span-2">
+                          <span className="text-gray-500">Dogru Cevap:</span>
+                          <span className="ml-2 text-green-400 font-medium">{aiResult.correctAnswer}</span>
+                        </div>
+                        {aiResult.options && aiResult.options.length > 0 && (
+                          <div className="col-span-2">
+                            <span className="text-gray-500">Secenekler:</span>
+                            <div className="mt-1 space-y-1">
+                              {aiResult.options.map((opt, i) => (
+                                <div key={i} className="text-gray-300 text-xs pl-2">
+                                  {String.fromCharCode(65 + i)}) {opt}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        {aiResult.explanation && (
+                          <div className="col-span-2">
+                            <span className="text-gray-500">Aciklama:</span>
+                            <div className="mt-1 text-gray-300 text-xs">{aiResult.explanation}</div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="bg-surface-light rounded-lg p-3 mb-4">
+                      <div className="text-gray-500 text-xs mb-1">Soru:</div>
+                      <div className="text-white text-sm whitespace-pre-wrap">{aiQuestionText}</div>
+                    </div>
+
+                    <div className="flex gap-3">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAiResult(null);
+                          setError("");
+                        }}
+                        className="flex-1 px-4 py-3 border border-gray-700 text-gray-400 rounded-lg hover:bg-surface-light transition-colors"
+                      >
+                        Geri
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleAICreate}
+                        disabled={saving}
+                        className="flex-1 px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+                      >
+                        {saving ? "Kaydediliyor..." : "Onayla ve Kaydet"}
+                      </button>
+                    </div>
+                  </>
                 )}
               </div>
+            ) : (
+              /* Manual Mode */
+              <form onSubmit={handleSubmit}>
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-400 mb-2">Alt Konu</label>
+                    <select
+                      value={formData.subtopicId}
+                      onChange={(e) => setFormData({ ...formData, subtopicId: Number(e.target.value) })}
+                      className="w-full px-4 py-3 bg-surface-light border border-gray-700 rounded-lg text-white focus:outline-none focus:border-primary"
+                      required
+                    >
+                      <option value={0}>Secin</option>
+                      {subtopics.map((s) => (
+                        <option key={s.id} value={s.id}>
+                          {s.course?.displayName} - {s.topic?.displayName} - {s.displayName}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-400 mb-2">Bilgi Turu</label>
+                    <select
+                      value={formData.knowledgeTypeId}
+                      onChange={(e) => setFormData({ ...formData, knowledgeTypeId: Number(e.target.value) })}
+                      className="w-full px-4 py-3 bg-surface-light border border-gray-700 rounded-lg text-white focus:outline-none focus:border-primary"
+                      required
+                    >
+                      <option value={0}>Secin</option>
+                      {knowledgeTypes.map((kt) => (
+                        <option key={kt.id} value={kt.id}>{kt.displayName}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
 
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-400 mb-2">Aciklama (opsiyonel)</label>
-                <textarea
-                  value={formData.explanation}
-                  onChange={(e) => setFormData({ ...formData, explanation: e.target.value })}
-                  className="w-full px-4 py-3 bg-surface-light border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-primary resize-none"
-                  rows={2}
-                  placeholder="Cevap aciklamasi..."
-                />
-              </div>
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-400 mb-2">Soru Tipi</label>
+                    <select
+                      value={formData.type}
+                      onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                      className="w-full px-4 py-3 bg-surface-light border border-gray-700 rounded-lg text-white focus:outline-none focus:border-primary"
+                    >
+                      {QUESTION_TYPES.map((t) => (
+                        <option key={t.value} value={t.value}>{t.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-400 mb-2">Puan</label>
+                    <input
+                      type="number"
+                      value={formData.points}
+                      onChange={(e) => setFormData({ ...formData, points: Number(e.target.value) })}
+                      className="w-full px-4 py-3 bg-surface-light border border-gray-700 rounded-lg text-white focus:outline-none focus:border-primary"
+                      min={1}
+                    />
+                  </div>
+                </div>
 
-              <div className="flex gap-3">
-                <button
-                  type="button"
-                  onClick={closeModal}
-                  className="flex-1 px-4 py-3 border border-gray-700 text-gray-400 rounded-lg hover:bg-surface-light transition-colors"
-                >
-                  Iptal
-                </button>
-                <button
-                  type="submit"
-                  disabled={saving || formData.subtopicId === 0 || formData.knowledgeTypeId === 0}
-                  className="flex-1 px-4 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
-                >
-                  {saving ? "Kaydediliyor..." : "Kaydet"}
-                </button>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-400 mb-2">Soru Metni</label>
+                  <textarea
+                    value={formData.text}
+                    onChange={(e) => setFormData({ ...formData, text: e.target.value })}
+                    className="w-full px-4 py-3 bg-surface-light border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-primary resize-none"
+                    rows={3}
+                    placeholder={formData.type === "fill_in_blank" ? "Soru metni (bosluk icin ___ kullanin)" : "Soru metni"}
+                    required
+                  />
+                </div>
+
+                {formData.type === "multiple_choice" && (
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-400 mb-2">Secenekler</label>
+                    <div className="space-y-2">
+                      {formData.options.map((opt, idx) => (
+                        <input
+                          key={idx}
+                          type="text"
+                          value={opt}
+                          onChange={(e) => {
+                            const newOpts = [...formData.options];
+                            newOpts[idx] = e.target.value;
+                            setFormData({ ...formData, options: newOpts });
+                          }}
+                          className="w-full px-4 py-2 bg-surface-light border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-primary"
+                          placeholder={`Secenek ${String.fromCharCode(65 + idx)}`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-400 mb-2">
+                    Dogru Cevap
+                    {formData.type === "multiple_choice" && " (A, B, C veya D)"}
+                    {formData.type === "true_false" && " (true veya false)"}
+                  </label>
+                  {formData.type === "true_false" ? (
+                    <select
+                      value={formData.correctAnswer}
+                      onChange={(e) => setFormData({ ...formData, correctAnswer: e.target.value })}
+                      className="w-full px-4 py-3 bg-surface-light border border-gray-700 rounded-lg text-white focus:outline-none focus:border-primary"
+                      required
+                    >
+                      <option value="">Secin</option>
+                      <option value="true">Dogru</option>
+                      <option value="false">Yanlis</option>
+                    </select>
+                  ) : (
+                    <input
+                      type="text"
+                      value={formData.correctAnswer}
+                      onChange={(e) => setFormData({ ...formData, correctAnswer: e.target.value })}
+                      className="w-full px-4 py-3 bg-surface-light border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-primary"
+                      required
+                    />
+                  )}
+                </div>
+
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-gray-400 mb-2">Aciklama (opsiyonel)</label>
+                  <textarea
+                    value={formData.explanation}
+                    onChange={(e) => setFormData({ ...formData, explanation: e.target.value })}
+                    className="w-full px-4 py-3 bg-surface-light border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-primary resize-none"
+                    rows={2}
+                    placeholder="Cevap aciklamasi..."
+                  />
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={closeModal}
+                    className="flex-1 px-4 py-3 border border-gray-700 text-gray-400 rounded-lg hover:bg-surface-light transition-colors"
+                  >
+                    Iptal
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={saving || formData.subtopicId === 0 || formData.knowledgeTypeId === 0}
+                    className="flex-1 px-4 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
+                  >
+                    {saving ? "Kaydediliyor..." : "Kaydet"}
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {/* Error in modal */}
+            {error && (
+              <div className="mt-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm">
+                {error}
               </div>
-            </form>
+            )}
           </div>
         </div>
       )}

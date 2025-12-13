@@ -13,6 +13,7 @@ from ..db import get_session
 from ..models import Course, Topic, Subtopic, KnowledgeType, Question, DEFAULT_KNOWLEDGE_TYPES
 from ..models.user_role import UserRole
 from ..auth.jwt_handler import verify_token
+from ..services.gemini_service import analyze_question
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -787,4 +788,138 @@ async def get_admin_stats(
         "subtopics": subtopics,
         "questions": questions,
         "questionsByType": questions_by_type
+    }
+
+
+# ============ AI Analysis Endpoint ============
+class AIAnalyzeRequest(BaseModel):
+    courseId: int
+    questionText: str
+
+
+@router.post("/questions/analyze")
+async def analyze_question_with_ai(
+    data: AIAnalyzeRequest,
+    db: AsyncSession = Depends(get_session),
+    admin: dict = Depends(get_admin_user)
+):
+    """Analyze a question using AI and suggest categorization"""
+    # Get course info
+    course_result = await db.execute(select(Course).where(Course.id == data.courseId))
+    course = course_result.scalar_one_or_none()
+    if not course:
+        raise HTTPException(status_code=404, detail="Course not found")
+
+    # Get existing topics for this course
+    topics_result = await db.execute(
+        select(Topic).where(Topic.course_id == data.courseId, Topic.is_active == True)
+    )
+    topics = [{"id": t.id, "name": t.name, "displayName": t.display_name} for t in topics_result.scalars().all()]
+
+    # Get existing subtopics for this course
+    subtopics_result = await db.execute(
+        select(Subtopic)
+        .join(Topic)
+        .where(Topic.course_id == data.courseId, Subtopic.is_active == True)
+    )
+    subtopics = [{"id": s.id, "topicId": s.topic_id, "name": s.name, "displayName": s.display_name} for s in subtopics_result.scalars().all()]
+
+    # Get all knowledge types
+    kt_result = await db.execute(select(KnowledgeType).where(KnowledgeType.is_active == True))
+    knowledge_types = [{"id": k.id, "name": k.name, "displayName": k.display_name} for k in kt_result.scalars().all()]
+
+    # Analyze with Gemini
+    result = await analyze_question(
+        question_text=data.questionText,
+        course_name=course.display_name,
+        existing_topics=topics,
+        existing_subtopics=subtopics,
+        existing_knowledge_types=knowledge_types
+    )
+
+    return result
+
+
+@router.post("/questions/ai-create")
+async def create_question_with_ai(
+    data: dict,
+    db: AsyncSession = Depends(get_session),
+    admin: dict = Depends(get_admin_user)
+):
+    """Create a question with AI-suggested categorization, creating new topics/subtopics if needed"""
+    course_id = data.get("courseId")
+    topic_data = data.get("topic")
+    subtopic_data = data.get("subtopic")
+    knowledge_type_id = data.get("knowledgeTypeId")
+    question_text = data.get("questionText")
+    question_type = data.get("questionType", "multiple_choice")
+    correct_answer = data.get("correctAnswer")
+    options = data.get("options")
+    explanation = data.get("explanation")
+
+    # Validate course
+    course_result = await db.execute(select(Course).where(Course.id == course_id))
+    course = course_result.scalar_one_or_none()
+    if not course:
+        raise HTTPException(status_code=404, detail="Course not found")
+
+    # Handle topic - create if new
+    topic_id = topic_data.get("id")
+    if topic_id is None:
+        # Create new topic
+        new_topic = Topic(
+            course_id=course_id,
+            name=topic_data["name"],
+            display_name=topic_data["displayName"]
+        )
+        db.add(new_topic)
+        await db.flush()
+        topic_id = new_topic.id
+
+    # Handle subtopic - create if new
+    subtopic_id = subtopic_data.get("id")
+    if subtopic_id is None:
+        # Create new subtopic
+        new_subtopic = Subtopic(
+            topic_id=topic_id,
+            name=subtopic_data["name"],
+            display_name=subtopic_data["displayName"]
+        )
+        db.add(new_subtopic)
+        await db.flush()
+        subtopic_id = new_subtopic.id
+
+    # Validate knowledge type
+    kt_result = await db.execute(select(KnowledgeType).where(KnowledgeType.id == knowledge_type_id))
+    if not kt_result.scalar_one_or_none():
+        raise HTTPException(status_code=404, detail="Knowledge type not found")
+
+    # Get topic for question_id generation
+    topic_result = await db.execute(select(Topic).where(Topic.id == topic_id))
+    topic = topic_result.scalar_one_or_none()
+
+    # Generate question_id
+    question_id = f"{course.name}_{topic.name}_{question_type}_{uuid.uuid4().hex[:8]}"
+
+    # Create question
+    question = Question(
+        question_id=question_id,
+        subtopic_id=subtopic_id,
+        knowledge_type_id=knowledge_type_id,
+        type=question_type,
+        text=question_text,
+        options=options,
+        correct_answer=correct_answer,
+        explanation=explanation,
+        points=10
+    )
+    db.add(question)
+    await db.commit()
+    await db.refresh(question)
+
+    return {
+        "success": True,
+        "question": question.to_dict(),
+        "topicCreated": topic_data.get("id") is None,
+        "subtopicCreated": subtopic_data.get("id") is None
     }

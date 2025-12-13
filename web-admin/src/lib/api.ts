@@ -355,3 +355,57 @@ export const adminQuestionsApi = {
 export const adminStatsApi = {
   getStats: () => fetchApi<AdminStats>('/admin/stats'),
 };
+
+// AI Analysis API
+export interface AIAnalysisResult {
+  success: boolean;
+  topic?: {
+    id: number | null;
+    name: string;
+    displayName: string;
+    isNew: boolean;
+  };
+  subtopic?: {
+    id: number | null;
+    name: string;
+    displayName: string;
+    isNew: boolean;
+  };
+  knowledgeType?: {
+    id: number;
+    name: string;
+    displayName: string;
+  };
+  questionType?: string;
+  correctAnswer?: string;
+  options?: string[];
+  explanation?: string;
+  error?: string;
+}
+
+export const adminAIApi = {
+  analyzeQuestion: (courseId: number, questionText: string) =>
+    fetchApi<AIAnalysisResult>('/admin/questions/analyze', {
+      method: 'POST',
+      body: JSON.stringify({ courseId, questionText }),
+    }),
+
+  createWithAI: (data: {
+    courseId: number;
+    topic: { id: number | null; name: string; displayName: string };
+    subtopic: { id: number | null; name: string; displayName: string };
+    knowledgeTypeId: number;
+    questionText: string;
+    questionType: string;
+    correctAnswer: string;
+    options?: string[];
+    explanation?: string;
+  }) =>
+    fetchApi<{ success: boolean; question: Question; topicCreated: boolean; subtopicCreated: boolean }>(
+      '/admin/questions/ai-create',
+      {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }
+    ),
+};
