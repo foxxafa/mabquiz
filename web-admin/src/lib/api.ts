@@ -41,7 +41,7 @@ async function fetchApi<T>(
 // Auth API
 export const authApi = {
   login: (username: string, password: string) =>
-    fetchApi<{ access_token: string; user: any }>('/auth/login', {
+    fetchApi<{ access_token: string; user: any }>('/auth/admin/login', {
       method: 'POST',
       body: JSON.stringify({ username, password }),
     }),

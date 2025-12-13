@@ -161,6 +161,63 @@ async def manual_login(request: Request, db: AsyncSession = Depends(get_session)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.post("/api/v1/auth/admin/login")
+async def admin_login(request: Request, db: AsyncSession = Depends(get_session)):
+    """Admin login endpoint - requires admin role"""
+    try:
+        from .models.user import UserDB
+        from .models.user_role import UserRole
+        from .auth.password_utils import verify_password
+        from .auth.jwt_handler import create_access_token
+        from sqlalchemy import select
+
+        body = await request.json()
+        username = body.get("username")
+        password = body.get("password")
+
+        # Find user by username
+        result = await db.execute(select(UserDB).filter(UserDB.username == username))
+        user = result.scalar_one_or_none()
+        if not user:
+            raise HTTPException(status_code=401, detail="Invalid credentials")
+
+        # Verify password
+        if not verify_password(password, user.password_hash):
+            raise HTTPException(status_code=401, detail="Invalid credentials")
+
+        # Check if user has admin role
+        role_result = await db.execute(
+            select(UserRole).filter(UserRole.user_uid == user.uid, UserRole.role == "admin")
+        )
+        admin_role = role_result.scalar_one_or_none()
+        if not admin_role:
+            raise HTTPException(status_code=403, detail="Access denied. Admin privileges required.")
+
+        # Create token with admin flag
+        token_data = {
+            "uid": user.uid,
+            "email": user.email,
+            "display_name": user.display_name,
+            "is_admin": True
+        }
+        access_token = create_access_token(token_data)
+
+        return {
+            "access_token": access_token,
+            "token_type": "bearer",
+            "user": {
+                "uid": user.uid,
+                "email": user.email,
+                "display_name": user.display_name,
+                "email_verified": user.email_verified,
+                "is_admin": True
+            }
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.get("/api/v1/auth/me")
 async def get_current_user(request: Request, db: AsyncSession = Depends(get_session)):
     """Get current user info"""
