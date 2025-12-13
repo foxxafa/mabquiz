@@ -348,13 +348,20 @@ async def run_migrations(conn):
 
     print("🔄 Running database migrations...")
 
-    # Check if knowledge_types has Bloom taxonomy (check for 'recall')
-    result = await conn.execute(text("""
-        SELECT EXISTS (
-            SELECT 1 FROM knowledge_types WHERE name = 'recall'
-        )
-    """))
-    has_bloom = result.scalar()
+    # Check if knowledge_types table exists and has Bloom taxonomy
+    has_bloom = False
+    try:
+        result = await conn.execute(text(
+            "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'knowledge_types')"
+        ))
+        table_exists = result.scalar()
+
+        if table_exists:
+            result = await conn.execute(text("SELECT COUNT(*) FROM knowledge_types WHERE name = 'recall'"))
+            has_bloom = result.scalar() > 0
+    except Exception as e:
+        print(f"  ⚠️ Check failed: {e}")
+        has_bloom = False
 
     if not has_bloom:
         print("  📋 Migrating knowledge_types to Bloom taxonomy...")
@@ -363,13 +370,13 @@ async def run_migrations(conn):
         try:
             await conn.execute(text("UPDATE questions SET knowledge_type_id = NULL"))
             print("  ✅ Cleared knowledge_type_id from questions")
-        except Exception as e:
-            print(f"  ⚠️ Could not clear knowledge_type_id: {e}")
+        except Exception:
+            pass  # Table might not exist
 
         # Drop and recreate knowledge_types
         await conn.execute(text("DROP TABLE IF EXISTS knowledge_types CASCADE"))
         await conn.execute(text("""
-            CREATE TABLE knowledge_types (
+            CREATE TABLE IF NOT EXISTS knowledge_types (
                 id SERIAL PRIMARY KEY,
                 name VARCHAR(50) UNIQUE NOT NULL,
                 display_name VARCHAR(100) NOT NULL,
@@ -385,6 +392,7 @@ async def run_migrations(conn):
             await conn.execute(text("""
                 INSERT INTO knowledge_types (name, display_name, description)
                 VALUES (:name, :display_name, :description)
+                ON CONFLICT (name) DO NOTHING
             """), kt)
 
         await conn.execute(text("CREATE INDEX IF NOT EXISTS idx_knowledge_types_name ON knowledge_types(name)"))
