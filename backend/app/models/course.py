@@ -20,6 +20,12 @@ class Course(Base):
     topics = relationship("Topic", back_populates="course", cascade="all, delete-orphan")
 
     def to_dict(self):
+        # Safely get topic count - avoid lazy loading in async context
+        try:
+            topic_count = len(self.topics) if self.topics else 0
+        except Exception:
+            topic_count = 0
+
         return {
             "id": self.id,
             "name": self.name,
@@ -28,5 +34,5 @@ class Course(Base):
             "isActive": self.is_active,
             "createdAt": self.created_at.isoformat() if self.created_at else None,
             "updatedAt": self.updated_at.isoformat() if self.updated_at else None,
-            "topicCount": len(self.topics) if self.topics else 0,
+            "topicCount": topic_count,
         }

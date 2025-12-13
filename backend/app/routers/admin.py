@@ -190,7 +190,11 @@ async def update_course(
     admin: dict = Depends(get_admin_user)
 ):
     """Update a course"""
-    result = await db.execute(select(Course).where(Course.id == course_id))
+    result = await db.execute(
+        select(Course)
+        .options(selectinload(Course.topics))
+        .where(Course.id == course_id)
+    )
     course = result.scalar_one_or_none()
     if not course:
         raise HTTPException(status_code=404, detail="Course not found")
@@ -297,7 +301,11 @@ async def update_topic(
     admin: dict = Depends(get_admin_user)
 ):
     """Update a topic"""
-    result = await db.execute(select(Topic).where(Topic.id == topic_id))
+    result = await db.execute(
+        select(Topic)
+        .options(selectinload(Topic.subtopics))
+        .where(Topic.id == topic_id)
+    )
     topic = result.scalar_one_or_none()
     if not topic:
         raise HTTPException(status_code=404, detail="Topic not found")
@@ -412,7 +420,11 @@ async def update_subtopic(
     admin: dict = Depends(get_admin_user)
 ):
     """Update a subtopic"""
-    result = await db.execute(select(Subtopic).where(Subtopic.id == subtopic_id))
+    result = await db.execute(
+        select(Subtopic)
+        .options(selectinload(Subtopic.questions))
+        .where(Subtopic.id == subtopic_id)
+    )
     subtopic = result.scalar_one_or_none()
     if not subtopic:
         raise HTTPException(status_code=404, detail="Subtopic not found")

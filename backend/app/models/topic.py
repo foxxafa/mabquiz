@@ -27,6 +27,12 @@ class Topic(Base):
     )
 
     def to_dict(self, include_course=False):
+        # Safely get subtopic count - avoid lazy loading in async context
+        try:
+            subtopic_count = len(self.subtopics) if self.subtopics else 0
+        except Exception:
+            subtopic_count = 0
+
         result = {
             "id": self.id,
             "courseId": self.course_id,
@@ -36,12 +42,16 @@ class Topic(Base):
             "isActive": self.is_active,
             "createdAt": self.created_at.isoformat() if self.created_at else None,
             "updatedAt": self.updated_at.isoformat() if self.updated_at else None,
-            "subtopicCount": len(self.subtopics) if self.subtopics else 0,
+            "subtopicCount": subtopic_count,
         }
-        if include_course and self.course:
-            result["course"] = {
-                "id": self.course.id,
-                "name": self.course.name,
-                "displayName": self.course.display_name,
-            }
+        if include_course:
+            try:
+                if self.course:
+                    result["course"] = {
+                        "id": self.course.id,
+                        "name": self.course.name,
+                        "displayName": self.course.display_name,
+                    }
+            except Exception:
+                pass
         return result

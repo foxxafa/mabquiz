@@ -22,6 +22,12 @@ class Subtopic(Base):
     questions = relationship("Question", back_populates="subtopic_rel", cascade="all, delete-orphan")
 
     def to_dict(self, include_topic=False):
+        # Safely get question count - avoid lazy loading in async context
+        try:
+            question_count = len(self.questions) if self.questions else 0
+        except Exception:
+            question_count = 0
+
         result = {
             "id": self.id,
             "topicId": self.topic_id,
@@ -31,19 +37,23 @@ class Subtopic(Base):
             "isActive": self.is_active,
             "createdAt": self.created_at.isoformat() if self.created_at else None,
             "updatedAt": self.updated_at.isoformat() if self.updated_at else None,
-            "questionCount": len(self.questions) if self.questions else 0,
+            "questionCount": question_count,
         }
-        if include_topic and self.topic:
-            result["topic"] = {
-                "id": self.topic.id,
-                "name": self.topic.name,
-                "displayName": self.topic.display_name,
-                "courseId": self.topic.course_id,
-            }
-            if self.topic.course:
-                result["course"] = {
-                    "id": self.topic.course.id,
-                    "name": self.topic.course.name,
-                    "displayName": self.topic.course.display_name,
-                }
+        if include_topic:
+            try:
+                if self.topic:
+                    result["topic"] = {
+                        "id": self.topic.id,
+                        "name": self.topic.name,
+                        "displayName": self.topic.display_name,
+                        "courseId": self.topic.course_id,
+                    }
+                    if self.topic.course:
+                        result["course"] = {
+                            "id": self.topic.course.id,
+                            "name": self.topic.course.name,
+                            "displayName": self.topic.course.display_name,
+                        }
+            except Exception:
+                pass
         return result
