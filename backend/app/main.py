@@ -343,49 +343,54 @@ async def get_current_user(request: Request, db: AsyncSession = Depends(get_sess
         raise HTTPException(status_code=500, detail=str(e))
 
 async def run_migrations(conn):
-    """Run database migrations"""
+    """Run database migrations - Knowledge types Bloom taxonomy"""
+    from .models.knowledge_type import DEFAULT_KNOWLEDGE_TYPES
+
     print("🔄 Running database migrations...")
 
-    # Check if user_mab_question_arms has 'difficulty' column (should be removed)
+    # Check if knowledge_types has Bloom taxonomy (check for 'recall')
     result = await conn.execute(text("""
-        SELECT column_name FROM information_schema.columns
-        WHERE table_name = 'user_mab_question_arms' AND column_name = 'difficulty'
+        SELECT EXISTS (
+            SELECT 1 FROM knowledge_types WHERE name = 'recall'
+        )
     """))
-    if result.fetchone():
-        print("  📋 Removing 'difficulty' column from user_mab_question_arms...")
-        await conn.execute(text("ALTER TABLE user_mab_question_arms DROP COLUMN difficulty"))
-        print("  ✅ Dropped 'difficulty' column")
+    has_bloom = result.scalar()
 
-    # Check if user_mab_topic_arms has 'last_updated' column (should be renamed to 'updated_at')
-    result = await conn.execute(text("""
-        SELECT column_name FROM information_schema.columns
-        WHERE table_name = 'user_mab_topic_arms' AND column_name = 'last_updated'
-    """))
-    if result.fetchone():
-        print("  📋 Renaming 'last_updated' to 'updated_at' in user_mab_topic_arms...")
-        await conn.execute(text("ALTER TABLE user_mab_topic_arms RENAME COLUMN last_updated TO updated_at"))
-        print("  ✅ Renamed column")
+    if not has_bloom:
+        print("  📋 Migrating knowledge_types to Bloom taxonomy...")
 
-    # Migration: Clean questions table - drop old columns if they exist
-    # Check if old 'course' column exists (indicates old schema)
-    result = await conn.execute(text("""
-        SELECT column_name FROM information_schema.columns
-        WHERE table_name = 'questions' AND column_name = 'course'
-    """))
-    if result.fetchone():
-        print("  📋 Dropping old questions table to create clean schema...")
-        await conn.execute(text("DROP TABLE IF EXISTS questions CASCADE"))
-        print("  ✅ Dropped old questions table")
+        # Clear knowledge_type_id from questions first
+        try:
+            await conn.execute(text("UPDATE questions SET knowledge_type_id = NULL"))
+            print("  ✅ Cleared knowledge_type_id from questions")
+        except Exception as e:
+            print(f"  ⚠️ Could not clear knowledge_type_id: {e}")
 
-    # Migration: Remove difficulty column from questions table
-    result = await conn.execute(text("""
-        SELECT column_name FROM information_schema.columns
-        WHERE table_name = 'questions' AND column_name = 'difficulty'
-    """))
-    if result.fetchone():
-        print("  📋 Removing 'difficulty' column from questions table...")
-        await conn.execute(text("ALTER TABLE questions DROP COLUMN difficulty"))
-        print("  ✅ Dropped 'difficulty' column from questions")
+        # Drop and recreate knowledge_types
+        await conn.execute(text("DROP TABLE IF EXISTS knowledge_types CASCADE"))
+        await conn.execute(text("""
+            CREATE TABLE knowledge_types (
+                id SERIAL PRIMARY KEY,
+                name VARCHAR(50) UNIQUE NOT NULL,
+                display_name VARCHAR(100) NOT NULL,
+                description TEXT,
+                is_active BOOLEAN DEFAULT TRUE,
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+            )
+        """))
+
+        # Insert Bloom taxonomy types
+        for kt in DEFAULT_KNOWLEDGE_TYPES:
+            await conn.execute(text("""
+                INSERT INTO knowledge_types (name, display_name, description)
+                VALUES (:name, :display_name, :description)
+            """), kt)
+
+        await conn.execute(text("CREATE INDEX IF NOT EXISTS idx_knowledge_types_name ON knowledge_types(name)"))
+        print(f"  ✅ Created knowledge_types with {len(DEFAULT_KNOWLEDGE_TYPES)} Bloom taxonomy types")
+    else:
+        print("  ✅ Knowledge types already have Bloom taxonomy")
 
     print("✅ Migrations completed")
 
