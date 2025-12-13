@@ -187,29 +187,45 @@ async def analyze_question(
     # Include description for better knowledge type selection
     knowledge_types_list = "\n".join([f"- ID:{k['id']} | {k['name']} | {k['displayName']} | {k.get('description', '')}" for k in existing_knowledge_types])
 
-    # Shorter prompt to avoid truncation
-    prompt = f"""Soruyu analiz et ve JSON dondur.
+    # Clear prompt with explicit requirements
+    prompt = f"""Verilen soruyu analiz edip JSON formatinda kategorize et.
 
 DERS: {course_name}
 
-KONULAR: {topics_list if topics_list else "YOK"}
+MEVCUT KONULAR:
+{topics_list if topics_list else "(henuz yok - yeni olustur)"}
 
-ALT KONULAR: {subtopics_list if subtopics_list else "YOK"}
+MEVCUT ALT KONULAR:
+{subtopics_list if subtopics_list else "(henuz yok - yeni olustur)"}
 
-BILGI TURLERI: {knowledge_types_list}
+BILGI TURLERI (birini sec):
+{knowledge_types_list}
 
-SORU: {question_text}
+ANALIZ EDILECEK SORU:
+{question_text}
 
-CEVAP FORMATI:
-{{"topic":{{"id":null,"name":"snake_case","displayName":"Ad"}},"subtopic":{{"id":null,"name":"snake_case","displayName":"Ad"}},"knowledgeTypeId":1,"questionType":"multiple_choice","questionText":"soru?","correctAnswer":"dogru sik icerigi","options":["A","B","C","D"],"explanation":"aciklama"}}
+ONEMLI: Asagidaki JSON formatinda cevap ver. TUM alanlari MUTLAKA doldur, hicbirini null birakma (sadece id null olabilir).
+
+SORU TIPI ORNEKLERI:
+
+1. COKTAN SECMELI (multiple_choice):
+{{"topic":{{"id":5,"name":"hucre_biyolojisi","displayName":"Hücre Biyolojisi"}},"subtopic":{{"id":null,"name":"madde_tasimasi","displayName":"Madde Taşıması"}},"knowledgeTypeId":1,"questionType":"multiple_choice","questionText":"Hangisi dogrudur?","correctAnswer":"Dogru sikin tam icerigi","options":["Sik A icerigi","Sik B icerigi","Sik C icerigi","Sik D icerigi"],"explanation":"Aciklama"}}
+
+2. DOGRU/YANLIS (true_false):
+{{"topic":{{"id":null,"name":"genetik","displayName":"Genetik"}},"subtopic":{{"id":null,"name":"dna_yapisi","displayName":"DNA Yapısı"}},"knowledgeTypeId":1,"questionType":"true_false","questionText":"DNA cift sarmallidir.","correctAnswer":"true","options":null,"explanation":"DNA Watson-Crick modeline gore cift sarmal yapidir"}}
+
+3. BOSLUK DOLDURMA (fill_in_blank):
+{{"topic":{{"id":null,"name":"fizik","displayName":"Fizik"}},"subtopic":{{"id":null,"name":"hareket","displayName":"Hareket"}},"knowledgeTypeId":1,"questionType":"fill_in_blank","questionText":"Isik hizi ___ km/s dir.","correctAnswer":"300000","options":null,"explanation":"Isik hizi yaklasik 300.000 km/s"}}
 
 KURALLAR:
-- topic/subtopic id: mevcut listede varsa ID, yoksa null
-- questionText: sadece soru, siklar olmadan
-- correctAnswer: harf degil, cevap ICERIGI
-- options: sik icerikleri, harfler olmadan
+1. topic.id ve subtopic.id: Mevcut listede varsa ID yaz, yoksa null (ama name ve displayName MUTLAKA doldur!)
+2. name: snake_case formatinda (ornek: madde_tasimasi, hucre_bolunmesi)
+3. displayName: Turkce gorunen ad (ornek: Madde Taşıması, Hücre Bölünmesi)
+4. questionText: SADECE soru cumlesi (siklar olmadan, bosluk doldurma icin ___ kullan)
+5. correctAnswer: Coktan secmelide sikin ICERIGI, dogru/yanlista "true"/"false", bosluk doldurmada cevap metni
+6. options: Coktan secmelide 4 sik icerigi (harfsiz), diger tiplerde null
 
-JSON:"""
+JSON cevap:"""
 
     try:
         async with httpx.AsyncClient(timeout=60.0) as client:
@@ -269,14 +285,14 @@ JSON:"""
                 "success": True,
                 "topic": {
                     "id": topic_id,
-                    "name": topic_data.get("name", "unknown"),
-                    "displayName": topic_data.get("displayName", "Bilinmeyen Konu"),
+                    "name": topic_data.get("name") or "unknown",
+                    "displayName": topic_data.get("displayName") or "Bilinmeyen Konu",
                     "isNew": topic_is_new
                 },
                 "subtopic": {
                     "id": subtopic_id,
-                    "name": subtopic_data.get("name", "unknown"),
-                    "displayName": subtopic_data.get("displayName", "Bilinmeyen Alt Konu"),
+                    "name": subtopic_data.get("name") or "unknown",
+                    "displayName": subtopic_data.get("displayName") or "Bilinmeyen Alt Konu",
                     "isNew": subtopic_is_new
                 },
                 "knowledgeType": {
