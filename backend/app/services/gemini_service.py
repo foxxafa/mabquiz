@@ -89,16 +89,15 @@ YANIT FORMAT (JSON):
 SADECE JSON DÖNDÜR, başka bir şey yazma."""
 
     try:
-        async with httpx.AsyncClient(timeout=30.0) as client:
+        async with httpx.AsyncClient(timeout=60.0) as client:
             response = await client.post(
                 f"{GEMINI_API_URL}?key={GEMINI_API_KEY}",
                 json={
                     "contents": [{"parts": [{"text": prompt}]}],
                     "generationConfig": {
-                        "temperature": 0.2,
-                        "topK": 40,
-                        "topP": 0.95,
-                        "maxOutputTokens": 1024,
+                        "temperature": 0.1,
+                        "maxOutputTokens": 2048,
+                        "responseMimeType": "application/json"
                     }
                 },
                 headers={"Content-Type": "application/json"}
@@ -112,6 +111,9 @@ SADECE JSON DÖNDÜR, başka bir şey yazma."""
             # Extract the generated text
             generated_text = result.get("candidates", [{}])[0].get("content", {}).get("parts", [{}])[0].get("text", "")
 
+            if not generated_text:
+                return {"success": False, "error": f"Empty response from Gemini. Full response: {json.dumps(result)[:500]}"}
+
             # Clean and parse JSON
             generated_text = generated_text.strip()
             if generated_text.startswith("```json"):
@@ -122,7 +124,10 @@ SADECE JSON DÖNDÜR, başka bir şey yazma."""
                 generated_text = generated_text[:-3]
             generated_text = generated_text.strip()
 
-            analysis = json.loads(generated_text)
+            try:
+                analysis = json.loads(generated_text)
+            except json.JSONDecodeError as e:
+                return {"success": False, "error": f"JSON parse error: {str(e)}. Raw response: {generated_text[:300]}"}
 
             # Determine if topic/subtopic are new
             topic_is_new = analysis["topic"]["id"] is None
