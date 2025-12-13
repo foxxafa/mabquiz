@@ -20,12 +20,6 @@ const QUESTION_TYPES = [
   { value: "fill_in_blank", label: "Bosluk Doldurma" },
 ];
 
-const DIFFICULTIES = [
-  { value: "beginner", label: "Baslangic" },
-  { value: "intermediate", label: "Orta" },
-  { value: "advanced", label: "Ileri" },
-];
-
 export default function QuestionsPage() {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [subtopics, setSubtopics] = useState<Subtopic[]>([]);
@@ -56,7 +50,6 @@ export default function QuestionsPage() {
     options: ["", "", "", ""],
     correctAnswer: "",
     explanation: "",
-    difficulty: "intermediate",
     points: 10,
   });
 
@@ -121,7 +114,6 @@ export default function QuestionsPage() {
         options: question.options || ["", "", "", ""],
         correctAnswer: question.correctAnswer,
         explanation: question.explanation || "",
-        difficulty: question.difficulty,
         points: question.points,
       });
     } else {
@@ -134,7 +126,6 @@ export default function QuestionsPage() {
         options: ["", "", "", ""],
         correctAnswer: "",
         explanation: "",
-        difficulty: "intermediate",
         points: 10,
       });
     }
@@ -158,7 +149,6 @@ export default function QuestionsPage() {
       text: formData.text,
       correctAnswer: formData.correctAnswer,
       explanation: formData.explanation || undefined,
-      difficulty: formData.difficulty,
       points: formData.points,
     };
 
@@ -328,7 +318,6 @@ export default function QuestionsPage() {
                   <th className="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Soru</th>
                   <th className="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Tip</th>
                   <th className="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Konum</th>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Zorluk</th>
                   <th className="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Durum</th>
                   <th className="px-6 py-4 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">Islemler</th>
                 </tr>
@@ -336,7 +325,7 @@ export default function QuestionsPage() {
               <tbody className="divide-y divide-gray-800">
                 {questions.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
+                    <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
                       Henuz soru eklenmemis
                     </td>
                   </tr>
@@ -361,17 +350,6 @@ export default function QuestionsPage() {
                         <div className="text-gray-500 text-xs">
                           {q.topicInfo?.displayName || q.topic} / {q.subtopicInfo?.displayName || q.subtopic}
                         </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`px-2 py-1 rounded text-xs ${
-                          q.difficulty === "beginner"
-                            ? "bg-green-500/20 text-green-400"
-                            : q.difficulty === "intermediate"
-                            ? "bg-yellow-500/20 text-yellow-400"
-                            : "bg-red-500/20 text-red-400"
-                        }`}>
-                          {DIFFICULTIES.find((d) => d.value === q.difficulty)?.label || q.difficulty}
-                        </span>
                       </td>
                       <td className="px-6 py-4">
                         <button
@@ -476,7 +454,7 @@ export default function QuestionsPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-4 mb-4">
+              <div className="grid grid-cols-2 gap-4 mb-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-400 mb-2">Soru Tipi</label>
                   <select
@@ -486,18 +464,6 @@ export default function QuestionsPage() {
                   >
                     {QUESTION_TYPES.map((t) => (
                       <option key={t.value} value={t.value}>{t.label}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-2">Zorluk</label>
-                  <select
-                    value={formData.difficulty}
-                    onChange={(e) => setFormData({ ...formData, difficulty: e.target.value })}
-                    className="w-full px-4 py-3 bg-surface-light border border-gray-700 rounded-lg text-white focus:outline-none focus:border-primary"
-                  >
-                    {DIFFICULTIES.map((d) => (
-                      <option key={d.value} value={d.value}>{d.label}</option>
                     ))}
                   </select>
                 </div>

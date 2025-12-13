@@ -153,7 +153,6 @@ export interface Question {
   subtopic?: string;
   knowledgeType?: string;
   tags?: string[];
-  difficulty: string;
   points: number;
   isActive: boolean;
   subtopicInfo?: { id: number; name: string; displayName: string };
@@ -319,7 +318,6 @@ export const adminQuestionsApi = {
     correctAnswer: string;
     explanation?: string;
     matchPairs?: { left: string; right: string }[];
-    difficulty?: string;
     points?: number;
     tags?: string[];
   }) =>
@@ -337,7 +335,6 @@ export const adminQuestionsApi = {
     correctAnswer: string;
     explanation: string;
     matchPairs: { left: string; right: string }[];
-    difficulty: string;
     points: number;
     tags: string[];
     isActive: boolean;

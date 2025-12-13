@@ -31,9 +31,6 @@ class Question(Base):
     # Tags for additional categorization
     tags = Column(JSON, nullable=True)  # JSON array: ["NSAID", "pain", "aspirin"]
 
-    # Difficulty
-    difficulty = Column(String(32), index=True, default="intermediate")  # beginner, intermediate, advanced
-
     # Scoring
     points = Column(Integer, default=10)
 
@@ -61,7 +58,6 @@ class Question(Base):
             "subtopicId": self.subtopic_id,
             "knowledgeTypeId": self.knowledge_type_id,
             "tags": self.tags or [],
-            "difficulty": self.difficulty,
             "points": self.points,
             "isActive": self.is_active,
             "createdAt": self.created_at.isoformat() if self.created_at else None,

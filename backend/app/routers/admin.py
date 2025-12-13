@@ -107,7 +107,6 @@ class QuestionCreate(BaseModel):
     correctAnswer: str
     explanation: Optional[str] = None
     matchPairs: Optional[List[dict]] = None
-    difficulty: str = "intermediate"
     points: int = 10
     tags: Optional[List[str]] = None
 
@@ -121,7 +120,6 @@ class QuestionUpdate(BaseModel):
     correctAnswer: Optional[str] = None
     explanation: Optional[str] = None
     matchPairs: Optional[List[dict]] = None
-    difficulty: Optional[str] = None
     points: Optional[int] = None
     tags: Optional[List[str]] = None
     isActive: Optional[bool] = None
@@ -651,7 +649,6 @@ async def create_question(
         correct_answer=data.correctAnswer,
         explanation=data.explanation,
         match_pairs=data.matchPairs,
-        difficulty=data.difficulty,
         points=data.points,
         tags=data.tags,
     )
@@ -703,8 +700,6 @@ async def update_question(
         question.explanation = data.explanation
     if data.matchPairs is not None:
         question.match_pairs = data.matchPairs
-    if data.difficulty is not None:
-        question.difficulty = data.difficulty
     if data.points is not None:
         question.points = data.points
     if data.tags is not None:
