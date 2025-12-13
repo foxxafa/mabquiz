@@ -138,12 +138,18 @@ def extract_json_from_text(text: str) -> Optional[Dict]:
     if answer_match:
         result["correctAnswer"] = answer_match.group(1)
 
-    # Extract options array
+    # Extract options array - handle multiline and escaped quotes
     options_match = re.search(r'"options"\s*:\s*\[(.*?)\]', json_str, re.DOTALL)
     if options_match:
         options_str = options_match.group(1)
-        options = re.findall(r'"([^"]*)"', options_str)
-        result["options"] = options
+        # Handle both simple and escaped quotes
+        options = re.findall(r'"((?:[^"\\]|\\.)*)"', options_str)
+        if options:
+            result["options"] = options
+
+    # If options is null explicitly
+    if '"options"' in json_str and '"options": null' in json_str.replace(" ", "").replace("\n", ""):
+        result["options"] = None
 
     explanation_match = re.search(r'"explanation"\s*:\s*"([^"]*)"', json_str)
     if explanation_match:
@@ -188,26 +194,35 @@ async def analyze_question(
     # Include description for better knowledge type selection
     knowledge_types_list = "\n".join([f"- ID:{k['id']} | {k['name']} | {k['displayName']} | {k.get('description', '')}" for k in existing_knowledge_types])
 
-    # Compact prompt to avoid truncation
-    prompt = f"""Soruyu analiz et, JSON dondur.
+    # Build compact prompt - minimize tokens to prevent truncation
+    prompt = f"""Analyze this {course_name} question. Return ONLY valid JSON.
 
-DERS: {course_name}
-KONULAR: {topics_list if topics_list else "YOK"}
-ALT KONULAR: {subtopics_list if subtopics_list else "YOK"}
-BILGI TURLERI: {knowledge_types_list}
+EXISTING TOPICS: {topics_list if topics_list else "NONE"}
+EXISTING SUBTOPICS: {subtopics_list if subtopics_list else "NONE"}
+KNOWLEDGE TYPES: {knowledge_types_list}
 
-SORU:
+QUESTION TEXT:
 {question_text}
 
-JSON FORMAT (tum alanlari doldur):
-{{"topic":{{"id":ID_veya_null,"name":"snake_case","displayName":"Turkce Ad"}},"subtopic":{{"id":ID_veya_null,"name":"snake_case","displayName":"Turkce Ad"}},"knowledgeTypeId":BILGI_TURU_ID,"questionType":"multiple_choice","questionText":"Sadece soru metni","correctAnswer":"Dogru cevap ICERIGI","options":["A sikki","B sikki","C sikki","D sikki"],"explanation":"Kisa aciklama"}}
+Return this exact JSON structure (fill ALL fields):
+{{
+  "topic": {{"id": null, "name": "topic_name", "displayName": "Konu Adi"}},
+  "subtopic": {{"id": null, "name": "subtopic_name", "displayName": "Alt Konu Adi"}},
+  "knowledgeTypeId": 1,
+  "questionType": "multiple_choice",
+  "questionText": "Question without options",
+  "correctAnswer": "The correct option text",
+  "options": ["Option A text", "Option B text", "Option C text", "Option D text"],
+  "explanation": "Brief explanation"
+}}
 
-KURALLAR:
-- questionText: Sadece soru, siklar olmadan
-- correctAnswer: Harf degil, dogru sikin TAM ICERIGI
-- options: 4 sik icerigi (A/B/C/D harfleri olmadan)
-- true_false icin: correctAnswer="true" veya "false", options=null
-- fill_in_blank icin: questionText'te ___ kullan, options=null
+RULES:
+- Use existing topic/subtopic ID if it matches, otherwise id=null for new
+- questionText: Only the question, no A/B/C/D options
+- correctAnswer: The FULL TEXT of correct option (not just A/B/C/D letter)
+- options: Array of 4 option texts without A/B/C/D prefixes
+- For true_false: correctAnswer="true" or "false", options=null
+- For fill_in_blank: use ___ in questionText, options=null
 
 JSON:"""
 
