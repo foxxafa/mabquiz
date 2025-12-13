@@ -9,7 +9,8 @@ from typing import Optional, List, Dict, Any
 
 # Gemini API configuration
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
-GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
+# Use gemini-2.0-flash - higher rate limits, generally available
+GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
 
 
 def extract_json_from_text(text: str) -> Optional[Dict]:
@@ -187,45 +188,28 @@ async def analyze_question(
     # Include description for better knowledge type selection
     knowledge_types_list = "\n".join([f"- ID:{k['id']} | {k['name']} | {k['displayName']} | {k.get('description', '')}" for k in existing_knowledge_types])
 
-    # Clear prompt with explicit requirements
-    prompt = f"""Verilen soruyu analiz edip JSON formatinda kategorize et.
+    # Compact prompt to avoid truncation
+    prompt = f"""Soruyu analiz et, JSON dondur.
 
 DERS: {course_name}
+KONULAR: {topics_list if topics_list else "YOK"}
+ALT KONULAR: {subtopics_list if subtopics_list else "YOK"}
+BILGI TURLERI: {knowledge_types_list}
 
-MEVCUT KONULAR:
-{topics_list if topics_list else "(henuz yok - yeni olustur)"}
-
-MEVCUT ALT KONULAR:
-{subtopics_list if subtopics_list else "(henuz yok - yeni olustur)"}
-
-BILGI TURLERI (birini sec):
-{knowledge_types_list}
-
-ANALIZ EDILECEK SORU:
+SORU:
 {question_text}
 
-ONEMLI: Asagidaki JSON formatinda cevap ver. TUM alanlari MUTLAKA doldur, hicbirini null birakma (sadece id null olabilir).
-
-SORU TIPI ORNEKLERI:
-
-1. COKTAN SECMELI (multiple_choice):
-{{"topic":{{"id":5,"name":"hucre_biyolojisi","displayName":"Hücre Biyolojisi"}},"subtopic":{{"id":null,"name":"madde_tasimasi","displayName":"Madde Taşıması"}},"knowledgeTypeId":1,"questionType":"multiple_choice","questionText":"Hangisi dogrudur?","correctAnswer":"Dogru sikin tam icerigi","options":["Sik A icerigi","Sik B icerigi","Sik C icerigi","Sik D icerigi"],"explanation":"Aciklama"}}
-
-2. DOGRU/YANLIS (true_false):
-{{"topic":{{"id":null,"name":"genetik","displayName":"Genetik"}},"subtopic":{{"id":null,"name":"dna_yapisi","displayName":"DNA Yapısı"}},"knowledgeTypeId":1,"questionType":"true_false","questionText":"DNA cift sarmallidir.","correctAnswer":"true","options":null,"explanation":"DNA Watson-Crick modeline gore cift sarmal yapidir"}}
-
-3. BOSLUK DOLDURMA (fill_in_blank):
-{{"topic":{{"id":null,"name":"fizik","displayName":"Fizik"}},"subtopic":{{"id":null,"name":"hareket","displayName":"Hareket"}},"knowledgeTypeId":1,"questionType":"fill_in_blank","questionText":"Isik hizi ___ km/s dir.","correctAnswer":"300000","options":null,"explanation":"Isik hizi yaklasik 300.000 km/s"}}
+JSON FORMAT (tum alanlari doldur):
+{{"topic":{{"id":ID_veya_null,"name":"snake_case","displayName":"Turkce Ad"}},"subtopic":{{"id":ID_veya_null,"name":"snake_case","displayName":"Turkce Ad"}},"knowledgeTypeId":BILGI_TURU_ID,"questionType":"multiple_choice","questionText":"Sadece soru metni","correctAnswer":"Dogru cevap ICERIGI","options":["A sikki","B sikki","C sikki","D sikki"],"explanation":"Kisa aciklama"}}
 
 KURALLAR:
-1. topic.id ve subtopic.id: Mevcut listede varsa ID yaz, yoksa null (ama name ve displayName MUTLAKA doldur!)
-2. name: snake_case formatinda (ornek: madde_tasimasi, hucre_bolunmesi)
-3. displayName: Turkce gorunen ad (ornek: Madde Taşıması, Hücre Bölünmesi)
-4. questionText: SADECE soru cumlesi (siklar olmadan, bosluk doldurma icin ___ kullan)
-5. correctAnswer: Coktan secmelide sikin ICERIGI, dogru/yanlista "true"/"false", bosluk doldurmada cevap metni
-6. options: Coktan secmelide 4 sik icerigi (harfsiz), diger tiplerde null
+- questionText: Sadece soru, siklar olmadan
+- correctAnswer: Harf degil, dogru sikin TAM ICERIGI
+- options: 4 sik icerigi (A/B/C/D harfleri olmadan)
+- true_false icin: correctAnswer="true" veya "false", options=null
+- fill_in_blank icin: questionText'te ___ kullan, options=null
 
-JSON cevap:"""
+JSON:"""
 
     try:
         async with httpx.AsyncClient(timeout=60.0) as client:
