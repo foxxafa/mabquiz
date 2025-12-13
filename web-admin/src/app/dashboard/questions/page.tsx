@@ -198,7 +198,7 @@ export default function QuestionsPage() {
         displayName: aiResult.subtopic?.displayName || "",
       },
       knowledgeTypeId: aiResult.knowledgeType?.id || 9,
-      questionText: aiQuestionText,
+      questionText: aiResult.questionText || aiQuestionText,
       questionType: aiResult.questionType || "multiple_choice",
       correctAnswer: aiResult.correctAnswer || "",
       options: aiResult.options,
@@ -654,8 +654,8 @@ export default function QuestionsPage() {
                     </div>
 
                     <div className="bg-surface-light rounded-lg p-3 mb-4">
-                      <div className="text-gray-500 text-xs mb-1">Soru:</div>
-                      <div className="text-white text-sm whitespace-pre-wrap">{aiQuestionText}</div>
+                      <div className="text-gray-500 text-xs mb-1">Soru Metni:</div>
+                      <div className="text-white text-sm whitespace-pre-wrap">{aiResult?.questionText || aiQuestionText}</div>
                     </div>
 
                     <div className="flex gap-3">

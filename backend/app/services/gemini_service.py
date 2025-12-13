@@ -63,9 +63,17 @@ GÖREV:
 2. Uygun konu, alt konu ve bilgi türünü belirle
 3. Eğer mevcut kategoriler uygun değilse, yeni konu/alt konu öner
 4. Soru tipini belirle (multiple_choice, true_false, fill_in_blank)
-5. Doğru cevabı belirle
-6. Varsa şıkları çıkar
-7. Kısa bir açıklama yaz
+5. SADECE soru metnini çıkar (şıklar, cevap harfi olmadan, soru işaretiyle biten kısım)
+6. Şıkları ayrı ayrı çıkar (A, B, C, D harfleri olmadan sadece içerik)
+7. Doğru cevabın İÇERİĞİNİ belirle (harf değil, cevabın kendisi)
+8. Kısa bir açıklama yaz
+
+ÖRNEK:
+Girdi: "Türkiye'nin başkenti neresidir? A) İstanbul B) Ankara C) İzmir D) Bursa Cevap: B"
+Çıktı:
+- questionText: "Türkiye'nin başkenti neresidir?"
+- options: ["İstanbul", "Ankara", "İzmir", "Bursa"]
+- correctAnswer: "Ankara"
 
 YANIT FORMAT (JSON):
 {{
@@ -81,8 +89,9 @@ YANIT FORMAT (JSON):
     }},
     "knowledgeTypeId": <bilgi türü ID - mutlaka mevcut listeden seç>,
     "questionType": "<multiple_choice|true_false|fill_in_blank>",
-    "correctAnswer": "<doğru cevap>",
-    "options": ["A şıkkı", "B şıkkı", "C şıkkı", "D şıkkı"] veya null,
+    "questionText": "<SADECE soru metni, şıklar ve cevap harfi olmadan>",
+    "correctAnswer": "<doğru cevabın içeriği, harf değil>",
+    "options": ["şık1 içeriği", "şık2 içeriği", "şık3 içeriği", "şık4 içeriği"] veya null,
     "explanation": "<kısa açıklama>"
 }}
 
@@ -157,6 +166,7 @@ SADECE JSON DÖNDÜR, başka bir şey yazma."""
                     "displayName": kt_info["displayName"]
                 },
                 "questionType": analysis.get("questionType", "multiple_choice"),
+                "questionText": analysis.get("questionText", ""),
                 "correctAnswer": analysis.get("correctAnswer", ""),
                 "options": analysis.get("options"),
                 "explanation": analysis.get("explanation")

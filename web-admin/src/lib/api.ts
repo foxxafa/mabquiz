@@ -377,6 +377,7 @@ export interface AIAnalysisResult {
     displayName: string;
   };
   questionType?: string;
+  questionText?: string;
   correctAnswer?: string;
   options?: string[];
   explanation?: string;
