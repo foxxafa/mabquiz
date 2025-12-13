@@ -826,7 +826,7 @@ async def analyze_question_with_ai(
 
     # Get all knowledge types
     kt_result = await db.execute(select(KnowledgeType).where(KnowledgeType.is_active == True))
-    knowledge_types = [{"id": k.id, "name": k.name, "displayName": k.display_name} for k in kt_result.scalars().all()]
+    knowledge_types = [{"id": k.id, "name": k.name, "displayName": k.display_name, "description": k.description or ""} for k in kt_result.scalars().all()]
 
     # Analyze with Gemini
     result = await analyze_question(

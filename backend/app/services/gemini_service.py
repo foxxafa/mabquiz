@@ -40,7 +40,8 @@ async def analyze_question(
     # Build context for the AI
     topics_list = "\n".join([f"- ID:{t['id']} | {t['name']} | {t['displayName']}" for t in existing_topics])
     subtopics_list = "\n".join([f"- ID:{s['id']} | TopicID:{s['topicId']} | {s['name']} | {s['displayName']}" for s in existing_subtopics])
-    knowledge_types_list = "\n".join([f"- ID:{k['id']} | {k['name']} | {k['displayName']}" for k in existing_knowledge_types])
+    # Include description for better knowledge type selection
+    knowledge_types_list = "\n".join([f"- ID:{k['id']} | {k['name']} | {k['displayName']} | {k.get('description', '')}" for k in existing_knowledge_types])
 
     prompt = f"""Sen bir eğitim içeriği sınıflandırma asistanısın. Verilen soruyu analiz et ve kategorize et.
 

@@ -38,15 +38,15 @@ class KnowledgeType(Base):
         }
 
 
-# Default knowledge types to seed
+# Default knowledge types to seed - Bloom taksonomisine dayali genel egitim icin
 DEFAULT_KNOWLEDGE_TYPES = [
-    {"name": "terminology", "display_name": "Terminoloji", "description": "Tibbi terimlerin anlami ve kullanimi"},
-    {"name": "dosage", "display_name": "Dozaj", "description": "Ilac dozlari ve uygulama sekilleri"},
-    {"name": "mechanism", "display_name": "Mekanizma", "description": "Ilac etki mekanizmalari"},
-    {"name": "indication", "display_name": "Endikasyon", "description": "Ilac kullanim alanlari"},
-    {"name": "contraindication", "display_name": "Kontrendikasyon", "description": "Ilac kullanim engelleri"},
-    {"name": "side_effect", "display_name": "Yan Etki", "description": "Ilaclarin yan etkileri"},
-    {"name": "interaction", "display_name": "Etkilesim", "description": "Ilac-ilac ve ilac-besin etkilesimleri"},
-    {"name": "pharmacokinetics", "display_name": "Farmakokinetik", "description": "Ilacin vucuttaki hareketi"},
-    {"name": "general", "display_name": "Genel", "description": "Genel bilgi sorulari"},
+    {"name": "recall", "display_name": "Hatirlama", "description": "Temel bilgileri hatirlama ve tanimlama"},
+    {"name": "comprehension", "display_name": "Anlama", "description": "Kavramlari aciklama ve yorumlama"},
+    {"name": "application", "display_name": "Uygulama", "description": "Bilgiyi yeni durumlara uygulama"},
+    {"name": "analysis", "display_name": "Analiz", "description": "Bilgiyi parcalara ayirma ve inceleme"},
+    {"name": "synthesis", "display_name": "Sentez", "description": "Bilgileri birlestirip yeni sonuclar cikarma"},
+    {"name": "evaluation", "display_name": "Degerlendirme", "description": "Yargi ve karar verme"},
+    {"name": "factual", "display_name": "Olgusal", "description": "Somut olgular, tarihler, sayilar"},
+    {"name": "conceptual", "display_name": "Kavramsal", "description": "Kavramlar arasi iliskiler ve prensipler"},
+    {"name": "procedural", "display_name": "Islemsel", "description": "Adim adim islemler ve yontemler"},
 ]
