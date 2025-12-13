@@ -35,43 +35,122 @@ def extract_json_from_text(text: str) -> Optional[Dict]:
 
     # Try to find JSON object in text
     json_match = re.search(r'\{.*', text, re.DOTALL)
-    if json_match:
-        json_str = json_match.group()
+    if not json_match:
+        return None
 
-        # Try parsing as-is
-        try:
-            return json.loads(json_str)
-        except json.JSONDecodeError:
-            pass
+    json_str = json_match.group()
 
-        # Try to fix incomplete JSON by counting braces
-        open_braces = json_str.count('{')
-        close_braces = json_str.count('}')
+    # Try parsing as-is
+    try:
+        return json.loads(json_str)
+    except json.JSONDecodeError:
+        pass
 
-        if open_braces > close_braces:
-            # Add missing closing braces
-            json_str = json_str.rstrip()
-            # Remove trailing incomplete parts (after last complete value)
-            # Find last complete key-value
-            last_quote = json_str.rfind('"')
-            if last_quote > 0:
-                # Check if we're in middle of a string
-                before_quote = json_str[:last_quote]
-                if before_quote.rstrip().endswith(':'):
-                    # We have "key": "incomplete... - remove this incomplete part
-                    # Find the start of this key
-                    key_match = re.search(r',?\s*"[^"]+"\s*:\s*"[^"]*$', json_str)
-                    if key_match:
-                        json_str = json_str[:key_match.start()]
+    # Aggressive fix for truncated JSON
+    # Step 1: Find and remove any incomplete string at the end
+    # Pattern: we're looking for unclosed strings
 
-            # Add missing braces
-            json_str = json_str.rstrip().rstrip(',')
-            json_str += '}' * (open_braces - close_braces)
+    # Remove everything after the last complete value
+    # Find last occurrence of: "value" or number or true/false/null followed by comma or brace
 
-            try:
-                return json.loads(json_str)
-            except json.JSONDecodeError:
-                pass
+    # First, try to find the last complete key-value pair
+    # Look for patterns like: "key": "value", or "key": number, or "key": null,
+
+    fixed = json_str
+
+    # Check if we have an unclosed string at the end
+    # Count quotes - if odd, we have an unclosed string
+    quote_count = fixed.count('"')
+    if quote_count % 2 == 1:
+        # Find the last quote and remove from there
+        last_quote = fixed.rfind('"')
+        # Go back to find the start of this incomplete key or value
+        # Look for the comma or brace before this
+        search_area = fixed[:last_quote]
+
+        # Find last complete structure (ends with ", or }, or ])
+        last_complete = -1
+        for pattern in ['},', '},\n', '",', '",\n', '],', '],\n', 'null,', 'true,', 'false,']:
+            idx = search_area.rfind(pattern)
+            if idx > last_complete:
+                last_complete = idx + len(pattern) - 1  # Keep the comma
+
+        if last_complete > 0:
+            fixed = fixed[:last_complete]
+
+    # Remove trailing comma if any
+    fixed = fixed.rstrip().rstrip(',').rstrip()
+
+    # Count braces and add missing ones
+    open_braces = fixed.count('{')
+    close_braces = fixed.count('}')
+    open_brackets = fixed.count('[')
+    close_brackets = fixed.count(']')
+
+    # Add missing brackets first, then braces
+    fixed += ']' * (open_brackets - close_brackets)
+    fixed += '}' * (open_braces - close_braces)
+
+    try:
+        return json.loads(fixed)
+    except json.JSONDecodeError:
+        pass
+
+    # Last resort: try to extract just the critical fields with regex
+    result = {}
+
+    # Extract topic
+    topic_match = re.search(r'"topic"\s*:\s*\{[^}]*"id"\s*:\s*(\d+|null)[^}]*"name"\s*:\s*"([^"]*)"[^}]*"displayName"\s*:\s*"([^"]*)"', json_str)
+    if topic_match:
+        result["topic"] = {
+            "id": int(topic_match.group(1)) if topic_match.group(1) != "null" else None,
+            "name": topic_match.group(2),
+            "displayName": topic_match.group(3)
+        }
+
+    # Extract subtopic - might be incomplete
+    subtopic_match = re.search(r'"subtopic"\s*:\s*\{[^}]*"id"\s*:\s*(\d+|null)', json_str)
+    subtopic_name = re.search(r'"subtopic"\s*:\s*\{[^}]*"name"\s*:\s*"([^"]*)"', json_str)
+    subtopic_display = re.search(r'"subtopic"\s*:\s*\{[^}]*"displayName"\s*:\s*"([^"]*)"', json_str)
+
+    if subtopic_match:
+        result["subtopic"] = {
+            "id": int(subtopic_match.group(1)) if subtopic_match.group(1) != "null" else None,
+            "name": subtopic_name.group(1) if subtopic_name else "unknown",
+            "displayName": subtopic_display.group(1) if subtopic_display else "Bilinmeyen"
+        }
+
+    # Extract other fields
+    kt_match = re.search(r'"knowledgeTypeId"\s*:\s*(\d+)', json_str)
+    if kt_match:
+        result["knowledgeTypeId"] = int(kt_match.group(1))
+
+    qt_match = re.search(r'"questionType"\s*:\s*"([^"]*)"', json_str)
+    if qt_match:
+        result["questionType"] = qt_match.group(1)
+
+    qtext_match = re.search(r'"questionText"\s*:\s*"([^"]*)"', json_str)
+    if qtext_match:
+        result["questionText"] = qtext_match.group(1)
+
+    answer_match = re.search(r'"correctAnswer"\s*:\s*"([^"]*)"', json_str)
+    if answer_match:
+        result["correctAnswer"] = answer_match.group(1)
+
+    # Extract options array
+    options_match = re.search(r'"options"\s*:\s*\[(.*?)\]', json_str, re.DOTALL)
+    if options_match:
+        options_str = options_match.group(1)
+        options = re.findall(r'"([^"]*)"', options_str)
+        result["options"] = options
+
+    explanation_match = re.search(r'"explanation"\s*:\s*"([^"]*)"', json_str)
+    if explanation_match:
+        result["explanation"] = explanation_match.group(1)
+
+    # If we extracted at least topic, return the result
+    if "topic" in result:
+        return result
 
     return None
 
@@ -193,11 +272,11 @@ JSON formatinda yanit ver. Sadece JSON, baska bir sey yazma."""
             analysis = extract_json_from_text(generated_text)
 
             if not analysis:
-                return {"success": False, "error": f"Could not parse JSON from response. Raw: {generated_text[:500]}"}
-
-            # Debug log
-            print(f"🔍 Gemini raw response: {generated_text[:500]}")
-            print(f"🔍 Parsed analysis keys: {list(analysis.keys())}")
+                return {
+                    "success": False,
+                    "error": "AI yanıtı işlenemedi. Lütfen tekrar deneyin.",
+                    "rawResponse": generated_text[:800]  # Frontend'de F12 ile görebilirsin
+                }
 
             # Safely extract topic info
             topic_data = analysis.get("topic", {})
