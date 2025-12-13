@@ -1,11 +1,11 @@
-from sqlalchemy import Column, Integer, String, Text, Float, DateTime, Boolean, JSON, ForeignKey
+from sqlalchemy import Column, Integer, String, Text, DateTime, Boolean, JSON, ForeignKey
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from . import Base
 
 
 class Question(Base):
-    """Enhanced Question model with foreign keys for MAB system"""
+    """Clean Question model with foreign keys for MAB system"""
     __tablename__ = "questions"
 
     # Primary fields
@@ -13,8 +13,8 @@ class Question(Base):
     question_id = Column(String(64), unique=True, index=True, nullable=False)
 
     # Foreign keys for categorization
-    subtopic_id = Column(Integer, ForeignKey("subtopics.id", ondelete="SET NULL"), nullable=True, index=True)
-    knowledge_type_id = Column(Integer, ForeignKey("knowledge_types.id", ondelete="SET NULL"), nullable=True, index=True)
+    subtopic_id = Column(Integer, ForeignKey("subtopics.id", ondelete="CASCADE"), nullable=False, index=True)
+    knowledge_type_id = Column(Integer, ForeignKey("knowledge_types.id", ondelete="RESTRICT"), nullable=False, index=True)
 
     # Content
     text = Column(Text, nullable=False)  # Question text (prompt)
@@ -28,19 +28,11 @@ class Question(Base):
     # For matching questions (future support)
     match_pairs = Column(JSON, nullable=True)  # JSON for matching: [{"left": "...", "right": "..."}, ...]
 
-    # Legacy string fields (for backward compatibility during migration)
-    course = Column(String(64), index=True, nullable=True)
-    subject = Column(String(64), index=True, nullable=True)
-    topic = Column(String(128), index=True, nullable=True)
-    subtopic = Column(String(128), nullable=True)
-    knowledge_type = Column(String(64), index=True, nullable=True)
-
     # Tags for additional categorization
     tags = Column(JSON, nullable=True)  # JSON array: ["NSAID", "pain", "aspirin"]
 
     # Difficulty
     difficulty = Column(String(32), index=True, default="intermediate")  # beginner, intermediate, advanced
-    initial_confidence = Column(Float, default=0.5)  # For MAB algorithm
 
     # Scoring
     points = Column(Integer, default=10)
@@ -54,13 +46,7 @@ class Question(Base):
     subtopic_rel = relationship("Subtopic", back_populates="questions")
     knowledge_type_rel = relationship("KnowledgeType", back_populates="questions")
 
-    @property
-    def options_json(self):
-        """Backward compatibility property"""
-        import json
-        return json.dumps(self.options, ensure_ascii=False) if self.options else None
-
-    def to_dict(self, include_relations=False):
+    def to_dict(self, include_relations=True):
         """Convert to dictionary for API responses"""
         result = {
             "id": self.question_id,
@@ -74,15 +60,8 @@ class Question(Base):
             "matchPairs": self.match_pairs,
             "subtopicId": self.subtopic_id,
             "knowledgeTypeId": self.knowledge_type_id,
-            # Legacy fields
-            "course": self.course,
-            "subject": self.subject,
-            "topic": self.topic,
-            "subtopic": self.subtopic,
-            "knowledgeType": self.knowledge_type,
             "tags": self.tags or [],
             "difficulty": self.difficulty,
-            "initialConfidence": self.initial_confidence,
             "points": self.points,
             "isActive": self.is_active,
             "createdAt": self.created_at.isoformat() if self.created_at else None,
@@ -91,24 +70,28 @@ class Question(Base):
 
         if include_relations:
             if self.subtopic_rel:
+                result["subtopic"] = self.subtopic_rel.name
                 result["subtopicInfo"] = {
                     "id": self.subtopic_rel.id,
                     "name": self.subtopic_rel.name,
                     "displayName": self.subtopic_rel.display_name,
                 }
                 if self.subtopic_rel.topic:
+                    result["topic"] = self.subtopic_rel.topic.name
                     result["topicInfo"] = {
                         "id": self.subtopic_rel.topic.id,
                         "name": self.subtopic_rel.topic.name,
                         "displayName": self.subtopic_rel.topic.display_name,
                     }
                     if self.subtopic_rel.topic.course:
+                        result["course"] = self.subtopic_rel.topic.course.name
                         result["courseInfo"] = {
                             "id": self.subtopic_rel.topic.course.id,
                             "name": self.subtopic_rel.topic.course.name,
                             "displayName": self.subtopic_rel.topic.course.display_name,
                         }
             if self.knowledge_type_rel:
+                result["knowledgeType"] = self.knowledge_type_rel.name
                 result["knowledgeTypeInfo"] = {
                     "id": self.knowledge_type_rel.id,
                     "name": self.knowledge_type_rel.name,

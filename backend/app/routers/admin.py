@@ -654,12 +654,6 @@ async def create_question(
         difficulty=data.difficulty,
         points=data.points,
         tags=data.tags,
-        # Legacy fields for backward compatibility
-        course=subtopic.topic.course.name,
-        subject=subtopic.topic.course.name,
-        topic=subtopic.topic.name,
-        subtopic=subtopic.name,
-        knowledge_type=knowledge_type.name
     )
     db.add(question)
     await db.commit()
@@ -681,20 +675,14 @@ async def update_question(
         raise HTTPException(status_code=404, detail="Question not found")
 
     if data.subtopicId is not None:
-        # Validate and update legacy fields too
+        # Validate subtopic exists
         subtopic_result = await db.execute(
-            select(Subtopic)
-            .options(selectinload(Subtopic.topic).selectinload(Topic.course))
-            .where(Subtopic.id == data.subtopicId)
+            select(Subtopic).where(Subtopic.id == data.subtopicId)
         )
         subtopic = subtopic_result.scalar_one_or_none()
         if not subtopic:
             raise HTTPException(status_code=404, detail="Subtopic not found")
         question.subtopic_id = data.subtopicId
-        question.course = subtopic.topic.course.name
-        question.subject = subtopic.topic.course.name
-        question.topic = subtopic.topic.name
-        question.subtopic = subtopic.name
 
     if data.knowledgeTypeId is not None:
         kt_result = await db.execute(select(KnowledgeType).where(KnowledgeType.id == data.knowledgeTypeId))
@@ -702,7 +690,6 @@ async def update_question(
         if not kt:
             raise HTTPException(status_code=404, detail="Knowledge type not found")
         question.knowledge_type_id = data.knowledgeTypeId
-        question.knowledge_type = kt.name
 
     if data.type is not None:
         question.type = data.type
