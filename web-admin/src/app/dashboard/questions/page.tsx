@@ -50,14 +50,16 @@ export default function QuestionsPage() {
   const [aiAnalyzing, setAiAnalyzing] = useState(false);
   const [aiResult, setAiResult] = useState<AIAnalysisResult | null>(null);
 
-  // Manual Form data
+  // Manual Form data with step-by-step selection
+  const [formCourseId, setFormCourseId] = useState<number>(0);
+  const [formTopicId, setFormTopicId] = useState<number>(0);
   const [formData, setFormData] = useState({
     subtopicId: 0,
     knowledgeTypeId: 0,
     type: "multiple_choice",
     text: "",
     options: ["", "", "", ""],
-    correctAnswer: "",
+    correctAnswerIndex: -1, // 0=A, 1=B, 2=C, 3=D, -1=none
     explanation: "",
     points: 10,
   });
@@ -122,13 +124,26 @@ export default function QuestionsPage() {
       // Duzenleme modunda AI kapali
       setAiMode(false);
       setEditingQuestion(question);
+
+      // Find course and topic from subtopic
+      const subtopic = subtopics.find(s => s.id === question.subtopicId);
+      const topic = subtopic ? topics.find(t => t.id === subtopic.topicId) : null;
+      setFormCourseId(topic?.courseId || 0);
+      setFormTopicId(subtopic?.topicId || 0);
+
+      // Find correct answer index from options
+      let correctIdx = -1;
+      if (question.options && question.correctAnswer) {
+        correctIdx = question.options.findIndex(opt => opt === question.correctAnswer);
+      }
+
       setFormData({
         subtopicId: question.subtopicId || 0,
         knowledgeTypeId: question.knowledgeTypeId || 0,
         type: question.type,
         text: question.text,
         options: question.options || ["", "", "", ""],
-        correctAnswer: question.correctAnswer,
+        correctAnswerIndex: correctIdx,
         explanation: question.explanation || "",
         points: question.points,
       });
@@ -136,13 +151,15 @@ export default function QuestionsPage() {
       // Yeni soru - AI varsayilan acik
       setAiMode(true);
       setEditingQuestion(null);
+      setFormCourseId(0);
+      setFormTopicId(0);
       setFormData({
-        subtopicId: subtopics[0]?.id || 0,
-        knowledgeTypeId: knowledgeTypes[0]?.id || 0,
+        subtopicId: 0,
+        knowledgeTypeId: 0,
         type: "multiple_choice",
         text: "",
         options: ["", "", "", ""],
-        correctAnswer: "",
+        correctAnswerIndex: -1,
         explanation: "",
         points: 10,
       });
@@ -232,12 +249,22 @@ export default function QuestionsPage() {
     setSaving(true);
     setError("");
 
+    // Get correct answer from index for multiple choice
+    let correctAnswer = "";
+    if (formData.type === "multiple_choice") {
+      if (formData.correctAnswerIndex >= 0 && formData.correctAnswerIndex < formData.options.length) {
+        correctAnswer = formData.options[formData.correctAnswerIndex];
+      }
+    } else if (formData.type === "true_false") {
+      correctAnswer = formData.correctAnswerIndex === 0 ? "true" : "false";
+    }
+
     const payload: any = {
       subtopicId: formData.subtopicId,
       knowledgeTypeId: formData.knowledgeTypeId,
       type: formData.type,
       text: formData.text,
-      correctAnswer: formData.correctAnswer,
+      correctAnswer: correctAnswer,
       explanation: formData.explanation || undefined,
       points: formData.points,
     };
@@ -729,89 +756,144 @@ export default function QuestionsPage() {
                   )}
                 </div>
               ) : (
-                /* Manual Mode - Compact Layout */
+                /* Manual Mode - Step by Step */
                 <form onSubmit={handleSubmit}>
-                  {/* Row 1: Alt Konu + Bilgi Turu */}
-                  <div className="grid grid-cols-2 gap-3 mb-3">
-                    <div>
-                      <label className="block text-xs font-medium text-gray-400 mb-1">Alt Konu</label>
+                  {/* Step 1: Ders > Konu > Alt Konu - Kademeli Secim */}
+                  <div className="mb-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold">1</div>
+                      <span className="text-sm font-medium text-white">Konum Secin</span>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2">
+                      {/* Ders */}
+                      <select
+                        value={formCourseId}
+                        onChange={(e) => {
+                          setFormCourseId(Number(e.target.value));
+                          setFormTopicId(0);
+                          setFormData({ ...formData, subtopicId: 0 });
+                        }}
+                        className="px-3 py-2 bg-surface-light border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-primary"
+                      >
+                        <option value={0}>Ders secin</option>
+                        {courses.map((c) => (
+                          <option key={c.id} value={c.id}>{c.displayName}</option>
+                        ))}
+                      </select>
+
+                      {/* Konu */}
+                      <select
+                        value={formTopicId}
+                        onChange={(e) => {
+                          setFormTopicId(Number(e.target.value));
+                          setFormData({ ...formData, subtopicId: 0 });
+                        }}
+                        disabled={!formCourseId}
+                        className="px-3 py-2 bg-surface-light border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-primary disabled:opacity-50"
+                      >
+                        <option value={0}>Konu secin</option>
+                        {topics
+                          .filter((t) => t.courseId === formCourseId)
+                          .map((t) => (
+                            <option key={t.id} value={t.id}>{t.displayName}</option>
+                          ))}
+                      </select>
+
+                      {/* Alt Konu */}
                       <select
                         value={formData.subtopicId}
                         onChange={(e) => setFormData({ ...formData, subtopicId: Number(e.target.value) })}
-                        className="w-full px-3 py-2 bg-surface-light border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-primary"
-                        required
+                        disabled={!formTopicId}
+                        className="px-3 py-2 bg-surface-light border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-primary disabled:opacity-50"
                       >
-                        <option value={0}>Secin</option>
-                        {subtopics.map((s) => (
-                          <option key={s.id} value={s.id}>
-                            {s.course?.displayName} - {s.topic?.displayName} - {s.displayName}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-400 mb-1">Bilgi Turu</label>
-                      <select
-                        value={formData.knowledgeTypeId}
-                        onChange={(e) => setFormData({ ...formData, knowledgeTypeId: Number(e.target.value) })}
-                        className="w-full px-3 py-2 bg-surface-light border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-primary"
-                        required
-                      >
-                        <option value={0}>Secin</option>
-                        {knowledgeTypes.map((kt) => (
-                          <option key={kt.id} value={kt.id}>{kt.displayName}</option>
-                        ))}
+                        <option value={0}>Alt konu secin</option>
+                        {subtopics
+                          .filter((s) => s.topicId === formTopicId)
+                          .map((s) => (
+                            <option key={s.id} value={s.id}>{s.displayName}</option>
+                          ))}
                       </select>
                     </div>
                   </div>
 
-                  {/* Row 2: Soru Tipi + Puan */}
-                  <div className="grid grid-cols-2 gap-3 mb-3">
-                    <div>
-                      <label className="block text-xs font-medium text-gray-400 mb-1">Soru Tipi</label>
+                  {/* Step 2: Bilgi Turu + Soru Tipi */}
+                  <div className="mb-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold">2</div>
+                      <span className="text-sm font-medium text-white">Soru Ozellikleri</span>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2">
+                      <select
+                        value={formData.knowledgeTypeId}
+                        onChange={(e) => setFormData({ ...formData, knowledgeTypeId: Number(e.target.value) })}
+                        className="px-3 py-2 bg-surface-light border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-primary"
+                      >
+                        <option value={0}>Bilgi turu</option>
+                        {knowledgeTypes.map((kt) => (
+                          <option key={kt.id} value={kt.id}>{kt.displayName}</option>
+                        ))}
+                      </select>
+
                       <select
                         value={formData.type}
-                        onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                        className="w-full px-3 py-2 bg-surface-light border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-primary"
+                        onChange={(e) => setFormData({ ...formData, type: e.target.value, correctAnswerIndex: -1 })}
+                        className="px-3 py-2 bg-surface-light border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-primary"
                       >
                         {QUESTION_TYPES.map((t) => (
                           <option key={t.value} value={t.value}>{t.label}</option>
                         ))}
                       </select>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-400 mb-1">Puan</label>
+
                       <input
                         type="number"
                         value={formData.points}
                         onChange={(e) => setFormData({ ...formData, points: Number(e.target.value) })}
-                        className="w-full px-3 py-2 bg-surface-light border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-primary"
+                        className="px-3 py-2 bg-surface-light border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-primary"
                         min={1}
+                        placeholder="Puan"
                       />
                     </div>
                   </div>
 
-                  {/* Soru Metni */}
-                  <div className="mb-3">
-                    <label className="block text-xs font-medium text-gray-400 mb-1">Soru Metni</label>
+                  {/* Step 3: Soru Metni */}
+                  <div className="mb-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold">3</div>
+                      <span className="text-sm font-medium text-white">Soru Metni</span>
+                    </div>
                     <textarea
                       value={formData.text}
                       onChange={(e) => setFormData({ ...formData, text: e.target.value })}
                       className="w-full px-3 py-2 bg-surface-light border border-gray-700 rounded-lg text-white placeholder-gray-500 text-sm focus:outline-none focus:border-primary resize-none"
                       rows={2}
-                      placeholder={formData.type === "fill_in_blank" ? "Soru metni (bosluk icin ___ kullanin)" : "Soru metni"}
+                      placeholder={formData.type === "fill_in_blank" ? "Soru metni (bosluk icin ___ kullanin)" : "Soru metnini girin..."}
                       required
                     />
                   </div>
 
-                  {/* Secenekler - Compact 2x2 grid for multiple choice */}
+                  {/* Step 4: Secenekler ve Dogru Cevap */}
                   {formData.type === "multiple_choice" && (
-                    <div className="mb-3">
-                      <label className="block text-xs font-medium text-gray-400 mb-1">Secenekler</label>
-                      <div className="grid grid-cols-2 gap-2">
+                    <div className="mb-4">
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold">4</div>
+                        <span className="text-sm font-medium text-white">Secenekler</span>
+                        <span className="text-xs text-gray-500">(dogru olanı tiklayin)</span>
+                      </div>
+                      <div className="space-y-2">
                         {formData.options.map((opt, idx) => (
                           <div key={idx} className="flex items-center gap-2">
-                            <span className="text-gray-500 text-sm font-medium w-5">{String.fromCharCode(65 + idx)})</span>
+                            {/* Correct answer toggle button */}
+                            <button
+                              type="button"
+                              onClick={() => setFormData({ ...formData, correctAnswerIndex: idx })}
+                              className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold transition-all ${
+                                formData.correctAnswerIndex === idx
+                                  ? 'bg-green-500 text-white shadow-lg shadow-green-500/30'
+                                  : 'bg-surface-light text-gray-400 hover:bg-gray-700'
+                              }`}
+                            >
+                              {String.fromCharCode(65 + idx)}
+                            </button>
                             <input
                               type="text"
                               value={opt}
@@ -820,54 +902,86 @@ export default function QuestionsPage() {
                                 newOpts[idx] = e.target.value;
                                 setFormData({ ...formData, options: newOpts });
                               }}
-                              className="flex-1 px-3 py-2 bg-surface-light border border-gray-700 rounded-lg text-white placeholder-gray-500 text-sm focus:outline-none focus:border-primary"
-                              placeholder={`Secenek ${String.fromCharCode(65 + idx)}`}
+                              className={`flex-1 px-3 py-2 bg-surface-light border rounded-lg text-white placeholder-gray-500 text-sm focus:outline-none transition-all ${
+                                formData.correctAnswerIndex === idx
+                                  ? 'border-green-500 bg-green-500/10'
+                                  : 'border-gray-700 focus:border-primary'
+                              }`}
+                              placeholder={`${String.fromCharCode(65 + idx)} secenegi`}
                             />
+                            {formData.correctAnswerIndex === idx && (
+                              <span className="text-green-400 text-xs font-medium">Dogru</span>
+                            )}
                           </div>
                         ))}
                       </div>
                     </div>
                   )}
 
-                  {/* Dogru Cevap + Aciklama - Side by side for compact view */}
-                  <div className="grid grid-cols-2 gap-3 mb-4">
-                    <div>
-                      <label className="block text-xs font-medium text-gray-400 mb-1">
-                        Dogru Cevap
-                        {formData.type === "multiple_choice" && " (A-D)"}
-                      </label>
-                      {formData.type === "true_false" ? (
-                        <select
-                          value={formData.correctAnswer}
-                          onChange={(e) => setFormData({ ...formData, correctAnswer: e.target.value })}
-                          className="w-full px-3 py-2 bg-surface-light border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-primary"
-                          required
+                  {/* True/False secenekleri */}
+                  {formData.type === "true_false" && (
+                    <div className="mb-4">
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold">4</div>
+                        <span className="text-sm font-medium text-white">Dogru Cevap</span>
+                      </div>
+                      <div className="flex gap-3">
+                        <button
+                          type="button"
+                          onClick={() => setFormData({ ...formData, correctAnswerIndex: 0 })}
+                          className={`flex-1 py-3 rounded-lg font-medium transition-all ${
+                            formData.correctAnswerIndex === 0
+                              ? 'bg-green-500 text-white shadow-lg'
+                              : 'bg-surface-light text-gray-400 hover:bg-gray-700'
+                          }`}
                         >
-                          <option value="">Secin</option>
-                          <option value="true">Dogru</option>
-                          <option value="false">Yanlis</option>
-                        </select>
-                      ) : (
-                        <input
-                          type="text"
-                          value={formData.correctAnswer}
-                          onChange={(e) => setFormData({ ...formData, correctAnswer: e.target.value })}
-                          className="w-full px-3 py-2 bg-surface-light border border-gray-700 rounded-lg text-white placeholder-gray-500 text-sm focus:outline-none focus:border-primary"
-                          placeholder={formData.type === "multiple_choice" ? "A, B, C veya D" : "Cevap"}
-                          required
-                        />
-                      )}
+                          Dogru
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setFormData({ ...formData, correctAnswerIndex: 1 })}
+                          className={`flex-1 py-3 rounded-lg font-medium transition-all ${
+                            formData.correctAnswerIndex === 1
+                              ? 'bg-red-500 text-white shadow-lg'
+                              : 'bg-surface-light text-gray-400 hover:bg-gray-700'
+                          }`}
+                        >
+                          Yanlis
+                        </button>
+                      </div>
                     </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-400 mb-1">Aciklama (opsiyonel)</label>
+                  )}
+
+                  {/* Fill in blank - direkt cevap */}
+                  {formData.type === "fill_in_blank" && (
+                    <div className="mb-4">
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold">4</div>
+                        <span className="text-sm font-medium text-white">Dogru Cevap</span>
+                      </div>
                       <input
                         type="text"
-                        value={formData.explanation}
-                        onChange={(e) => setFormData({ ...formData, explanation: e.target.value })}
+                        value={formData.options[0] || ""}
+                        onChange={(e) => setFormData({ ...formData, options: [e.target.value, "", "", ""], correctAnswerIndex: 0 })}
                         className="w-full px-3 py-2 bg-surface-light border border-gray-700 rounded-lg text-white placeholder-gray-500 text-sm focus:outline-none focus:border-primary"
-                        placeholder="Kisa aciklama..."
+                        placeholder="Bosluga gelecek cevap"
+                        required
                       />
                     </div>
+                  )}
+
+                  {/* Aciklama */}
+                  <div className="mb-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-xs text-gray-500">Aciklama (opsiyonel)</span>
+                    </div>
+                    <input
+                      type="text"
+                      value={formData.explanation}
+                      onChange={(e) => setFormData({ ...formData, explanation: e.target.value })}
+                      className="w-full px-3 py-2 bg-surface-light border border-gray-700 rounded-lg text-white placeholder-gray-500 text-sm focus:outline-none focus:border-primary"
+                      placeholder="Cevap aciklamasi..."
+                    />
                   </div>
 
                   {/* Action Buttons */}
@@ -881,7 +995,7 @@ export default function QuestionsPage() {
                     </button>
                     <button
                       type="submit"
-                      disabled={saving || formData.subtopicId === 0 || formData.knowledgeTypeId === 0}
+                      disabled={saving || formData.subtopicId === 0 || formData.knowledgeTypeId === 0 || formData.correctAnswerIndex < 0}
                       className="flex-1 px-4 py-2.5 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 text-sm"
                     >
                       {saving ? "Kaydediliyor..." : "Kaydet"}
