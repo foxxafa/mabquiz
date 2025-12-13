@@ -43,6 +43,21 @@ except Exception as e:
     import traceback
     print(f"❌ Full traceback: {traceback.format_exc()}")
 
+print("🔧 Attempting to import admin router...")
+try:
+    from .admin import router as admin_router
+    print("✅ Admin router imported successfully")
+    router.include_router(admin_router)  # admin router will be included under /api/v1/admin
+    print("✅ Admin router registered successfully")
+except ImportError as e:
+    print(f"❌ Admin router import failed: {e}")
+    import traceback
+    print(f"❌ Full traceback: {traceback.format_exc()}")
+except Exception as e:
+    print(f"❌ Error registering admin router: {e}")
+    import traceback
+    print(f"❌ Full traceback: {traceback.format_exc()}")
+
 @router.get("/health")
 async def health_check():
     """Sağlık kontrolü endpoint'i"""

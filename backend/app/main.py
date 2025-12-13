@@ -350,6 +350,49 @@ async def run_migrations(conn):
         await conn.execute(text("ALTER TABLE user_mab_topic_arms RENAME COLUMN last_updated TO updated_at"))
         print("  ✅ Renamed column")
 
+    # Migration: Add new columns to questions table for relational structure
+    # Check if subtopic_id column exists in questions
+    result = await conn.execute(text("""
+        SELECT column_name FROM information_schema.columns
+        WHERE table_name = 'questions' AND column_name = 'subtopic_id'
+    """))
+    if not result.fetchone():
+        print("  📋 Adding 'subtopic_id' column to questions...")
+        await conn.execute(text("ALTER TABLE questions ADD COLUMN subtopic_id INTEGER"))
+        print("  ✅ Added 'subtopic_id' column")
+
+    # Check if knowledge_type_id column exists in questions
+    result = await conn.execute(text("""
+        SELECT column_name FROM information_schema.columns
+        WHERE table_name = 'questions' AND column_name = 'knowledge_type_id'
+    """))
+    if not result.fetchone():
+        print("  📋 Adding 'knowledge_type_id' column to questions...")
+        await conn.execute(text("ALTER TABLE questions ADD COLUMN knowledge_type_id INTEGER"))
+        print("  ✅ Added 'knowledge_type_id' column")
+
+    # Check if match_pairs column exists in questions (for future matching questions)
+    result = await conn.execute(text("""
+        SELECT column_name FROM information_schema.columns
+        WHERE table_name = 'questions' AND column_name = 'match_pairs'
+    """))
+    if not result.fetchone():
+        print("  📋 Adding 'match_pairs' column to questions...")
+        await conn.execute(text("ALTER TABLE questions ADD COLUMN match_pairs JSONB"))
+        print("  ✅ Added 'match_pairs' column")
+
+    # Make course, subject, topic, subtopic, knowledge_type nullable for new relational structure
+    # PostgreSQL: These columns were NOT NULL, we need to make them nullable
+    try:
+        await conn.execute(text("ALTER TABLE questions ALTER COLUMN course DROP NOT NULL"))
+        await conn.execute(text("ALTER TABLE questions ALTER COLUMN subject DROP NOT NULL"))
+        await conn.execute(text("ALTER TABLE questions ALTER COLUMN topic DROP NOT NULL"))
+        await conn.execute(text("ALTER TABLE questions ALTER COLUMN knowledge_type DROP NOT NULL"))
+        print("  ✅ Made legacy columns nullable")
+    except Exception as e:
+        # Columns might already be nullable
+        pass
+
     print("✅ Migrations completed")
 
 
