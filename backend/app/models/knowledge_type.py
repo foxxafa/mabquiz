@@ -39,14 +39,15 @@ class KnowledgeType(Base):
 
 
 # Default knowledge types to seed - Bloom taksonomisine dayali genel egitim icin
+# Description alani Gemini'ye gonderilir, bu yuzden detayli olmali
 DEFAULT_KNOWLEDGE_TYPES = [
-    {"name": "recall", "display_name": "Hatirlama", "description": "Temel bilgileri hatirlama ve tanimlama"},
-    {"name": "comprehension", "display_name": "Anlama", "description": "Kavramlari aciklama ve yorumlama"},
-    {"name": "application", "display_name": "Uygulama", "description": "Bilgiyi yeni durumlara uygulama"},
-    {"name": "analysis", "display_name": "Analiz", "description": "Bilgiyi parcalara ayirma ve inceleme"},
-    {"name": "synthesis", "display_name": "Sentez", "description": "Bilgileri birlestirip yeni sonuclar cikarma"},
-    {"name": "evaluation", "display_name": "Degerlendirme", "description": "Yargi ve karar verme"},
-    {"name": "factual", "display_name": "Olgusal", "description": "Somut olgular, tarihler, sayilar"},
-    {"name": "conceptual", "display_name": "Kavramsal", "description": "Kavramlar arasi iliskiler ve prensipler"},
-    {"name": "procedural", "display_name": "Islemsel", "description": "Adim adim islemler ve yontemler"},
+    {"name": "recall", "display_name": "Hatirlama", "description": "X nedir, Y kactir, Z ne zaman gibi temel bilgi sorulari. Ornek: Isik hizi kactir? Turkiyenin baskenti neresi?"},
+    {"name": "comprehension", "display_name": "Anlama", "description": "Aciklama ve yorumlama gerektiren sorular. Ornek: Enerji korunumu ne demek? Bu kavram ne anlama gelir?"},
+    {"name": "application", "display_name": "Uygulama", "description": "Hesaplama, problem cozme, formul uygulama. Ornek: Bu kuvveti hesaplayin, denklemi cozun, dozu hesaplayin"},
+    {"name": "analysis", "display_name": "Analiz", "description": "Karsilastirma, yorumlama, parcalara ayirma. Ornek: Bu grafigi yorumlayin, farklari karsilastirin, nedenleri aciklayin"},
+    {"name": "synthesis", "display_name": "Sentez", "description": "Tasarlama, olusturma, birlestirme. Ornek: Deney tasarlayin, plan olusturun, cozum onerin"},
+    {"name": "evaluation", "display_name": "Degerlendirme", "description": "Yargilama, elestirme, secim yapma. Ornek: Hangisi daha iyi? En uygun yontem hangisi? Elestirin"},
+    {"name": "factual", "display_name": "Olgusal", "description": "Tarih, sayi, isim, formul gibi somut bilgiler. Ornek: Pi sayisi kactir? Hangi yil oldu? Formulu nedir?"},
+    {"name": "conceptual", "display_name": "Kavramsal", "description": "Kavramlar arasi iliski ve prensipler. Ornek: X ile Y arasindaki iliski nedir? Bu prensip nasil calisir?"},
+    {"name": "procedural", "display_name": "Islemsel", "description": "Adim adim islem ve yontemler. Ornek: Nasil yapilir? Hangi adimlar izlenir? Surec nasil isler?"},
 ]
