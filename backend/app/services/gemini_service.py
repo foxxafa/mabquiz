@@ -187,60 +187,29 @@ async def analyze_question(
     # Include description for better knowledge type selection
     knowledge_types_list = "\n".join([f"- ID:{k['id']} | {k['name']} | {k['displayName']} | {k.get('description', '')}" for k in existing_knowledge_types])
 
-    prompt = f"""Sen bir eğitim içeriği sınıflandırma asistanısın. Verilen soruyu analiz et ve kategorize et.
+    # Shorter prompt to avoid truncation
+    prompt = f"""Soruyu analiz et ve JSON dondur.
 
 DERS: {course_name}
 
-MEVCUT KONULAR:
-{topics_list if topics_list else "(Henüz konu yok)"}
+KONULAR: {topics_list if topics_list else "YOK"}
 
-MEVCUT ALT KONULAR:
-{subtopics_list if subtopics_list else "(Henüz alt konu yok)"}
+ALT KONULAR: {subtopics_list if subtopics_list else "YOK"}
 
-MEVCUT BİLGİ TÜRLERİ:
-{knowledge_types_list}
+BILGI TURLERI: {knowledge_types_list}
 
-SORU:
-{question_text}
+SORU: {question_text}
 
-GÖREV:
-1. Bu soruyu analiz et
-2. Uygun konu, alt konu ve bilgi türünü belirle
-3. Eğer mevcut kategoriler uygun değilse, yeni konu/alt konu öner
-4. Soru tipini belirle (multiple_choice, true_false, fill_in_blank)
-5. SADECE soru metnini çıkar (şıklar, cevap harfi olmadan, soru işaretiyle biten kısım)
-6. Şıkları ayrı ayrı çıkar (A, B, C, D harfleri olmadan sadece içerik)
-7. Doğru cevabın İÇERİĞİNİ belirle (harf değil, cevabın kendisi)
-8. Kısa bir açıklama yaz
+CEVAP FORMATI:
+{{"topic":{{"id":null,"name":"snake_case","displayName":"Ad"}},"subtopic":{{"id":null,"name":"snake_case","displayName":"Ad"}},"knowledgeTypeId":1,"questionType":"multiple_choice","questionText":"soru?","correctAnswer":"dogru sik icerigi","options":["A","B","C","D"],"explanation":"aciklama"}}
 
-ÖRNEK:
-Girdi: "Türkiye'nin başkenti neresidir? A) İstanbul B) Ankara C) İzmir D) Bursa Cevap: B"
-Çıktı:
-- questionText: "Türkiye'nin başkenti neresidir?"
-- options: ["İstanbul", "Ankara", "İzmir", "Bursa"]
-- correctAnswer: "Ankara"
+KURALLAR:
+- topic/subtopic id: mevcut listede varsa ID, yoksa null
+- questionText: sadece soru, siklar olmadan
+- correctAnswer: harf degil, cevap ICERIGI
+- options: sik icerikleri, harfler olmadan
 
-YANIT FORMAT (JSON):
-{{
-    "topic": {{
-        "id": <mevcut ise ID, yoksa null>,
-        "name": "<sistem_adi_snake_case>",
-        "displayName": "<Görünen Ad>"
-    }},
-    "subtopic": {{
-        "id": <mevcut ise ID, yoksa null>,
-        "name": "<sistem_adi_snake_case>",
-        "displayName": "<Görünen Ad>"
-    }},
-    "knowledgeTypeId": <bilgi türü ID - mutlaka mevcut listeden seç>,
-    "questionType": "<multiple_choice|true_false|fill_in_blank>",
-    "questionText": "<SADECE soru metni, şıklar ve cevap harfi olmadan>",
-    "correctAnswer": "<doğru cevabın içeriği, harf değil>",
-    "options": ["şık1 içeriği", "şık2 içeriği", "şık3 içeriği", "şık4 içeriği"] veya null,
-    "explanation": "<kısa açıklama>"
-}}
-
-JSON formatinda yanit ver. Sadece JSON, baska bir sey yazma."""
+JSON:"""
 
     try:
         async with httpx.AsyncClient(timeout=60.0) as client:
@@ -250,8 +219,7 @@ JSON formatinda yanit ver. Sadece JSON, baska bir sey yazma."""
                     "contents": [{"parts": [{"text": prompt}]}],
                     "generationConfig": {
                         "temperature": 0.1,
-                        "maxOutputTokens": 2048
-                        # NOT using responseMimeType - it can cause truncation
+                        "maxOutputTokens": 4096
                     }
                 },
                 headers={"Content-Type": "application/json"}
