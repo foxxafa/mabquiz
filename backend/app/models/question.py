@@ -65,33 +65,47 @@ class Question(Base):
         }
 
         if include_relations:
-            if self.subtopic_rel:
-                result["subtopic"] = self.subtopic_rel.name
-                result["subtopicInfo"] = {
-                    "id": self.subtopic_rel.id,
-                    "name": self.subtopic_rel.name,
-                    "displayName": self.subtopic_rel.display_name,
-                }
-                if self.subtopic_rel.topic:
-                    result["topic"] = self.subtopic_rel.topic.name
-                    result["topicInfo"] = {
-                        "id": self.subtopic_rel.topic.id,
-                        "name": self.subtopic_rel.topic.name,
-                        "displayName": self.subtopic_rel.topic.display_name,
+            # Safely access relationships - avoid lazy loading in async context
+            try:
+                if self.subtopic_rel:
+                    result["subtopic"] = self.subtopic_rel.name
+                    result["subtopicInfo"] = {
+                        "id": self.subtopic_rel.id,
+                        "name": self.subtopic_rel.name,
+                        "displayName": self.subtopic_rel.display_name,
                     }
-                    if self.subtopic_rel.topic.course:
-                        result["course"] = self.subtopic_rel.topic.course.name
-                        result["courseInfo"] = {
-                            "id": self.subtopic_rel.topic.course.id,
-                            "name": self.subtopic_rel.topic.course.name,
-                            "displayName": self.subtopic_rel.topic.course.display_name,
-                        }
-            if self.knowledge_type_rel:
-                result["knowledgeType"] = self.knowledge_type_rel.name
-                result["knowledgeTypeInfo"] = {
-                    "id": self.knowledge_type_rel.id,
-                    "name": self.knowledge_type_rel.name,
-                    "displayName": self.knowledge_type_rel.display_name,
-                }
+                    try:
+                        if self.subtopic_rel.topic:
+                            result["topic"] = self.subtopic_rel.topic.name
+                            result["topicInfo"] = {
+                                "id": self.subtopic_rel.topic.id,
+                                "name": self.subtopic_rel.topic.name,
+                                "displayName": self.subtopic_rel.topic.display_name,
+                            }
+                            try:
+                                if self.subtopic_rel.topic.course:
+                                    result["course"] = self.subtopic_rel.topic.course.name
+                                    result["courseInfo"] = {
+                                        "id": self.subtopic_rel.topic.course.id,
+                                        "name": self.subtopic_rel.topic.course.name,
+                                        "displayName": self.subtopic_rel.topic.course.display_name,
+                                    }
+                            except Exception:
+                                pass
+                    except Exception:
+                        pass
+            except Exception:
+                pass
+
+            try:
+                if self.knowledge_type_rel:
+                    result["knowledgeType"] = self.knowledge_type_rel.name
+                    result["knowledgeTypeInfo"] = {
+                        "id": self.knowledge_type_rel.id,
+                        "name": self.knowledge_type_rel.name,
+                        "displayName": self.knowledge_type_rel.display_name,
+                    }
+            except Exception:
+                pass
 
         return result

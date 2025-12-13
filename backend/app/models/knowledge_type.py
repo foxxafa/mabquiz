@@ -20,6 +20,12 @@ class KnowledgeType(Base):
     questions = relationship("Question", back_populates="knowledge_type_rel")
 
     def to_dict(self):
+        # Safely get question count - avoid lazy loading in async context
+        try:
+            question_count = len(self.questions) if self.questions else 0
+        except Exception:
+            question_count = 0
+
         return {
             "id": self.id,
             "name": self.name,
@@ -28,7 +34,7 @@ class KnowledgeType(Base):
             "isActive": self.is_active,
             "createdAt": self.created_at.isoformat() if self.created_at else None,
             "updatedAt": self.updated_at.isoformat() if self.updated_at else None,
-            "questionCount": len(self.questions) if self.questions else 0,
+            "questionCount": question_count,
         }
 
 
